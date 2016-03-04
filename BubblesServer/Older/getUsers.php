@@ -1,7 +1,7 @@
 <?php
 
 	// 1 - Establish database connection
-	require '../DBConnect/dbConnect.php';
+	require $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBConnect/dbConnect.php';
 
 	// 2 - Decode incoming Json contents
 	$_POST = json_decode(file_get_contents("php://input"), true);

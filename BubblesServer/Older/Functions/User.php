@@ -24,7 +24,7 @@ if ($function == "getUserFriendRequestUsers")
  * -------------------------------------------------------------------------------- */
 function changeEmail()
 {
-    require '../../DBConnect/dbConnect.php';
+    require $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBConnect/dbConnect.php';
     // 1 - DECODE JSON STRING
     $json_decoded = json_decode(file_get_contents("php://input"), true);
 
@@ -85,7 +85,7 @@ function changeEmail()
  * -------------------------------------------------------------------------------- */
 function changePassword()
 {
-    require '../../DBConnect/dbConnect.php';
+    require $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBConnect/dbConnect.php';
     // 1 - DECODE JSON STRING
     $json_decoded = json_decode(file_get_contents("php://input"), true);
 
@@ -123,7 +123,7 @@ function changePassword()
  * -------------------------------------------------------------------------------- */
 function syncUserFacebook()
 {
-    require '../../DBConnect/dbConnect.php';
+    require $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBConnect/dbConnect.php';
     // 1 - DECODE JSON STRING
     $json_decoded = json_decode(file_get_contents("php://input"), true);
     
@@ -161,7 +161,7 @@ function syncUserFacebook()
  * -------------------------------------------------------------------------------- */
 function setUserAccountPrivacyLabel()
 {
-    require '../../DBConnect/dbConnect.php';
+    require $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBConnect/dbConnect.php';
     // 1 - DECODE JSON STRING
     $json_decoded = json_decode(file_get_contents("php://input"), true);
 
@@ -224,7 +224,7 @@ function setUserAccountPrivacyLabel()
  * -------------------------------------------------------------------------------- */
 function getUserData()
 {
-    require '../../DBConnect/dbConnect.php';
+    require $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBConnect/dbConnect.php';
     // 1 - DECODE JSON STRING
     $json_decoded = json_decode(file_get_contents("php://input"), true);
 
@@ -290,7 +290,7 @@ function getUserData()
  * -------------------------------------------------------------------------------- */
 function getUserFriendRequestUsers()
 {
-	require '../../DBConnect/dbConnect.php';
+	require $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBConnect/dbConnect.php';
 	// 1 - DECODE JSON STRING
 	$json_decoded = json_decode(file_get_contents("php://input"), true);
 	

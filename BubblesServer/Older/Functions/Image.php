@@ -20,7 +20,7 @@ elseif ($function == 'setUserImagePurpose')
  * -------------------------------------------------------------------------------- */
 function deleteImage()
 {
-    require '../../DBConnect/dbConnect.php';
+    require $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBConnect/dbConnect.php';
     // 1 - DECODE JSON STRING
     $json_decoded = json_decode(file_get_contents("php://input"), true);
 
@@ -88,7 +88,7 @@ function deleteImage()
  * -------------------------------------------------------------------------------- */
 function getImages()
 {
-    require '../../DBConnect/dbConnect.php';
+    require $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBConnect/dbConnect.php';
     // 1 - DECODE JSON STRING
     //     THIS WILL GIVE THE LOGGED-IN USER'S ID
     $json_decoded = json_decode(file_get_contents("php://input"), true);
@@ -236,7 +236,7 @@ function getImages()
 function uploadImage()
 {
     // 1 - ESTABLISH DATABASE CONNECTION
-    require '../../DBConnect/dbConnect.php';
+    require $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBConnect/dbConnect.php';
     
     // 2 - DECODE INCOMING JSON CONTENTS
     $json_decoded = json_decode(file_get_contents("php://input"), true);
@@ -395,7 +395,7 @@ function uploadImage()
  * -------------------------------------------------------------------------------- */
 function setUserImagePurpose()
 {
-    require '../../DBConnect/dbConnect.php';
+    require $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBConnect/dbConnect.php';
     // 1 - DECODE JSON STRING
     $json_decoded = json_decode(file_get_contents("php://input"), true);
 

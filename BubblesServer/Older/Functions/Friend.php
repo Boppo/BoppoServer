@@ -14,7 +14,7 @@ if ($function == "getFriends")
  * -------------------------------------------------------------------------------- */
 function getFriends() 
 {
-	require '../../DBConnect/dbConnect.php';
+	require $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBConnect/dbConnect.php';
 	// 1 - DECODE JSON STRING
 	//     THIS WILL GIVE THE LOGGED-IN USER'S ID
 	$json_decoded = json_decode(file_get_contents("php://input"), true);

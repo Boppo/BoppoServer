@@ -4,7 +4,7 @@
              User 2 is the user that received a friend request. */
 
     // 1 - ESTABLISH DATABASE CONNECTION
-	require '../DBConnect/dbConnect.php';
+	require $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBConnect/dbConnect.php';
 
     // 2 - DECODE INCOMING JSON CONTENTS
 	$_POST = json_decode(file_get_contents("php://input"), true);
