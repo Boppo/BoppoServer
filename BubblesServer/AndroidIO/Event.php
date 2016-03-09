@@ -7,8 +7,8 @@ if ($function == "createEvent")
 
 	
 	
-/* FUNCTION: getUserData
- * DESCRIPTION: Retrieves and returns all of the user's information.
+/* FUNCTION: createEvent
+ * DESCRIPTION: Adds an event into the corresponding database table.
  * --------------------------------------------------------------------------------
  * ================================================================================
  * -------------------------------------------------------------------------------- */
@@ -53,14 +53,14 @@ function createEvent()
 	require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/Functions/Miscellaneous.php';
 	$event_image_upload_allowed_indicator = booleanToChar($event_image_upload_allowed_indicator);
 	
-	echo "PRIVACY CODE: " . $event_privacy_code . "<br><br>"; 
-	echo "INVITE TYPE CODE: " . $event_invite_type_code . "<br><br>";
-	echo "IMAGE UPLOAD ALLOWED INDICATOR: " . $event_image_upload_allowed_indicator . "<br><br>";
+	//echo "PRIVACY CODE: " . $event_privacy_code . "<br><br>"; 
+	//echo "INVITE TYPE CODE: " . $event_invite_type_code . "<br><br>";
+	//echo "IMAGE UPLOAD ALLOWED INDICATOR: " . $event_image_upload_allowed_indicator . "<br><br>";
+	//echo "GPS LATITUDE: " . $event_gps_latitude . "<br><br>";
+	//echo "GPS LONGITUDE: " . $event_gps_longitude . "<br><br>";
 			
 	// EXECUTE THE TRANSACTION
-	$query = array(
-		"START TRANSACTION;", 
-		"SET autocommit = 0", 
+	$queries = array(
 		"INSERT IGNORE INTO T_GEOLOCATION (gps_latitude, gps_longitude) 
 		 	VALUES (?, ?)", 
 		"INSERT INTO T_EVENT 
@@ -68,55 +68,37 @@ function createEvent()
 			 event_image_upload_allowed_indicator, event_start_datetime, event_end_datetime, 
 		     event_gps_latitude, event_gps_longitude)
 		 VALUES 
-		 	(?, ?, ?, ?, ?, ?, ?, ?, ?)",
-		"COMMIT"
+		 	(?, ?, ?, ?, ?, ?, ?, ?, ?)"
 	);
+		
+	$conn->autocommit(FALSE);
 	
-	var_dump($query);
+	foreach ($queries as $query)
+	{
+		$statement = $conn->prepare($query);
+		
+		$index = array_search($query, $queries);
+		if ($index === 0) {
+			$statement->bind_param("dd", $event_gps_latitude, $event_gps_longitude);
+		}
+		elseif ($index === 1) {
+			$statement->bind_param("siiiissdd", $event_name, $event_host_uid, $event_privacy_code,
+				$event_invite_type_code, $event_image_upload_allowed_indicator,
+				$event_start_datetime, $event_end_datetime, $event_gps_latitude, $event_gps_longitude);
+		}
+		
+		$statement->execute();
+		$error = $statement->error;
+		// CHECK FOR AN ERROR, RETURN IT IF ONE EXISTS
+		if ($error != "") { echo "DB ERROR: " . $error; return; }
+		$statement->close();
+	}
 	
-	$statement = $conn->prepare($query[0]);
-	$statement->execute();
-	$error = $statement->error;
-	// CHECK FOR AN ERROR, RETURN IT IF ONE EXISTS
-	if ($error != "") { echo "DB ERROR: " . $error; return; }
-	$statement->close();
-	
-	$statement = $conn->prepare($query[1]);
-	$statement->execute();
-	$error = $statement->error;
-	// CHECK FOR AN ERROR, RETURN IT IF ONE EXISTS
-	if ($error != "") { echo "DB ERROR: " . $error; return; }
-	$statement->close();
-	
-	$statement = $conn->prepare($query[2]);
-	$statement->bind_param("dd", $event_gps_latitude, $event_gps_longitude);
-	$statement->execute();
-	$error = $statement->error;
-	// CHECK FOR AN ERROR, RETURN IT IF ONE EXISTS
-	if ($error != "") { echo "DB ERROR: " . $error; return; }
-	$statement->close();
-	
-	$statement = $conn->prepare($query[3]);
-	$statement->bind_param("siiiissdd", $event_name, $event_host_uid, $event_privacy_code, 
-			$event_invite_type_code, $event_image_upload_allowed_indicator, 
-			$event_start_datetime, $event_end_datetime, $event_gps_latitude, $event_gps_longitude);
-	$statement->execute();
-	$error = $statement->error;
-	// CHECK FOR AN ERROR, RETURN IT IF ONE EXISTS
-	if ($error != "") { echo "DB ERROR: " . $error; return; }
-	$statement->close();
-	
-	$statement = $conn->prepare($query[4]);
-	$statement->execute();
-	$error = $statement->error;
-	// CHECK FOR AN ERROR, RETURN IT IF ONE EXISTS
-	if ($error != "") { echo "DB ERROR: " . $error; return; }
-	$statement->close();
+	$conn->commit();
+	$conn->autocommit(TRUE);
 	
 	// RETURN A SUCCESS CONFIRMATION MESSAGE
-	echo "Success";
-	
-	$statement->close();
+	echo "Success";	
 }
 	
 /* --------------------------------------------------------------------------------
