@@ -8,6 +8,8 @@ if ($function == "getEid")
 	getEid();
 if ($function == "getEventData")
 	getEventData();
+if ($function == "deleteEvent")
+	deleteEvent();
 
 	
 	
@@ -236,6 +238,47 @@ function getEventData()
 
 	// RETURN THE EVENT ID
     echo json_encode($event);
+}
+
+/* --------------------------------------------------------------------------------
+ * ================================================================================
+ * -------------------------------------------------------------------------------- */
+
+/* FUNCTION: deleteEvent
+ * DESCRIPTION: Deletes an Event with the specified Event Identifier from the 
+ *              corresponding database table.
+ * --------------------------------------------------------------------------------
+ * ================================================================================
+ * -------------------------------------------------------------------------------- */
+function deleteEvent()
+{
+	/* THE FOLLOWING 3 LINES OF CODE ENABLE ERROR REPORTING. */
+	error_reporting(E_ALL);
+	ini_set('display_errors', TRUE);
+	ini_set('display_startup_errors', TRUE);
+	/* END. */
+
+	// IMPORT THE DATABASE CONNECTION
+	require $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBConnect/dbConnect.php';
+	// DECODE JSON STRING
+	$json_decoded = json_decode(file_get_contents("php://input"), true);
+	// ASSIGN THE JSON VALUES TO VARIABLES
+	$eid = $json_decoded["eid"];
+
+	// EXECUTE THE QUERY
+	$query = "DELETE 
+			  FROM T_EVENT 
+			  WHERE eid = ?";
+	$statement = $conn->prepare($query);
+	$statement->bind_param("i", $eid);
+	$statement->execute();
+	$error = $statement->error;
+	$statement->close();
+	// CHECK FOR AN ERROR, RETURN IT IF ONE EXISTS
+	if ($error != "") { echo "DB ERROR: " . $error; return; }
+
+	// RETURN A SUCCESS MESSAGE
+	echo "Success.";
 }
 
 /* --------------------------------------------------------------------------------
