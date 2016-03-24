@@ -24,12 +24,11 @@ echo "The value returned for the invite type code from the database is: '" . $in
 
 include 'Functions/Miscellaneous.php';
 
-$someBoolean1 = "true";
-$someChar1  = booleanToChar($someBoolean1);
-echo "A '" . $someBoolean1 . "' converted into a character is a '" . $someChar1 . "'<br><br>";
-$someChar2 = "N";
-$someBoolean2 = charToBoolean($someChar2);
-echo "A '" . $someChar2 . "' converted into a boolean is a '" . $someBoolean2 . "'<br><br>";
+include 'DBIO/Friendship.php';
+$uid_1 = 3;
+$uid_2 = 4;
+$friendship_status_type_label = getFriendshipStatus($uid_1, $uid_2);
+echo "RETURNED FRIENDSHIP STATUS TYPE LABEL: " . $friendship_status_type_label . "<br><br>";
 
 echo "!END OF SCRIPT!<br><br>";
 
