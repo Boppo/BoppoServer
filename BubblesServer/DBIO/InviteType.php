@@ -1,11 +1,11 @@
 <?php
 
-/* FUNCTION: getInviteTypeCode
+/* FUNCTION: fetchInviteTypeCode
  * DESCRIPTION: Retrieves and returns the code representing a type of an invite.
  * --------------------------------------------------------------------------------
  * ================================================================================
  * -------------------------------------------------------------------------------- */
-function getInviteTypeCode($invite_type_label)
+function fetchInviteTypeCode($invite_type_label)
 {
 	// IMPORT THE DATABASE CONNECTION
 	require $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBConnect/dbConnect.php';

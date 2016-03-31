@@ -6,30 +6,66 @@ ini_set('display_errors', TRUE);
 ini_set('display_startup_errors', TRUE);
 /* END. */
 
+require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/Functions/Miscellaneous.php';
+
 echo "!START OF SCRIPT!<br><br>";
 
 /*
-include 'DBIO/Privacy.php';
-$privacy_label = "Private";
-$privacy_code  = getPrivacyCode($privacy_label);
-echo "The value returned for the privacy code from the database is: '" . $privacy_code . "'<br><br>";
+$true = "true";
+$false = "false";
+$val0 = "0";
+$val1 = "1";
+echo "The value of true is: " . strBoolToChar($true) . "<br>";
+echo "The value of false is: " . strBoolToChar($false) . "<br>";
+echo "The value of 0 is: " . charToStrBool($val0) . "<br>";
+echo "The value of 1 is: " . charToStrBool($val1) . "<br>";
 */
 
 /*
-include 'DBIO/InviteType.php';
-$invite_type_label = "Everyone";
-$invite_type_code  = getInviteTypeCode($invite_type_label);
-echo "The value returned for the invite type code from the database is: '" . $invite_type_code . "'<br><br>";
+require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBIO/EventUser.php';
+
+$eid = 18;
+$uid = 3;
+echo var_dump(fetchEventUserData($eid, $uid)) . "<br>";
 */
 
-include 'Functions/Miscellaneous.php';
+/*
+$file_gv = file_get_contents($_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/Resources/GlobalVariables.json');
+$json_file_gv = json_decode($file_gv, true);
+$event_user_reinvite_user_type_code = $json_file_gv["Permission"]["EventUserReinviteUserTypeCode"];
+echo $event_user_reinvite_user_type_code . "<br>";
+*/
 
-include 'DBIO/Friendship.php';
-$uid_1 = 3;
-$uid_2 = 4;
-$friendship_status_type_label = getFriendshipStatus($uid_1, $uid_2);
-echo "RETURNED FRIENDSHIP STATUS TYPE LABEL: " . $friendship_status_type_label . "<br><br>";
+/*
+$file_gv = file_get_contents($_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/Resources/GlobalVariables.json');
+$json_file_gv = json_decode($file_gv, true);
+$event_user_reinvite_wait_duration_unit
+= $json_file_gv["Duration"]["EventUserReinviteWaitDuration"]["DatetimeUnit"];
+$event_user_reinvite_wait_duration_value
+= $json_file_gv["Duration"]["EventUserReinviteWaitDuration"]["DatetimeValue"];
+echo $event_user_reinvite_wait_duration_unit . "<br>";
+echo $event_user_reinvite_wait_duration_value . "<br>";
+*/
 
-echo "!END OF SCRIPT!<br><br>";
+require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/AndroidIO/EventUserRequest.php';
+addUserToEvent();
+
+/*
+$date1 = date('Y-m-d H:i:s');
+echo $date1;
+$date2 = date_format(date_create_from_format('Y-m-d H:i:s', '2009-02-15 15:16:17'), 'Y-m-d H:i:s');
+echo $date2;
+*/
+/*
+$date1 = new DateTime('2016-02-15 15:16:17');
+$date2 = new DateTime(date('Y-m-d H:i:s'));
+$difference = date_diff($date1, $date2);
+echo date_format($date1, 'Y-m-d H:i:s') . "<br>";
+echo date_format($date2, 'Y-m-d H:i:s') . "<br>";
+echo $difference->format('%a') . "<br>";
+*/
+//echo date_format($date, 'Y-m-d H:i:s') . "<br><br>";
+
+echo "<br><br>!END OF SCRIPT!";
 
 ?>

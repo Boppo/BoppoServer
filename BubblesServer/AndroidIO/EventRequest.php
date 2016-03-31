@@ -43,14 +43,14 @@ function createEvent()
 		
 	// ENCODE THE PRIVACY LABEL
 	require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBIO/Privacy.php';
-	$event_privacy_code = getPrivacyCode($event_privacy_label);
+	$event_privacy_code = fetchPrivacyCode($event_privacy_label);
 	if ($event_privacy_code == -1) { 
 		echo "ERROR: Incorrect event privacy specified.";
 		return; }
 			
 	// ENCODE THE INVITE TYPE LABEL
 	require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBIO/InviteType.php';
-	$event_invite_type_code = getInviteTypeCode($event_invite_type_label);
+	$event_invite_type_code = fetchInviteTypeCode($event_invite_type_label);
 	if ($event_invite_type_code == -1) {
 		echo "ERROR: Incorrect event invite type specified.";
 		return; }
@@ -180,62 +180,14 @@ function getEventData()
 	ini_set('display_startup_errors', TRUE);
 	/* END. */
 	
-	// IMPORT REQUIRED METHODS
-	require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/Functions/Miscellaneous.php';
-
-	// IMPORT THE DATABASE CONNECTION
-	require $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBConnect/dbConnect.php';
 	// DECODE JSON STRING
 	$json_decoded = json_decode(file_get_contents("php://input"), true);
 	// ASSIGN THE JSON VALUES TO VARIABLES
 	$eid = $json_decoded["eid"];
 
-	// EXECUTE THE QUERY
-	$query = "SELECT event_host_uid, event_name, 
-			         invite_type_label, privacy_label, event_image_upload_allowed_indicator, 
-			         event_start_datetime, event_end_datetime, event_gps_latitude, event_gps_longitude, 
-			         event_like_count, event_dislike_count, event_view_count 
-			  FROM   T_EVENT 
-			         LEFT JOIN T_INVITE_TYPE ON T_EVENT.event_invite_type_code = T_INVITE_TYPE.invite_type_code 
-			         LEFT JOIN T_PRIVACY ON T_EVENT.event_privacy_code = T_PRIVACY.privacy_code
-			  WHERE  eid = ?";
-	$statement = $conn->prepare($query);
-	$statement->bind_param("i", $eid);
-	$statement->execute();
-	$error = $statement->error;
-	// CHECK FOR AN ERROR, RETURN IT IF ONE EXISTS
-	if ($error != "") { echo "DB ERROR: " . $error; return; }
-
-	// DEFAULT AND ASSIGN THE EVENT VARIABLES
-	$event_start_datetime = "";
-	$event_end_datetime   = "";
-	$event_gps_latitude   = -1.0;
-	$event_gps_longitude  = -1.0;
-	$statement->bind_result($event_host_uid, $event_name,
-			                $event_invite_type_label, $event_privacy_label, 
-							$event_image_upload_allowed_indicator, $event_start_datetime, 
-							$event_end_datetime, $event_gps_latitude, $event_gps_longitude, 
-							$event_like_count, $event_dislike_count, $event_view_count);
-	$statement->fetch();
-		
-	$event = array
-	(
-		"eventHostUid" => $event_host_uid, 
-		"eventName" => $event_name, 
-		"eventInviteTypeLabel" => $event_invite_type_label, 
-		"eventPrivacyLabel" => $event_privacy_label, 
-		"eventImageUploadAllowedIndicator" => charToBoolean($event_image_upload_allowed_indicator),
-		"eventStartDatetime" => $event_start_datetime, 
-		"eventEndDatetime" => $event_end_datetime, 
-		"eventGpsLatitude" => $event_gps_latitude, 
-		"eventGpsLongitude" => $event_gps_longitude, 
-		"eventLikeCount" => $event_like_count, 
-		"eventDislikeCount" => $event_dislike_count, 
-		"eventViewCount" => $event_view_count
-	);
-
-	$statement->close();
-
+	require $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBIO/Event.php';
+	$event = fetchEventData($eid);
+	
 	// RETURN THE EVENT ID
     echo json_encode($event);
 }

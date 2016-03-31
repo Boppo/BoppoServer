@@ -5,27 +5,27 @@
  * --------------------------------------------------------------------------------
  * ================================================================================
  * -------------------------------------------------------------------------------- */
-function booleanToChar($inputBoolean)
+function strBoolToChar($strBool)
 {
-	$outputChar = "";
+	$char = "";
 	
-	if ($inputBoolean == false)
-		$outputChar = 0;
-	elseif ($inputBoolean == true)
-		$outputChar = 1;
+	if ($strBool === "false")
+		$char = "0";
+	elseif ($strBool === "true")
+		$char = "1";
 	
-	return $outputChar;
+	return $char;
 }
 
-function charToBoolean($inputChar)
+function charToStrBool($char)
 {
-	$outputBoolean = null;
+	$strBool = "";
 	
-	if ($inputChar === "0" || $inputChar === "N") 
-		$outputBoolean = "false";
-	elseif ($inputChar === "1" || $inputChar === "Y") 
-		$outputBoolean = "true";
+	if ($char === "0" || $char === "N") 
+		$strBool = "false";
+	elseif ($char === "1" || $char === "Y") 
+		$strBool = "true";
 	
-	return $outputBoolean;
+	return $strBool;
 }
 ?>

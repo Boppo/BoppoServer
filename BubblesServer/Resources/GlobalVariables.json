@@ -1,0 +1,11 @@
+{
+	"Duration": {
+		"EventUserReinviteWaitDuration": {
+			"DatetimeUnit": "Day",
+			"DatetimeValue": 30
+		}
+	},
+	"Permission": {
+		"EventUserReinviteUserTypeCode": 2
+	}
+}

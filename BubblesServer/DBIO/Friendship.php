@@ -11,9 +11,6 @@ function getFriendshipStatus($uid_1, $uid_2)
 {
 	// IMPORT THE DATABASE CONNECTION
 	require $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBConnect/dbConnect.php';
-	
-	// DECODE JSON STRING
-	$json_decoded = json_decode(file_get_contents("php://input"), true);
 
 	// EXECUTE THE QUERY
 	$query = "SELECT uid_1, uid_2, friendship_status_type_label
@@ -54,5 +51,40 @@ function getFriendshipStatus($uid_1, $uid_2)
 	
 	// RETURN THE FRIENDSHIP STATUS TYPE LABEL
 	return $friendship_status_type_label;
+}
+
+function isFriend($uid_1, $uid_2)
+{
+	// IMPORT REQUIRED METHODS
+	require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/Functions/Miscellaneous.php';
+	
+	// IMPORT THE DATABASE CONNECTION
+	require $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBConnect/dbConnect.php';
+	
+	$query = "SELECT 1
+			  FROM R_FRIENDSHIP_STATUS
+			  WHERE friendship_status_type_code = (
+  				SELECT friendship_status_type_code 
+  				FROM T_FRIENDSHIP_STATUS_TYPE 
+  				WHERE friendship_status_type_label = 'Friends')
+  				AND (
+    			  (uid_1 = ? AND uid_2 = ?) OR (uid_2 = ? and uid_1 = ?)
+  				)";
+	$statement = $conn->prepare($query);
+	$statement->bind_param("iiii", $uid_1, $uid_2, $uid_1, $uid_2);
+	$statement->execute();
+	$statement->store_result(); 	// Need this to check the number of rows later
+	$error = $statement->error;
+	// CHECK FOR AN ERROR, RETURN IT IF ONE EXISTS
+	if ($error != "") { echo "DB ERROR: " . $error; return; }
+	
+	
+	// ADD USER TO EVENT IF USER HAS NOT YET BEEN ADDED
+	if ($statement->num_rows === 0) 
+		return "true";
+	else if ($statement->num_rows > 0)
+		return "false";
+	
+	$statement->close();
 }
 ?>
