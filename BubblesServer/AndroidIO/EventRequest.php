@@ -8,6 +8,8 @@ if ($function == "getEid")
 	getEid();
 if ($function == "getEventData")
 	getEventData();
+if ($function == "getEventDataByMember")
+	getEventDataByMember();
 if ($function == "deleteEvent")
 	deleteEvent();
 
@@ -195,6 +197,40 @@ function getEventData()
 /* --------------------------------------------------------------------------------
  * ================================================================================
  * -------------------------------------------------------------------------------- */
+
+
+
+/* FUNCTION: getEventDataByMember
+ * DESCRIPTION: Gets the data of an entire event for all of the events of which 
+ *  			the specified uid (User Identifier) is a member.
+ * --------------------------------------------------------------------------------
+ * ================================================================================
+ * -------------------------------------------------------------------------------- */
+function getEventDataByMember()
+{
+	/* THE FOLLOWING 3 LINES OF CODE ENABLE ERROR REPORTING. */
+	error_reporting(E_ALL);
+	ini_set('display_errors', TRUE);
+	ini_set('display_startup_errors', TRUE);
+	/* END. */
+
+	// DECODE JSON STRING
+	$json_decoded = json_decode(file_get_contents("php://input"), true);
+	// ASSIGN THE JSON VALUES TO VARIABLES
+	$uid = $json_decoded["uid"];
+
+	require $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBIO/Event.php';
+	$eventList = fetchEventDataByMember($uid);
+
+	// RETURN THE EVENT ID
+	echo json_encode($eventList);
+}
+
+/* --------------------------------------------------------------------------------
+ * ================================================================================
+ * -------------------------------------------------------------------------------- */
+
+
 
 /* FUNCTION: deleteEvent
  * DESCRIPTION: Deletes an Event with the specified Event Identifier from the 

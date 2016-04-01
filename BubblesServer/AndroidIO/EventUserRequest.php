@@ -120,7 +120,7 @@ function addUserToEvent()
 		}
 		else if (!$isFriend)
 		{
-			echo "User is not a friend of the inviter, only friends may be invited.";
+			echo "User is not a friend of the inviter; only friends may be invited.";
 			return;
 		}
 		else if (strcmp($invitee_user["eventUserInviteStatusTypeLabel"], "Left") === 0)

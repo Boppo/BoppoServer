@@ -46,10 +46,10 @@ $event_user_reinvite_wait_duration_value
 echo $event_user_reinvite_wait_duration_unit . "<br>";
 echo $event_user_reinvite_wait_duration_value . "<br>";
 */
-
+/*
 require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/AndroidIO/EventUserRequest.php';
 addUserToEvent();
-
+*/
 /*
 $date1 = date('Y-m-d H:i:s');
 echo $date1;
@@ -65,6 +65,8 @@ echo date_format($date2, 'Y-m-d H:i:s') . "<br>";
 echo $difference->format('%a') . "<br>";
 */
 //echo date_format($date, 'Y-m-d H:i:s') . "<br><br>";
+require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBIO/Event.php';
+print_r(fetchEventDataByMember(2));
 
 echo "<br><br>!END OF SCRIPT!";
 
