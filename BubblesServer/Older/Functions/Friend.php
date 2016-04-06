@@ -69,7 +69,7 @@ function getFriends()
 	$uid_friend = -1;
 	$first_name = "";
 	$last_name  = "";
-	$query =   "SELECT uid, first_name, last_name  
+	$query =   "SELECT uid, username, first_name, last_name  
                 FROM R_FRIENDSHIP_STATUS, T_USER 
                 WHERE 
 	               uid_1 = uid AND 
@@ -78,10 +78,11 @@ function getFriends()
 	$statement = $conn->prepare($query);
 	$statement->bind_param("ii", $uid, $status_friends);
 	$statement->execute();
-	$statement->bind_result($uid_friend, $first_name, $last_name);
+	$statement->bind_result($uid_friend, $username, $first_name, $last_name);
 	while ($statement->fetch()) {
 	    $temp = array(
 	        "uid" => $uid_friend, 
+    		"username" => $username, 
             "firstName" => $first_name, 
             "lastName" => $last_name
 	    );
@@ -93,7 +94,7 @@ function getFriends()
 	$uid_friend = -1;
 	$first_name = "";
 	$last_name  = "";
-	$query =   "SELECT uid, first_name, last_name  
+	$query =   "SELECT uid, username, first_name, last_name  
                 FROM R_FRIENDSHIP_STATUS, T_USER 
                 WHERE 
 	               uid_2 = uid AND
@@ -102,10 +103,11 @@ function getFriends()
 	$statement = $conn->prepare($query);
 	$statement->bind_param("ii", $uid, $status_friends);
 	$statement->execute();
-	$statement->bind_result($uid_friend, $first_name, $last_name);
+	$statement->bind_result($uid_friend, $username, $first_name, $last_name);
 	while ($statement->fetch()) {
 	    $temp = array(
 	        "uid" => $uid_friend, 
+    		"username" => $username, 
             "firstName" => $first_name, 
             "lastName" => $last_name
 	    );

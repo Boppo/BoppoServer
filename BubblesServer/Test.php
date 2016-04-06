@@ -65,8 +65,12 @@ echo date_format($date2, 'Y-m-d H:i:s') . "<br>";
 echo $difference->format('%a') . "<br>";
 */
 //echo date_format($date, 'Y-m-d H:i:s') . "<br><br>";
+/*
 require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBIO/Event.php';
 print_r(fetchEventDataByMember(2));
+*/
+require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBIO/UserImage.php';
+print_r(fetchImagesByPrivacyAndPurpose("Public", "Regular"));
 
 echo "<br><br>!END OF SCRIPT!";
 

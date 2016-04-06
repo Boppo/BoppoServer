@@ -6,8 +6,8 @@ if ($function == 'deleteImage')
     deleteImage();
 elseif ($function == 'uploadImage')
     uploadImage();
-elseif ($function == 'getImages')
-    getImages();
+elseif ($function == 'getImagesByUid')
+    getImagesByUid();
 elseif ($function == 'setUserImagePurpose')
     setUserImagePurpose();
     
@@ -86,7 +86,7 @@ function deleteImage()
  * --------------------------------------------------------------------------------
  * ================================================================================
  * -------------------------------------------------------------------------------- */
-function getImages()
+function getImagesByUid()
 {
     require $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBConnect/dbConnect.php';
     // 1 - DECODE JSON STRING

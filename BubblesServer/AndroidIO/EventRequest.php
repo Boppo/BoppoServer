@@ -59,7 +59,7 @@ function createEvent()
 				
 	// CONVERT THE IMAGE UPLOAD ALLOWED INDICATOR TO A CHARACTER
 	require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/Functions/Miscellaneous.php';
-	$event_image_upload_allowed_indicator = booleanToChar($event_image_upload_allowed_indicator);
+	$event_image_upload_allowed_indicator = strBoolToChar($event_image_upload_allowed_indicator);
 	
 	//echo "PRIVACY CODE: " . $event_privacy_code . "<br><br>"; 
 	//echo "INVITE TYPE CODE: " . $event_invite_type_code . "<br><br>";

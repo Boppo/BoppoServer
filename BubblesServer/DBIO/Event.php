@@ -88,9 +88,9 @@ function fetchEventDataByMember($uid)
 		       		 LEFT JOIN T_INVITE_TYPE ON T_EVENT.event_invite_type_code = T_INVITE_TYPE.invite_type_code
 		       		 LEFT JOIN T_PRIVACY ON T_EVENT.event_privacy_code = T_PRIVACY.privacy_code
 		       		 LEFT JOIN T_EVENT_USER ON T_EVENT.eid = T_EVENT_USER.eid 
-			  WHERE  uid = ?";
+			  WHERE  uid = ? OR event_host_uid = ?";
 	$statement = $conn->prepare($query);
-	$statement->bind_param("i", $uid);
+	$statement->bind_param("ii", $uid, $uid);
 	$statement->execute();
 	$error = $statement->error;
 	// CHECK FOR AN ERROR, RETURN IT IF ONE EXISTS
