@@ -18,12 +18,12 @@
     // 4 - CHECK IF ALREADY FRIENDS
     // 4.1 - PREPARE THE QUERY
     $query = "SELECT uid_1, uid_2
-              FROM R_FRIENDSHIP_STATUS
+              FROM R_USER_RELATIONSHIP
               WHERE ((uid_1 = ? AND uid_2 = ?) OR (uid_2 = ? AND uid_1 = ?)) AND
-                friendship_status_type_code = (
-                    SELECT friendship_status_type_code 
-                    FROM T_FRIENDSHIP_STATUS_TYPE 
-                    WHERE friendship_status_type_label = 'Friends'
+                user_relationship_type_code = (
+                    SELECT user_relationship_type_code 
+                    FROM T_USER_RELATIONSHIP_TYPE 
+                    WHERE user_relationship_type_label = 'Friend'
                 )";
     $statement = mysqli_prepare($conn, $query);
     mysqli_stmt_bind_param($statement, "iiii", $uid_1, $uid_2, $uid_1, $uid_2);
@@ -45,12 +45,12 @@
     // 5 - CHECK IF REQUEST WAS SENT
     // 5.1 - PREPARE THE QUERY
     $query = "SELECT uid_1, uid_2
-              FROM R_FRIENDSHIP_STATUS
+              FROM R_USER_RELATIONSHIP
               WHERE ((uid_1 = ? AND uid_2 = ?) OR (uid_2 = ? AND uid_1 = ?)) AND
-                friendship_status_type_code = (
-                    SELECT friendship_status_type_code 
-                    FROM T_FRIENDSHIP_STATUS_TYPE 
-                    WHERE friendship_status_type_label = 'Request Sent'
+                user_relationship_type_code = (
+                    SELECT user_relationship_type_code 
+                    FROM T_USER_RELATIONSHIP_TYPE 
+                    WHERE user_relationship_type_label = 'Friendship Pending'
                 )";
     $statement = mysqli_prepare($conn, $query);
     mysqli_stmt_bind_param($statement, "iiii", $uid_1, $uid_2, $uid_1, $uid_2);
@@ -80,12 +80,12 @@
     // 6 - CHECK IF USER IS BEING BLOCKED
     // 6.1 - PREPARE THE QUERY
     $query = "SELECT uid_1, uid_2
-              FROM R_FRIENDSHIP_STATUS
+              FROM R_USER_RELATIONSHIP
               WHERE ((uid_1 = ? AND uid_2 = ?) OR (uid_2 = ? AND uid_1 = ?)) AND
-                friendship_status_type_code = (
-                    SELECT friendship_status_type_code
-                    FROM T_FRIENDSHIP_STATUS_TYPE
-                    WHERE friendship_status_type_label = 'Blocked'
+                user_relationship_type_code = (
+                    SELECT user_relationship_type_code
+                    FROM T_USER_RELATIONSHIP_TYPE
+                    WHERE user_relationship_type_label = 'Blocked'
                 )";
     $statement = mysqli_prepare($conn, $query);
     mysqli_stmt_bind_param($statement, "iiii", $uid_1, $uid_2, $uid_1, $uid_2);

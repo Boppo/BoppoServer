@@ -80,7 +80,7 @@ function fetchEventDataByMember($uid)
 	require $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBConnect/dbConnect.php';
 
 	// EXECUTE THE QUERY
-	$query = "SELECT T_EVENT.eid, event_host_uid, event_name,
+	$query = "SELECT DISTINCT T_EVENT.eid, event_host_uid, event_name,
 		       		 invite_type_label, privacy_label, event_image_upload_allowed_indicator,
 		       		 event_start_datetime, event_end_datetime, event_gps_latitude, event_gps_longitude,
 		       		 event_like_count, event_dislike_count, event_view_count

@@ -44,7 +44,7 @@ function addUserToEvent()
 	require $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBIO/EventUserType.php';
 	$inviter_event_user_type_code = fetchEventUserTypeCode($inviter_user["eventUserTypeLabel"]);
 	// FETCH THE DATA REPRESENTING WHETHER THE INVITEE IS A FRIEND OF THE INVITER
-	require $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBIO/Friendship.php';
+	require $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBIO/FriendshipStatus.php';
 	$isFriend = isFriend($inviter_uid, $invitee_uid);
 	// FETCH THE DATA REPRESENTING THE MINIMUM USER TYPE CODE THAT CAN REINVITE A USER TO AN EVENT
 	$path_gv = $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/Resources/GlobalVariables.json';

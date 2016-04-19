@@ -18,12 +18,12 @@
     // 4 - CHECK IF ALREADY FRIENDS
     // 4.1 - PREPARE THE QUERY
     $query = "SELECT uid_1, uid_2
-              FROM R_FRIENDSHIP_STATUS
+              FROM R_USER_RELATIONSHIP
               WHERE ((uid_1 = ? AND uid_2 = ?) OR (uid_2 = ? AND uid_1 = ?)) AND
-                friendship_status_type_code = (
-                    SELECT friendship_status_type_code 
-                    FROM T_FRIENDSHIP_STATUS_TYPE 
-                    WHERE friendship_status_type_label = 'Friends'
+                user_relationship_type_code = (
+                    SELECT user_relationship_type_code 
+                    FROM T_USER_RELATIONSHIP_TYPE
+                    WHERE user_relationship_type_label = 'Friend'
                 )";
     $statement = mysqli_prepare($conn, $query);
     mysqli_stmt_bind_param($statement, "iiii", $uid_1, $uid_2, $uid_1, $uid_2);
@@ -45,12 +45,12 @@
     // 5 - CHECK IF REQUEST WAS SENT
     // 5.1 - PREPARE THE QUERY
     $query = "SELECT uid_1, uid_2
-              FROM R_FRIENDSHIP_STATUS
+              FROM R_USER_RELATIONSHIP
               WHERE ((uid_1 = ? AND uid_2 = ?) OR (uid_2 = ? AND uid_1 = ?)) AND
-                friendship_status_type_code = (
-                    SELECT friendship_status_type_code 
-                    FROM T_FRIENDSHIP_STATUS_TYPE 
-                    WHERE friendship_status_type_label = 'Request Sent'
+                user_relationship_type_code = (
+                    SELECT user_relationship_type_code 
+                    FROM T_USER_RELATIONSHIP_TYPE 
+                    WHERE user_relationship_type_label = 'Friendship Pending'
                 )";
     $statement = mysqli_prepare($conn, $query);
     mysqli_stmt_bind_param($statement, "iiii", $uid_1, $uid_2, $uid_1, $uid_2);
@@ -75,9 +75,9 @@
         {
             // 5.5.2.1 - GET THE CODE FOR A 'FRIENDS' STATUS
             // 5.5.2.1.1 - PREPARE THE QUERY
-            $query = "SELECT friendship_status_type_code
-                      FROM T_FRIENDSHIP_STATUS_TYPE
-                      WHERE friendship_status_type_label = 'Friends'";
+            $query = "SELECT user_relationship_type_code
+                      FROM T_USER_RELATIONSHIP_TYPE
+                      WHERE user_relationship_type_label = 'Friend'";
             $statement = $conn->prepare($query);
             // 5.5.2.1.2 - EXECUTE THE QUERY
             $statement->execute();
@@ -93,8 +93,8 @@
             $statement->fetch();
             $statement->close();  // Need to close statements if variable is to be recycled
             // 5.5.2.2 - SET FRIENDSHIP STATUS TO FRIENDS
-            $query = "UPDATE R_FRIENDSHIP_STATUS 
-                      SET friendship_status_type_code = ?
+            $query = "UPDATE R_USER_RELATIONSHIP
+                      SET user_relationship_type_code = ?
                       WHERE uid_1 = ? AND uid_2 = ?";
             $statement = mysqli_prepare($conn, $query);
             mysqli_stmt_bind_param($statement, "iii", $status_friends, $uid_2, $uid_1);
@@ -108,9 +108,9 @@
     // 6 - SEND FRIEND REQUEST
     // 6.1 - GET THE CODE FOR A SENT REQUEST
     // 6.1.1 - PREPARE THE QUERY
-    $query = "SELECT friendship_status_type_code
-              FROM T_FRIENDSHIP_STATUS_TYPE
-              WHERE friendship_status_type_label = 'Request Sent'";
+    $query = "SELECT user_relationship_type_code
+              FROM T_USER_RELATIONSHIP_TYPE
+              WHERE user_relationship_type_label = 'Friendship Pending'";
     $statement = $conn->prepare($query);
     // 6.1.2 - EXECUTE THE QUERY
     $statement->execute();
@@ -126,14 +126,14 @@
     $statement->fetch();
     $statement->close();  // Need to close statements if variable is to be recycled
     // 6.2 - PREPARE THE QUERY
-    $query = "INSERT INTO R_FRIENDSHIP_STATUS (uid_1, uid_2, friendship_status_type_code) 
+    $query = "INSERT INTO R_USER_RELATIONSHIP (uid_1, uid_2, user_relationship_type_code) 
               VALUES (?, ?, ?)";
     $statement = mysqli_prepare($conn, $query);
     mysqli_stmt_bind_param($statement, "iii", $uid_1, $uid_2, $request_sent);
     // 6.3 - EXECUTE THE QUERY
     mysqli_stmt_execute($statement);
     
-    echo "Friend request sent successfully.";
+    echo "Friendship Pending request sent successfully.";
     return;
     
 ?>

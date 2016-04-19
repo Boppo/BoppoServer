@@ -300,11 +300,11 @@ function getUserFriendRequestUsers()
 	$uid = $json_decoded["uid"];
 	
 	// 3 - GET THE CODE FOR A SENT REQUEST
-	$friendship_status_type_code = -1;
+	$user_relationship_type_code = -1;
 		// 3.1 - PREPARE THE QUERY
-		$query = "SELECT friendship_status_type_code
-				  FROM T_FRIENDSHIP_STATUS_TYPE
-				  WHERE friendship_status_type_label = 'Request Sent'";
+		$query = "SELECT user_relationship_type_code
+				  FROM T_USER_RELATIONSHIP_TYPE
+				  WHERE user_relationship_type_label = 'Friendship Pending'";
 		$statement = $conn->prepare($query);
 		// 3.2 - EXECUTE THE QUERY 
 		$statement->execute();
@@ -314,22 +314,22 @@ function getUserFriendRequestUsers()
 			echo "MYSQL ERROR: " . $error;
 			return; }
 		// 3.4 - STORE THE QUERY RESULT IN A VARIABLE
-		$statement->bind_result($friendship_status_type_code);
+		$statement->bind_result($user_relationship_type_code);
 		$statement->fetch();
 		$statement->close(); 	// Need to close statements if variable is to be recycled
 		// 3.5 - CHECK IF VALUE EXISTS AND STOP IF IT DOESN'T
-		if ($friendship_status_type_code == -1) {
+		if ($user_relationship_type_code == -1) {
 			echo "FRIENDSHIP STATUS TYPE LABEL IS NOT VALID.";
 			return;
 		}
 		
 	// 4 - PREPARE THE QUERY
 	$query = "SELECT uid_1
-			  FROM R_FRIENDSHIP_STATUS
+			  FROM R_USER_RELATIONSHIP
 			  WHERE uid_2 = ? 
-				AND friendship_status_type_code = ?";
+				AND user_relationship_type_code = ?";
 	$statement = $conn->prepare($query);
-	$statement->bind_param("ii", $uid, $friendship_status_type_code);
+	$statement->bind_param("ii", $uid, $user_relationship_type_code);
 	
 	// 5 - EXECUTE THE QUERY
 	$statement->execute();
@@ -376,11 +376,11 @@ function getUserSentFriendRequestUsers()
 	$uid = $json_decoded["uid"];
 
 	// 3 - GET THE CODE FOR A SENT REQUEST
-	$friendship_status_type_code = -1;
+	$user_relationship_type_code = -1;
 	// 3.1 - PREPARE THE QUERY
-	$query = "SELECT friendship_status_type_code
-			  FROM T_FRIENDSHIP_STATUS_TYPE
-			  WHERE friendship_status_type_label = 'Request Sent'";
+	$query = "SELECT user_relationship_type_code
+			  FROM T_USER_RELATIONSHIP_TYPE
+			  WHERE user_relationship_type_label = 'Friendship Pending'";
 	$statement = $conn->prepare($query);
 	// 3.2 - EXECUTE THE QUERY
 	$statement->execute();
@@ -390,22 +390,22 @@ function getUserSentFriendRequestUsers()
 		echo "MYSQL ERROR: " . $error;
 		return; }
 	// 3.4 - STORE THE QUERY RESULT IN A VARIABLE
-	$statement->bind_result($friendship_status_type_code);
+	$statement->bind_result($user_relationship_type_code);
 	$statement->fetch();
 	$statement->close(); 	// Need to close statements if variable is to be recycled
 	// 3.5 - CHECK IF VALUE EXISTS AND STOP IF IT DOESN'T
-	if ($friendship_status_type_code == -1) {
+	if ($user_relationship_type_code == -1) {
 		echo "FRIENDSHIP STATUS TYPE LABEL IS NOT VALID.";
 		return;
 	}
 
 	// 4 - PREPARE THE QUERY
 	$query = "SELECT uid_2
-			  FROM R_FRIENDSHIP_STATUS
+			  FROM R_USER_RELATIONSHIP
 			  WHERE uid_1 = ?
-				AND friendship_status_type_code = ?";
+				AND user_relationship_type_code = ?";
 	$statement = $conn->prepare($query);
-	$statement->bind_param("ii", $uid, $friendship_status_type_code);
+	$statement->bind_param("ii", $uid, $user_relationship_type_code);
 
 	// 5 - EXECUTE THE QUERY
 	$statement->execute();

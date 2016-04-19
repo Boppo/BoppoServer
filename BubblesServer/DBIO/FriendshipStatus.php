@@ -13,11 +13,11 @@ function getFriendshipStatus($uid_1, $uid_2)
 	require $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBConnect/dbConnect.php';
 
 	// EXECUTE THE QUERY
-	$query = "SELECT uid_1, uid_2, friendship_status_type_label
-			  FROM R_FRIENDSHIP_STATUS, T_FRIENDSHIP_STATUS_TYPE 
+	$query = "SELECT uid_1, uid_2, user_relationship_type_label
+			  FROM R_USER_RELATIONSHIP, T_USER_RELATIONSHIP_TYPE 
 			  WHERE ((uid_1 = ? AND uid_2 = ?) OR (uid_2 = ? AND uid_1 = ?)) AND 
-  				R_FRIENDSHIP_STATUS.friendship_status_type_code = 
-				T_FRIENDSHIP_STATUS_TYPE.friendship_status_type_code";
+  				R_USER_RELATIONSHIP.user_relationship_type_code = 
+				T_USER_RELATIONSHIP_TYPE.user_relationship_type_code";
 	$statement = $conn->prepare($query);
 	$statement->bind_param("iiii", $uid_1, $uid_2, $uid_1, $uid_2);
 	$statement->execute();
@@ -28,29 +28,33 @@ function getFriendshipStatus($uid_1, $uid_2)
 	// DEFAULT AND ASSIGN THE FRIENDSHIP STATUS TYPE LABEL
 	$returned_uid_1 = -1;
 	$returned_uid_2 = -1;
-	$friendship_status_type_label = "";
-	$statement->bind_result($returned_uid_1, $returned_uid_2, $friendship_status_type_label);
+	$user_relationship_type_label = "";
+	$statement->bind_result($returned_uid_1, $returned_uid_2, $user_relationship_type_label);
 	$statement->fetch();
 	$statement->close();
 	
-	// IF FRIENDSHIP STATUS TYPE LABEL IS A SENT FRIEND REQUEST, IDENTIFY WHO SENT IT
+	// IF FRIENDSHIP STATUS TYPE LABEL IS FRIENDSHIP PENDING OR BLOCK, IDENTIFY WHO PERFORMED THE ACTION
 	if ($uid_1 === $returned_uid_1 && $uid_2 === $returned_uid_2)
 	{
-		if ($friendship_status_type_label === "Request Sent")
-			$friendship_status_type_label = "Request sent by this user.";
-		if ($friendship_status_type_label === "Blocked")
-			$friendship_status_type_label = "This user already blocked the other user.";
+		if ($user_relationship_type_label === "Friendship Pending")
+			$user_relationship_type_label = "Friendship Pending request sent by this user.";
+		if ($user_relationship_type_label === "Blocked")
+			$user_relationship_type_label = "This user already blocked the other user.";
 	}
 	if ($uid_1 === $returned_uid_2 && $uid_2 === $returned_uid_1)
 	{
-		if ($friendship_status_type_label === "Request Sent")
-			$friendship_status_type_label = "Request sent to this user.";
-		if ($friendship_status_type_label === "Blocked")
-			$friendship_status_type_label = "This user is already blocked by the other user.";
+		if ($user_relationship_type_label === "Friendship Pending")
+			$user_relationship_type_label = "Friendship Pending request sent to this user.";
+		if ($user_relationship_type_label === "Blocked")
+			$user_relationship_type_label = "This user is already blocked by the other user.";
 	}
 	
+	// IF THE TWO USERS DO NOT HAVE A RELATIONSHIP CURRENTLY
+	if (strlen($user_relationship_type_label) === 0)
+		$user_relationship_type_label = "Not friends.";
+	
 	// RETURN THE FRIENDSHIP STATUS TYPE LABEL
-	return $friendship_status_type_label;
+	return $user_relationship_type_label;
 }
 /* --------------------------------------------------------------------------------
  * ================================================================================
@@ -63,7 +67,7 @@ function getFriendshipStatus($uid_1, $uid_2)
  * --------------------------------------------------------------------------------
  * ================================================================================
  * -------------------------------------------------------------------------------- */
-function fetchFriendshipStatusRequestSentUsers($uid_1, $friendship_status_label)
+function fetchFriendshipStatusRequestSentUsers($uid_1, $user_relationship_type_label)
 {
 	// IMPORT REQUIRED METHODS
 	require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/Functions/Miscellaneous.php';
@@ -72,13 +76,13 @@ function fetchFriendshipStatusRequestSentUsers($uid_1, $friendship_status_label)
 	require $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBConnect/dbConnect.php';
 
 	$query = "SELECT uid, username, first_name, last_name 
-			  FROM R_FRIENDSHIP_STATUS 
-			    LEFT JOIN T_FRIENDSHIP_STATUS_TYPE ON 
-			      T_FRIENDSHIP_STATUS_TYPE .friendship_status_type_code = R_FRIENDSHIP_STATUS .friendship_status_type_code 
-			    LEFT JOIN T_USER ON R_FRIENDSHIP_STATUS.uid_2 = T_USER.uid
-			  WHERE uid_1 = ? AND friendship_status_type_label = ?";
+			  FROM R_USER_RELATIONSHIP 
+			    LEFT JOIN T_USER_RELATIONSHIP_TYPE ON 
+			      T_USER_RELATIONSHIP_TYPE .user_relationship_type_code = R_USER_RELATIONSHIP.user_relationship_type_code 
+			    LEFT JOIN T_USER ON R_USER_RELATIONSHIP.uid_2 = T_USER.uid
+			  WHERE uid_1 = ? AND user_relationship_type_label = ?";
 	$statement = $conn->prepare($query);
-	$statement->bind_param("is", $uid_1, $friendship_status_label);
+	$statement->bind_param("is", $uid_1, $user_relationship_type_label);
 	$statement->execute();
 	$error = $statement->error;
 	// CHECK FOR AN ERROR, RETURN IT IF ONE EXISTS
@@ -117,7 +121,7 @@ function fetchFriendshipStatusRequestSentUsers($uid_1, $friendship_status_label)
  * --------------------------------------------------------------------------------
  * ================================================================================
  * -------------------------------------------------------------------------------- */
-function fetchFriendshipStatusRequestReceivedUsers($uid_2, $friendship_status_label)
+function fetchFriendshipStatusRequestReceivedUsers($uid_2, $user_relationship_type_label)
 {
 	// IMPORT REQUIRED METHODS
 	require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/Functions/Miscellaneous.php';
@@ -126,13 +130,13 @@ function fetchFriendshipStatusRequestReceivedUsers($uid_2, $friendship_status_la
 	require $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBConnect/dbConnect.php';
 
 	$query = "SELECT uid, username, first_name, last_name
-			  FROM R_FRIENDSHIP_STATUS
-			    LEFT JOIN T_FRIENDSHIP_STATUS_TYPE ON
-			      T_FRIENDSHIP_STATUS_TYPE .friendship_status_type_code = R_FRIENDSHIP_STATUS .friendship_status_type_code
-			    LEFT JOIN T_USER ON R_FRIENDSHIP_STATUS.uid_1 = T_USER.uid
-			  WHERE uid_2 = ? AND friendship_status_type_label = ?";
+			  FROM R_USER_RELATIONSHIP
+			    LEFT JOIN T_USER_RELATIONSHIP_TYPE ON
+			      T_USER_RELATIONSHIP_TYPE .user_relationship_type_code = R_USER_RELATIONSHIP.user_relationship_type_code
+			    LEFT JOIN T_USER ON R_USER_RELATIONSHIP.uid_1 = T_USER.uid
+			  WHERE uid_2 = ? AND user_relationship_type_label = ?";
 	$statement = $conn->prepare($query);
-	$statement->bind_param("is", $uid_2, $friendship_status_label);
+	$statement->bind_param("is", $uid_2, $user_relationship_type_label);
 	$statement->execute();
 	$error = $statement->error;
 	// CHECK FOR AN ERROR, RETURN IT IF ONE EXISTS
@@ -180,11 +184,11 @@ function isFriend($uid_1, $uid_2)
 	require $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBConnect/dbConnect.php';
 	
 	$query = "SELECT 1
-			  FROM R_FRIENDSHIP_STATUS
-			  WHERE friendship_status_type_code = (
-  				SELECT friendship_status_type_code 
-  				FROM T_FRIENDSHIP_STATUS_TYPE 
-  				WHERE friendship_status_type_label = 'Friends')
+			  FROM R_USER_RELATIONSHIP
+			  WHERE user_relationship_type_code = (
+  				SELECT user_relationship_type_code 
+  				FROM T_USER_RELATIONSHIP_TYPE 
+  				WHERE user_relationship_type_label = 'Friend')
   				AND (
     			  (uid_1 = ? AND uid_2 = ?) OR (uid_2 = ? and uid_1 = ?)
   				)";

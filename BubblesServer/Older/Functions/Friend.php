@@ -47,9 +47,9 @@ function getFriends()
 	
 	// 4 - GET THE CODE FOR A 'FRIENDS' STATUS
 	// 4.1 - PREPARE THE QUERY
-	$query = "SELECT friendship_status_type_code
-              FROM T_FRIENDSHIP_STATUS_TYPE
-              WHERE friendship_status_type_label = 'Friends'";
+	$query = "SELECT user_relationship_type_code
+              FROM T_USER_RELATIONSHIP_TYPE
+              WHERE user_relationship_type_label = 'Friend'";
 	$statement = $conn->prepare($query);
 	// 4.2 - EXECUTE THE QUERY
 	$statement->execute();
@@ -70,11 +70,11 @@ function getFriends()
 	$first_name = "";
 	$last_name  = "";
 	$query =   "SELECT uid, username, first_name, last_name  
-                FROM R_FRIENDSHIP_STATUS, T_USER 
+                FROM R_USER_RELATIONSHIP, T_USER 
                 WHERE 
 	               uid_1 = uid AND 
                    uid_2 = ? AND 
-	               friendship_status_type_code = ?";
+	               user_relationship_type_code = ?";
 	$statement = $conn->prepare($query);
 	$statement->bind_param("ii", $uid, $status_friends);
 	$statement->execute();
@@ -95,11 +95,11 @@ function getFriends()
 	$first_name = "";
 	$last_name  = "";
 	$query =   "SELECT uid, username, first_name, last_name  
-                FROM R_FRIENDSHIP_STATUS, T_USER 
+                FROM R_USER_RELATIONSHIP, T_USER 
                 WHERE 
 	               uid_2 = uid AND
                    uid_1 = ? AND
-   	               friendship_status_type_code = ?";
+   	               user_relationship_type_code = ?";
 	$statement = $conn->prepare($query);
 	$statement->bind_param("ii", $uid, $status_friends);
 	$statement->execute();
