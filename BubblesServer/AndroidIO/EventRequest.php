@@ -14,6 +14,8 @@ if ($function == "deleteEvent")
 	deleteEvent();
 if ($function == "incrementEventViewCount")
 	incrementEventViewCount();
+if ($function == "getEventDataByTopNViews")
+	getEventDataByTopNViews();
 
 	
 	
@@ -223,6 +225,38 @@ function getEventDataByMember()
 
 	require $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBIO/Event.php';
 	$eventList = fetchEventDataByMember($uid);
+
+	// RETURN THE EVENT ID
+	echo json_encode($eventList);
+}
+
+/* --------------------------------------------------------------------------------
+ * ================================================================================
+ * -------------------------------------------------------------------------------- */
+
+
+
+/* FUNCTION: getEventDataByMember
+ * DESCRIPTION: Gets the data of an entire event for all of the events that have 
+ *              the top N count of views, where N is the input value.
+ * --------------------------------------------------------------------------------
+ * ================================================================================
+ * -------------------------------------------------------------------------------- */
+function getEventDataByTopNViews()
+{
+	/* THE FOLLOWING 3 LINES OF CODE ENABLE ERROR REPORTING. */
+	error_reporting(E_ALL);
+	ini_set('display_errors', TRUE);
+	ini_set('display_startup_errors', TRUE);
+	/* END. */
+
+	// DECODE JSON STRING
+	$json_decoded = json_decode(file_get_contents("php://input"), true);
+	// ASSIGN THE JSON VALUES TO VARIABLES
+	$top_n_views = $json_decoded["topNViews"];
+
+	require $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBIO/Event.php';
+	$eventList = dbGetEventDataByTopNViews($top_n_views);
 
 	// RETURN THE EVENT ID
 	echo json_encode($eventList);

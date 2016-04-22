@@ -77,8 +77,13 @@ print_r(fetchImagesByPrivacyAndPurpose("Public", "Regular"));
 require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBIO/FriendshipStatus.php';
 print_r(fetchFriendshipStatusRequestSentUsers(1, "Request Sent"));
 */
+/*
 require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBIO/FriendshipStatus.php';
 print_r(isFriend(1, 2));
+*/
+/*
+require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/AndroidIO/UserLikeRequest.php';
+setObjectLikeOrDislike();
 echo "<br><br>!END OF SCRIPT!";
-
+*/
 ?>
