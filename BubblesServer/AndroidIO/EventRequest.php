@@ -16,6 +16,10 @@ if ($function == "incrementEventViewCount")
 	incrementEventViewCount();
 if ($function == "getEventDataByTopNViews")
 	getEventDataByTopNViews();
+if ($function == "getEventDataByTopNLikes")
+	getEventDataByTopNLikes();
+if ($function == "getEventDataByTopNDislikes")
+	getEventDataByTopNDislikes();
 
 	
 	
@@ -236,7 +240,7 @@ function getEventDataByMember()
 
 
 
-/* FUNCTION: getEventDataByMember
+/* FUNCTION: getEventDataByTopNViews
  * DESCRIPTION: Gets the data of an entire event for all of the events that have 
  *              the top N count of views, where N is the input value.
  * --------------------------------------------------------------------------------
@@ -257,6 +261,70 @@ function getEventDataByTopNViews()
 
 	require $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBIO/Event.php';
 	$eventList = dbGetEventDataByTopNViews($top_n_views);
+
+	// RETURN THE EVENT ID
+	echo json_encode($eventList);
+}
+
+/* --------------------------------------------------------------------------------
+ * ================================================================================
+ * -------------------------------------------------------------------------------- */
+
+
+
+/* FUNCTION: getEventDataByTopNLikes
+ * DESCRIPTION: Gets the data of an entire event for all of the events that have
+ *              the top N count of likes, where N is the input value.
+ * --------------------------------------------------------------------------------
+ * ================================================================================
+ * -------------------------------------------------------------------------------- */
+function getEventDataByTopNLikes()
+{
+	/* THE FOLLOWING 3 LINES OF CODE ENABLE ERROR REPORTING. */
+	error_reporting(E_ALL);
+	ini_set('display_errors', TRUE);
+	ini_set('display_startup_errors', TRUE);
+	/* END. */
+
+	// DECODE JSON STRING
+	$json_decoded = json_decode(file_get_contents("php://input"), true);
+	// ASSIGN THE JSON VALUES TO VARIABLES
+	$top_n = $json_decoded["topN"];
+
+	require $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBIO/Event.php';
+	$eventList = dbGetEventDataByTopNLikes($top_n);
+
+	// RETURN THE EVENT ID
+	echo json_encode($eventList);
+}
+
+/* --------------------------------------------------------------------------------
+ * ================================================================================
+ * -------------------------------------------------------------------------------- */
+
+
+
+/* FUNCTION: getEventDataByTopNDislikes
+ * DESCRIPTION: Gets the data of an entire event for all of the events that have
+ *              the top N count of dislikes, where N is the input value.
+ * --------------------------------------------------------------------------------
+ * ================================================================================
+ * -------------------------------------------------------------------------------- */
+function getEventDataByTopNDislikes()
+{
+	/* THE FOLLOWING 3 LINES OF CODE ENABLE ERROR REPORTING. */
+	error_reporting(E_ALL);
+	ini_set('display_errors', TRUE);
+	ini_set('display_startup_errors', TRUE);
+	/* END. */
+
+	// DECODE JSON STRING
+	$json_decoded = json_decode(file_get_contents("php://input"), true);
+	// ASSIGN THE JSON VALUES TO VARIABLES
+	$top_n = $json_decoded["topN"];
+
+	require $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBIO/Event.php';
+	$eventList = dbGetEventDataByTopNDislikes($top_n);
 
 	// RETURN THE EVENT ID
 	echo json_encode($eventList);
