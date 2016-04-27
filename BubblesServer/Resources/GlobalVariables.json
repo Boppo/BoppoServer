@@ -5,6 +5,9 @@
 			"DatetimeValue": 30
 		}
 	},
+	"Image": {
+		"ImageProfileMaxAmount": 4
+	}, 
 	"Permission": {
 		"EventUserReinviteUserTypeCode": 2
 	}

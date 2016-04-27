@@ -84,6 +84,10 @@ print_r(isFriend(1, 2));
 /*
 require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/AndroidIO/UserLikeRequest.php';
 setObjectLikeOrDislike();
-echo "<br><br>!END OF SCRIPT!";
 */
+
+require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/AndroidIO/EventRequest.php';
+updateEvent();
+
+echo "<br><br>!END OF SCRIPT!";
 ?>

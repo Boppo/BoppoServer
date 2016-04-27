@@ -24,7 +24,7 @@ function fetchInviteTypeCode($invite_type_label)
 	if ($error != "") { echo "DB ERROR: " . $error; return; }
 	
 	// DEFAULT AND ASSIGN THE INVITE TYPE CODE
-	$invite_type_code = -1;
+	$invite_type_code = null;
 	$statement->bind_result($invite_type_code);
 	$statement->fetch();
 	$statement->close();

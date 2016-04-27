@@ -20,6 +20,8 @@ if ($function == "getEventDataByTopNLikes")
 	getEventDataByTopNLikes();
 if ($function == "getEventDataByTopNDislikes")
 	getEventDataByTopNDislikes();
+if ($function == "updateEvent")
+	updateEvent();
 
 	
 	
@@ -371,6 +373,102 @@ function deleteEvent()
 
 	// RETURN A SUCCESS MESSAGE
 	echo "Success.";
+}
+
+/* --------------------------------------------------------------------------------
+ * ================================================================================
+ * -------------------------------------------------------------------------------- */
+
+
+
+/* FUNCTION: updateEvent
+ * DESCRIPTION: Updates an event into the corresponding database table with the
+ *  			newly provided values.
+ * --------------------------------------------------------------------------------
+ * ================================================================================
+ * -------------------------------------------------------------------------------- */
+function updateEvent()
+{
+	/* THE FOLLOWING 3 LINES OF CODE ENABLE ERROR REPORTING. */
+	error_reporting(E_ALL);
+	ini_set('display_errors', TRUE);
+	ini_set('display_startup_errors', TRUE);
+	/* END. */
+
+	// IMPORT THE DATABASE CONNECTION
+	require $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBConnect/dbConnect.php';
+	// DECODE JSON STRING
+	$json_decoded = json_decode(file_get_contents("php://input"), true);
+	/*
+	$json_decoded["eid"] = 38;
+	$json_decoded["eventHostUid"] = null;
+	$json_decoded["eventName"] = "FunnierShizEvah";
+	$json_decoded["eventInviteTypeLabel"] = "Friends";
+	$json_decoded["eventPrivacyLabel"] = null;
+	$json_decoded["eventImageUploadAllowedIndicator"] = null;
+	$json_decoded["eventStartDatetime"] = null;
+	$json_decoded["eventEndDatetime"] = null;
+	$json_decoded["eventGpsLatitude"] = null;
+	$json_decoded["eventGpsLongitude"] = null;
+	*/
+	// ASSIGN THE JSON VALUES TO VARIABLES
+	$eid 								  = $json_decoded["eid"];
+	$event_host_uid                       = $json_decoded["eventHostUid"];
+	$event_name                           = $json_decoded["eventName"];
+	$event_invite_type_label              = $json_decoded["eventInviteTypeLabel"];
+	$event_privacy_label                  = $json_decoded["eventPrivacyLabel"];
+	$event_image_upload_allowed_indicator = filter_var($json_decoded["eventImageUploadAllowedIndicator"], 
+												FILTER_VALIDATE_BOOLEAN);
+	$event_start_datetime                 = $json_decoded["eventStartDatetime"];
+	$event_end_datetime                   = $json_decoded["eventEndDatetime"];
+	$event_gps_latitude                   = $json_decoded["eventGpsLatitude"];
+	$event_gps_longitude                  = $json_decoded["eventGpsLongitude"];
+	
+	// MAKE SURE THAT A VALID EVENT IDENTIFIER WAS PROVIDED
+	if ($eid <= 0) {
+		echo "ERROR: Incorrect event identifier specified.";
+		return; }
+	
+	// ENCODE THE INVITE TYPE LABEL
+	require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBIO/InviteType.php';
+	$event_invite_type_code = fetchInviteTypeCode($event_invite_type_label);
+	if (!($json_decoded["eventInviteTypeLabel"] == null || $event_invite_type_code != null)) {
+		echo "ERROR: Incorrect event invite type specified.";
+		return; }
+	
+	// ENCODE THE PRIVACY LABEL
+	require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBIO/Privacy.php';
+	$event_privacy_code = fetchPrivacyCode($event_privacy_label);
+	if (!($json_decoded["eventPrivacyLabel"] == null || $event_privacy_code != null)) {
+		echo "ERROR: Incorrect event privacy specified.";
+		return; }
+		
+	// CONVERT THE IMAGE UPLOAD ALLOWED INDICATOR TO A CHARACTER
+	require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/Functions/Miscellaneous.php';
+	$event_image_upload_allowed_indicator = strBoolToChar($event_image_upload_allowed_indicator);
+	if ($event_image_upload_allowed_indicator != "0" && $event_image_upload_allowed_indicator != "1"
+		&& $json_decoded["eventImageUploadAllowedIndicator"] != null) {
+		echo "ERROR: Incorrect event image upload allowed indicator specified.";
+		return; }
+		
+	// SEND THE NEW VALUES IN AN EVENT OBJECT TO THE CORRESPONDING DBIO METHOD
+	$event = array
+	(
+		"eid" => $eid, 
+		"eventHostUid" => $event_host_uid,
+		"eventName" => $event_name,
+		"eventInviteTypeCode" => $event_invite_type_code,
+		"eventPrivacyCode" => $event_privacy_code,
+		"eventImageUploadAllowedIndicator" => $event_image_upload_allowed_indicator,
+		"eventStartDatetime" => $event_start_datetime,
+		"eventEndDatetime" => $event_end_datetime,
+		"eventGpsLatitude" => $event_gps_latitude,
+		"eventGpsLongitude" => $event_gps_longitude
+	);
+	require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBIO/Event.php';
+	$response = dbUpdateEvent($event);
+	
+	echo $response;
 }
 
 /* --------------------------------------------------------------------------------

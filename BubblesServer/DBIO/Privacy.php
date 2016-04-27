@@ -24,7 +24,7 @@ function fetchPrivacyCode($privacy_label)
 	if ($error != "") { echo "DB ERROR: " . $error; return; }
 	
 	// DEFAULT AND ASSIGN THE PRIVACY CODE
-	$privacy_code = -1;
+	$privacy_code = null;
 	$statement->bind_result($privacy_code);
 	$statement->fetch();
 	$statement->close(); 
