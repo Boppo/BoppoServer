@@ -10,8 +10,8 @@ if ($function == "getEventData")
 	getEventData();
 if ($function == "getEventDataByMember")
 	getEventDataByMember();
-if ($function == "deleteEvent")
-	deleteEvent();
+if ($function == "getEventDataByName")
+	getEventDataByName();
 if ($function == "incrementEventViewCount")
 	incrementEventViewCount();
 if ($function == "getEventDataByTopNViews")
@@ -20,6 +20,8 @@ if ($function == "getEventDataByTopNLikes")
 	getEventDataByTopNLikes();
 if ($function == "getEventDataByTopNDislikes")
 	getEventDataByTopNDislikes();
+if ($function == "deleteEvent")
+	deleteEvent();
 if ($function == "updateEvent")
 	updateEvent();
 
@@ -86,12 +88,17 @@ function createEvent()
 			 event_image_upload_allowed_indicator, event_start_datetime, event_end_datetime, 
 		     event_gps_latitude, event_gps_longitude)
 		 VALUES 
-		 	(?, ?, ?, ?, ?, ?, ?, ?, ?)"
+		 	(?, ?, ?, ?, ?, ?, ?, ?, ?)",
+		"INSERT INTO T_EVENT_USER
+			(eid, uid, event_user_type_code, event_user_invite_status_type_code) 
+		 VALUES 
+			(?, ?, 3, 1)" 	// As of this moment, the 3 was = 'Administrator' & 1 was = 'Joined'
 	);
 		
 	$conn->autocommit(FALSE);
 	
 	$response = "PLACEHOLDER FOR RESPONSE";
+	$eid = null;
 	
 	foreach ($queries as $query)
 	{
@@ -106,6 +113,9 @@ function createEvent()
 				$event_invite_type_code, $event_image_upload_allowed_indicator,
 				$event_start_datetime, $event_end_datetime, $event_gps_latitude, $event_gps_longitude);
 		}
+		elseif ($index === 2) {
+			$statement->bind_param("ii", $eid, $event_host_uid);	
+		}
 		
 		$statement->execute();
 		$error = $statement->error;
@@ -113,8 +123,10 @@ function createEvent()
 		if ($error != "") { echo "DB ERROR: " . $error; return; }
 		$statement->close();
 		
-		if ($conn->insert_id != 0)
-			$response = "Success. ID: " . $conn->insert_id;
+		if ($conn->insert_id != 0) {
+			$eid = $conn->insert_id;
+			$response = "Success. ID: " . $eid;
+		}
 	}
 	
 	$conn->commit();
@@ -231,6 +243,38 @@ function getEventDataByMember()
 
 	require $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBIO/Event.php';
 	$eventList = fetchEventDataByMember($uid);
+
+	// RETURN THE EVENT ID
+	echo json_encode($eventList);
+}
+
+/* --------------------------------------------------------------------------------
+ * ================================================================================
+ * -------------------------------------------------------------------------------- */
+
+
+
+/* FUNCTION: getEventDataByName
+ * DESCRIPTION: Gets the data of an entire event for all of the events whose names
+ *  			match the specified event name.
+ * --------------------------------------------------------------------------------
+ * ================================================================================
+ * -------------------------------------------------------------------------------- */
+function getEventDataByName()
+{
+	/* THE FOLLOWING 3 LINES OF CODE ENABLE ERROR REPORTING. */
+	error_reporting(E_ALL);
+	ini_set('display_errors', TRUE);
+	ini_set('display_startup_errors', TRUE);
+	/* END. */
+
+	// DECODE JSON STRING
+	$json_decoded = json_decode(file_get_contents("php://input"), true);
+	// ASSIGN THE JSON VALUES TO VARIABLES
+	$event_name = $json_decoded["eventName"];
+
+	require $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBIO/Event.php';
+	$eventList = fetchEventDataByName($event_name);
 
 	// RETURN THE EVENT ID
 	echo json_encode($eventList);
