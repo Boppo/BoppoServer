@@ -151,7 +151,7 @@ function fetchEventDataByMember($uid)
 			  FROM   T_EVENT
 		       		 LEFT JOIN T_INVITE_TYPE ON T_EVENT.event_invite_type_code = T_INVITE_TYPE.invite_type_code
 		       		 LEFT JOIN T_PRIVACY ON T_EVENT.event_privacy_code = T_PRIVACY.privacy_code
-		       		 LEFT JOIN T_EVENT_USER ON T_EVENT.eid = T_EVENT_USER.eid 
+		       		 LEFT JOIN T_USER ON T_EVENT.event_host_uid = T_USER.uid
 			  WHERE  uid = ? OR event_host_uid = ?";
 	$statement = $conn->prepare($query);
 	$statement->bind_param("i", $uid, $uid);
@@ -167,7 +167,8 @@ function fetchEventDataByMember($uid)
 	$event_gps_latitude   = -1.0;
 	$event_gps_longitude  = -1.0;
 	*/
-	$statement->bind_result($eid, $event_host_uid, $event_name,
+	$statement->bind_result($eid, $event_host_uid, $event_host_username, 
+		$event_host_first_name, $event_host_last_name, $event_name,
 		$event_invite_type_label, $event_privacy_label,
 		$event_image_upload_allowed_indicator, $event_start_datetime,
 		$event_end_datetime, $event_gps_latitude, $event_gps_longitude,
@@ -181,6 +182,9 @@ function fetchEventDataByMember($uid)
 		(
 			"eid" => $eid, 
 			"eventHostUid" => $event_host_uid,
+			"eventHostUsername" => $event_host_username,
+			"eventHostFirstName" => $event_host_first_name,
+			"eventHostLastName" => $event_host_last_name,
 			"eventName" => $event_name,
 			"eventInviteTypeLabel" => $event_invite_type_label,
 			"eventPrivacyLabel" => $event_privacy_label,
@@ -221,14 +225,14 @@ function fetchEventDataByName($event_name)
 	$event_name = "%".$event_name."%";
 
 	// EXECUTE THE QUERY
-	$query = "SELECT DISTINCT T_EVENT.eid, event_host_uid, event_name,
+	$query = "SELECT DISTINCT T_EVENT.eid, uid, username, first_name, last_name, event_name,
 		       		 invite_type_label, privacy_label, event_image_upload_allowed_indicator,
 		       		 event_start_datetime, event_end_datetime, event_gps_latitude, event_gps_longitude,
 		       		 event_like_count, event_dislike_count, event_view_count
 			  FROM   T_EVENT
 		       		 LEFT JOIN T_INVITE_TYPE ON T_EVENT.event_invite_type_code = T_INVITE_TYPE.invite_type_code
 		       		 LEFT JOIN T_PRIVACY ON T_EVENT.event_privacy_code = T_PRIVACY.privacy_code
-		       		 LEFT JOIN T_EVENT_USER ON T_EVENT.eid = T_EVENT_USER.eid
+		       		 LEFT JOIN T_USER ON T_EVENT.event_host_uid = T_USER.uid
 			  WHERE  event_name LIKE ?";
 	$statement = $conn->prepare($query);
 	$statement->bind_param("s", $event_name);
@@ -244,7 +248,8 @@ function fetchEventDataByName($event_name)
 	 $event_gps_latitude   = -1.0;
 	 $event_gps_longitude  = -1.0;
 	 */
-	$statement->bind_result($eid, $event_host_uid, $event_name,
+	$statement->bind_result($eid, $event_host_uid, $event_host_username, 
+			$event_host_first_name, $event_host_last_name, $event_name,
 			$event_invite_type_label, $event_privacy_label,
 			$event_image_upload_allowed_indicator, $event_start_datetime,
 			$event_end_datetime, $event_gps_latitude, $event_gps_longitude,
@@ -258,6 +263,9 @@ function fetchEventDataByName($event_name)
 		(
 				"eid" => $eid,
 				"eventHostUid" => $event_host_uid,
+				"eventHostUsername" => $event_host_username, 
+				"eventHostFirstName" => $event_host_first_name, 
+				"eventHostLastName" => $event_host_last_name, 
 				"eventName" => $event_name,
 				"eventInviteTypeLabel" => $event_invite_type_label,
 				"eventPrivacyLabel" => $event_privacy_label,
@@ -302,7 +310,7 @@ function dbGetEventDataByTopNViews($top_n_views)
 			  FROM   T_EVENT
 		       		 LEFT JOIN T_INVITE_TYPE ON T_EVENT.event_invite_type_code = T_INVITE_TYPE.invite_type_code
 		       		 LEFT JOIN T_PRIVACY ON T_EVENT.event_privacy_code = T_PRIVACY.privacy_code
-		       		 LEFT JOIN T_EVENT_USER ON T_EVENT.eid = T_EVENT_USER.eid
+		       		 LEFT JOIN T_USER ON T_EVENT.event_host_uid = T_USER.uid
 			  ORDER BY event_view_count DESC
 			  LIMIT ?;";
 	$statement = $conn->prepare($query);
@@ -319,7 +327,8 @@ function dbGetEventDataByTopNViews($top_n_views)
 	 $event_gps_latitude   = -1.0;
 	 $event_gps_longitude  = -1.0;
 	 */
-	$statement->bind_result($eid, $event_host_uid, $event_name,
+	$statement->bind_result($eid, $event_host_uid, $event_host_username, 
+			$event_host_first_name, $event_host_last_name, $event_name,
 			$event_invite_type_label, $event_privacy_label,
 			$event_image_upload_allowed_indicator, $event_start_datetime,
 			$event_end_datetime, $event_gps_latitude, $event_gps_longitude,
@@ -333,6 +342,9 @@ function dbGetEventDataByTopNViews($top_n_views)
 		(
 				"eid" => $eid,
 				"eventHostUid" => $event_host_uid,
+				"eventHostUsername" => $event_host_username,
+				"eventHostFirstName" => $event_host_first_name,
+				"eventHostLastName" => $event_host_last_name,
 				"eventName" => $event_name,
 				"eventInviteTypeLabel" => $event_invite_type_label,
 				"eventPrivacyLabel" => $event_privacy_label,
@@ -377,7 +389,7 @@ function dbGetEventDataByTopNLikes($top_n)
 			  FROM   T_EVENT
 		       		 LEFT JOIN T_INVITE_TYPE ON T_EVENT.event_invite_type_code = T_INVITE_TYPE.invite_type_code
 		       		 LEFT JOIN T_PRIVACY ON T_EVENT.event_privacy_code = T_PRIVACY.privacy_code
-		       		 LEFT JOIN T_EVENT_USER ON T_EVENT.eid = T_EVENT_USER.eid
+		       		 LEFT JOIN T_USER ON T_EVENT.event_host_uid = T_USER.uid
 			  ORDER BY event_like_count DESC
 			  LIMIT ?;";
 	$statement = $conn->prepare($query);
@@ -394,7 +406,8 @@ function dbGetEventDataByTopNLikes($top_n)
 	 $event_gps_latitude   = -1.0;
 	 $event_gps_longitude  = -1.0;
 	 */
-	$statement->bind_result($eid, $event_host_uid, $event_name,
+	$statement->bind_result($eid, $event_host_uid, $event_host_username, 
+			$event_host_first_name, $event_host_last_name, $event_name,
 			$event_invite_type_label, $event_privacy_label,
 			$event_image_upload_allowed_indicator, $event_start_datetime,
 			$event_end_datetime, $event_gps_latitude, $event_gps_longitude,
@@ -408,6 +421,9 @@ function dbGetEventDataByTopNLikes($top_n)
 		(
 				"eid" => $eid,
 				"eventHostUid" => $event_host_uid,
+				"eventHostUsername" => $event_host_username,
+				"eventHostFirstName" => $event_host_first_name,
+				"eventHostLastName" => $event_host_last_name,
 				"eventName" => $event_name,
 				"eventInviteTypeLabel" => $event_invite_type_label,
 				"eventPrivacyLabel" => $event_privacy_label,
@@ -452,7 +468,7 @@ function dbGetEventDataByTopNDislikes($top_n)
 			  FROM   T_EVENT
 		       		 LEFT JOIN T_INVITE_TYPE ON T_EVENT.event_invite_type_code = T_INVITE_TYPE.invite_type_code
 		       		 LEFT JOIN T_PRIVACY ON T_EVENT.event_privacy_code = T_PRIVACY.privacy_code
-		       		 LEFT JOIN T_EVENT_USER ON T_EVENT.eid = T_EVENT_USER.eid
+		       		 LEFT JOIN T_USER ON T_EVENT.event_host_uid = T_USER.uid
 			  ORDER BY event_dislike_count DESC
 			  LIMIT ?;";
 	$statement = $conn->prepare($query);
@@ -469,7 +485,8 @@ function dbGetEventDataByTopNDislikes($top_n)
 	 $event_gps_latitude   = -1.0;
 	 $event_gps_longitude  = -1.0;
 	 */
-	$statement->bind_result($eid, $event_host_uid, $event_name,
+	$statement->bind_result($eid, $event_host_uid, $event_host_username, 
+			$event_host_first_name, $event_host_last_name, $event_name,
 			$event_invite_type_label, $event_privacy_label,
 			$event_image_upload_allowed_indicator, $event_start_datetime,
 			$event_end_datetime, $event_gps_latitude, $event_gps_longitude,
@@ -483,6 +500,9 @@ function dbGetEventDataByTopNDislikes($top_n)
 		(
 			"eid" => $eid,
 			"eventHostUid" => $event_host_uid,
+			"eventHostUsername" => $event_host_username,
+			"eventHostFirstName" => $event_host_first_name,
+			"eventHostLastName" => $event_host_last_name,
 			"eventName" => $event_name,
 			"eventInviteTypeLabel" => $event_invite_type_label,
 			"eventPrivacyLabel" => $event_privacy_label,
