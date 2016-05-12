@@ -4,6 +4,8 @@ $function = $_GET['function'];
 
 if ($function == "blockUser")
 	blockUser();
+if ($function == "getFriendshipStatus")
+	getFriendshipStatus();
 if ($function == "getFriendshipStatusRequestSentUsers")
 	getFriendshipStatusRequestSentUsers();
 if ($function == "getFriendshipStatusRequestReceivedUsers")
@@ -72,6 +74,43 @@ function blockUser()
 	// RETURN A SUCCESS MESSAGE
 	echo "<empty>";
 	return;
+}
+
+/* --------------------------------------------------------------------------------
+ * ================================================================================
+ * -------------------------------------------------------------------------------- */
+
+
+
+/* FUNCTION:    getFriendshipStatusRequestSentUsers
+ * NOTE:        User 1 is the user that sent the friendship status request.
+ * DESCRIPTION: This method echos a list of users (lists) that the specified user
+ *              has sent the specified type of request to.
+ * --------------------------------------------------------------------------------
+ * ================================================================================
+ * -------------------------------------------------------------------------------- */
+function getFriendshipStatus()
+{
+	/* THE FOLLOWING 3 LINES OF CODE ENABLE ERROR REPORTING. */
+	error_reporting(E_ALL);
+	ini_set('display_errors', TRUE);
+	ini_set('display_startup_errors', TRUE);
+	/* END. */
+
+	// IMPORT THE DATABASE CONNECTION
+	require $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBConnect/dbConnect.php';
+	// DECODE JSON STRING
+	$json_decoded = json_decode(file_get_contents("php://input"), true);
+	// ASSIGN THE JSON VALUES TO VARIABLES
+	$uid_1 = $json_decoded["uid1"];
+	$uid_2 = $json_decoded["uid2"];
+
+	// OBTAIN THE CURRENT RELATIONSHIP BETWEEN USER 1 AND USER 2
+	require $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/Older/getFriendStatus.php';
+	$friendship_status = fetchFriendshipStatus($uid_1, $uid_2);
+
+	// RETURN THE FRIENDSHIP STATUS
+	echo $friendship_status;
 }
 
 /* --------------------------------------------------------------------------------

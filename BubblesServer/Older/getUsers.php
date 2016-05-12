@@ -2,11 +2,13 @@
 
 	// 1 - Establish database connection
 	require $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBConnect/dbConnect.php';
+	require $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/Older/getFriendStatus.php';
 
 	// 2 - Decode incoming Json contents
 	$_POST = json_decode(file_get_contents("php://input"), true);
 
 	// 3 - Save the user string to a variable
+	$searched_by_uid = $_POST["searchedByUid"];
 	$searched_user = $_POST["searchedUser"];
 	//$searched_username = "asdas";
 
@@ -64,12 +66,15 @@
         // 6 - STORE THE QUERY RESUlT IN VARIABES
         mysqli_stmt_bind_result($statement, $uid, $username, $first_name, $last_name);
         while(mysqli_stmt_fetch($statement)) {
-            // 7 - STORE THE RESULTING VARIABLES IN ASSOCIATIVE ARRAY
+        	// 7.1 - FETCH THE FRIENDSHIP STATUS BETWEEN THE TWO USERS
+        	$friendship_status = fetchFriendshipStatus($searched_by_uid, $uid);
+            // 7.2 - STORE THE RESULTING VARIABLES IN ASSOCIATIVE ARRAY
             $result = array(
                 "uid" => $uid,
                 "username" => $username,
                 "firstName" => $first_name,
-                "lastName" => $last_name
+                "lastName" => $last_name,
+            	"friendshipStatus" => $friendship_status
             );
             array_push($data, $result);
         }
