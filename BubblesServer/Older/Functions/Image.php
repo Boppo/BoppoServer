@@ -26,16 +26,16 @@ function deleteImage()
 
     // 2 - DETERMINE BUBBLES USER ID, AND USER IMAGE PURPOSE LABEL
     //     FROM THE JSON DECODED STRING ARRAY
-    $uid  = $json_decoded["uid"];
-    $uiid = $json_decoded["uiid"];
+    $uid                 = $json_decoded["uid"];
+    $user_image_sequence = $json_decoded["userImageSequence"];
     
     // 3 - GET THE NAME OF THE IMAGE
     // 3.1 - PREPARE THE QUERY
     $query = "SELECT user_image_name
               FROM T_USER_IMAGE
-              WHERE uid = ? AND uiid = ?";
+              WHERE uid = ? AND user_image_sequence = ?";
     $statement = mysqli_prepare($conn, $query);
-    mysqli_stmt_bind_param($statement, "ii", $uid, $uiid);
+    mysqli_stmt_bind_param($statement, "ii", $uid, $user_image_sequence);
     // 3.2 - EXECUTE THE QUERY
     mysqli_stmt_execute($statement);
     // 3.3 - CHECK FOR ERROR AND STOP IF EXISTS
@@ -49,9 +49,9 @@ function deleteImage()
     mysqli_stmt_close($statement);  // Need to close statements if variable is to be recycled
 
     // 4 - PREPARE THE QUERY
-    $query = "DELETE FROM T_USER_IMAGE WHERE uid = ? AND uiid = ?";
+    $query = "DELETE FROM T_USER_IMAGE WHERE uid = ? AND user_image_sequence = ?";
     $statement = $conn->prepare($query);
-    $statement->bind_param("ii", $uid, $uiid);
+    $statement->bind_param("ii", $uid, $user_image_sequence);
 
     // 5 - EXECUTE THE QUERY
     $statement->execute();
@@ -68,158 +68,12 @@ function deleteImage()
         $user_image_name = $user_image_name . ".jpg";
             
     // 7 - DELETE THE FILE AND ITS WRAPPER FOLDER FROM THE DISK
-    if (file_exists("/var/www/Bubbles/Uploads/$uid/$uiid/$user_image_name"))
-        unlink("/var/www/Bubbles/Uploads/$uid/$uiid/$user_image_name");
-    if (is_dir("/var/www/Bubbles/Uploads/$uid/$uiid"))
-        rmdir("/var/www/Bubbles/Uploads/$uid/$uiid");
+    if (file_exists("/var/www/Bubbles/Uploads/$uid/$user_image_sequence/$user_image_name"))
+        unlink("/var/www/Bubbles/Uploads/$uid/$user_image_sequence/$user_image_name");
+    if (is_dir("/var/www/Bubbles/Uploads/$uid/$user_image_sequence"))
+        rmdir("/var/www/Bubbles/Uploads/$uid/$user_image_sequence");
         
     $statement->close();  // Need to close statements if variable is to be recycled
-}
-/* --------------------------------------------------------------------------------
- * ================================================================================
- * -------------------------------------------------------------------------------- */
-
-
-
-/* FUNCTION: getImagePaths
- * DESCRIPTION: Returns all of the image relative paths for the provided user.
- * --------------------------------------------------------------------------------
- * ================================================================================
- * -------------------------------------------------------------------------------- */
-function getImagesByUid()
-{
-    require $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBConnect/dbConnect.php';
-    // 1 - DECODE JSON STRING
-    //     THIS WILL GIVE THE LOGGED-IN USER'S ID
-    $json_decoded = json_decode(file_get_contents("php://input"), true);
-    $uid = $json_decoded["uid"];
-    $image_purpose_label = $json_decoded["imagePurposeLabel"];
-    
-    // 2 - GET THE CODE FOR THE PURPOSE OF THE IMAGE
-    // 2.1 - PREPARE THE QUERY
-    $query = "SELECT image_purpose_code 
-              FROM T_IMAGE_PURPOSE 
-              WHERE image_purpose_label = ?";
-    $statement = $conn->prepare($query);
-    $statement->bind_param("s", $image_purpose_label);
-    // 2.2 - EXECUTE THE QUERY
-    $statement->execute();
-    // 2.3 - CHECK FOR ERROR AND STOP IF EXISTS
-    $error = $statement->error;
-    if ($error != "") {
-        echo $error;
-        return; }
-    // 2.4 - STORE THE QUERY RESUlT IN A VARIABE
-    $statement->bind_result($user_image_purpose_code);
-    $statement->fetch();
-    $statement->close();  // Need to close statements if variable is to be recycled
-    
-    // 3 - CHECK IF THE USER PROVIDED IS VALID
-    // 3.1 - END IF PROVIDED UID IS NOT A NUMBER
-    if (!is_numeric($uid))
-    {
-        echo "UID IS NOT A NUMBER.";
-        return;
-    }
-    // 3.2 - END IF PROVIDED UID IS NOT A USER
-    $uid_user = -1;
-    $query = "SELECT uid
-              FROM T_USER
-              WHERE uid = ?";
-    $statement = $conn->prepare($query);
-    $statement->bind_param("i", $uid);
-    $statement->execute();
-    $statement->bind_result($uid_user);
-    $statement->fetch();
-    if ($uid_user == -1)
-    {
-        echo "USER WITH PROVIDED UID DOES NOT EXIST.";
-        return;
-    }
-    $statement->close();
-    
-    $images = array();
-        
-    // 4 - PERFORM THE RIGHT ACTION GIVEN THE IMAGE PURPOSE
-    // 4.1 - IF THE PURPOSE CODE EXISTS
-    if ($user_image_purpose_code != "") {
-        // 4.1.1 - CHECK TABLE T_IMAGE FOR THE DATA TO CREATE THE RELATIVE PATHS
-        $uid_user                 = -1;
-        $uiid                     = -1;
-        $user_image_name          = "";
-        $user_image_privacy_label = "";
-        $user_image_purpose_label = "";
-        $user_image_gps_latitude  = -1.0;
-        $user_image_gps_longitude = -1.0;
-        $query = "SELECT uid, uiid, user_image_name, privacy_label, image_purpose_label, 
-                    user_image_gps_latitude, user_image_gps_longitude
-                  FROM T_USER_IMAGE, T_PRIVACY, T_IMAGE_PURPOSE
-                  WHERE 
-                    uid = ? AND
-                    user_image_purpose_code = ? AND 
-                    T_USER_IMAGE.user_image_privacy_code = T_PRIVACY.privacy_code AND
-                    T_USER_IMAGE.user_image_purpose_code = T_IMAGE_PURPOSE.image_purpose_code";
-        $statement = $conn->prepare($query);
-        $statement->bind_param("is", $uid, $user_image_purpose_code);
-        $statement->execute();
-        $statement->bind_result($uid_user, $uiid, $user_image_name, $user_image_privacy_label, $user_image_purpose_label,
-            $user_image_gps_latitude, $user_image_gps_longitude);
-        while ($statement->fetch()) 
-        {
-            $image = array(
-                "userImagePath" => $uid_user . "/" . $uiid . "/" . $user_image_name,
-                "userImagePrivacyLabel" => $user_image_privacy_label,
-                "userImagePurposeLabel" => $user_image_purpose_label, 
-                "userImageGpsLatitude"  => $user_image_gps_latitude, 
-                "userImageGpsLongitude" => $user_image_gps_longitude
-            );
-            array_push($images, $image);
-        }
-        $statement->close();
-    }
-    // 4.2 - IF THE PURPOSE IS "All" 
-    elseif ($image_purpose_label == "All") {
-        // 4.1.1 - CHECK TABLE T_IMAGE FOR THE DATA TO CREATE THE RELATIVE PATHS
-        $uid_user                 = -1;
-        $uiid                     = -1;
-        $user_image_name          = "";
-        $user_image_privacy_label = "";
-        $user_image_purpose_label = "";
-        $user_image_gps_latitude  = -1.0;
-        $user_image_gps_longitude = -1.0;
-        $query = "SELECT uid, uiid, user_image_name, privacy_label, image_purpose_label, 
-                    user_image_gps_latitude, user_image_gps_longitude
-                  FROM T_USER_IMAGE, T_PRIVACY, T_IMAGE_PURPOSE
-                  WHERE 
-                    uid = ? AND
-                    T_USER_IMAGE.user_image_privacy_code = T_PRIVACY.privacy_code AND
-                    T_USER_IMAGE.user_image_purpose_code = T_IMAGE_PURPOSE.image_purpose_code";
-        $statement = $conn->prepare($query);
-        $statement->bind_param("i", $uid);
-        $statement->execute();
-        $statement->bind_result($uid_user, $uiid, $user_image_name, $user_image_privacy_label, $user_image_purpose_label,
-            $user_image_gps_latitude, $user_image_gps_longitude);
-        while ($statement->fetch()) 
-        {
-            $image = array(
-                "userImagePath" => $uid_user . "/" . $uiid . "/" . $user_image_name,
-                "userImagePrivacyLabel" => $user_image_privacy_label,
-                "userImagePurposeLabel" => $user_image_purpose_label, 
-                "userImageGpsLatitude"  => $user_image_gps_latitude, 
-                "userImageGpsLongitude" => $user_image_gps_longitude
-            );
-            array_push($images, $image);
-        }
-        $statement->close();
-    }
-    // 4.3 - IF THE PURPOSE DOES NOT EXIST
-    else {
-        echo "PURPOSE DOES NOT EXIST IN THE DATABASE.";
-        return;
-    }
-
-    // 5 - ENCODE THE DATA INTO JSON STRING AND RETURN
-    echo json_encode($images);
 }
 /* --------------------------------------------------------------------------------
  * ================================================================================
@@ -310,7 +164,7 @@ function uploadImage()
     
     // 6 - GET THE NEXT SEQUENCE NUMBER OF THE FILE ID
     // 6.1 - PREPARE THE QUERY
-    $query = "SELECT (MAX(UIID)+1) FROM T_USER_IMAGE WHERE UID = ?";
+    $query = "SELECT (MAX(user_image_sequence)+1) FROM T_USER_IMAGE WHERE UID = ?";
     $statement = mysqli_prepare($conn, $query);
     mysqli_stmt_bind_param($statement, "i", $uid);
     // 6.2 - EXECUTE THE QUERY
@@ -323,12 +177,12 @@ function uploadImage()
         return; 
     }
     // 6.4 - STORE THE QUERY RESUlT IN A VARIABE
-    mysqli_stmt_bind_result($statement, $uiid);
+    mysqli_stmt_bind_result($statement, $user_image_sequence);
     mysqli_stmt_fetch($statement);
     mysqli_stmt_close($statement);  // Need to close statements if variable is to be recycled
     // 6.5 - INITIALIZE THE SEQUENCE IF THIS IS THE FIRST FILE FOR THE USER
-    if ($uiid == "") {
-        $uiid = 1;
+    if ($user_image_sequence == "") {
+        $user_image_sequence = 1;
     }
     
     
@@ -351,12 +205,12 @@ function uploadImage()
 
     // 8 - STORE THE UID, IID (IMAGE ID), AND FILE NAME
     // 8.1 - PREPARE THE QUERY
-    $query = "INSERT INTO T_USER_IMAGE (uid, uiid, user_image_name, user_image_purpose_code, user_image_privacy_code, 
+    $query = "INSERT INTO T_USER_IMAGE (uid, user_image_sequence, user_image_name, user_image_purpose_code, user_image_privacy_code, 
                 user_image_gps_latitude, user_image_gps_longitude)
               VALUES (?, ?, ?, ?, ?, ?, ?)";
     $statement = mysqli_prepare($conn, $query);
     mysqli_stmt_bind_param($statement, "iisiidd", 
-        $uid, $uiid, $user_image_name, $user_image_purpose_code, $user_image_privacy_code, 
+        $uid, $user_image_sequence, $user_image_name, $user_image_purpose_code, $user_image_privacy_code, 
         $user_image_gps_latitude, $user_image_gps_longitude);
     // 8.2 - EXECUTE THE QUERY
     mysqli_stmt_execute($statement);
@@ -373,13 +227,13 @@ function uploadImage()
     // 10 - CREATE FOLDERS FOR UPLOADED IMAGE
     if (!file_exists("/var/www/Bubbles/Uploads/" . $uid))
         mkdir("/var/www/Bubbles/Uploads/" . $uid, 0777, true);
-    if (!file_exists("/var/www/Bubbles/Uploads/" . $uid . "/" . $uiid))
-        mkdir("/var/www/Bubbles/Uploads/" . $uid . "/" . $uiid, 0777, true);
+    if (!file_exists("/var/www/Bubbles/Uploads/" . $uid . "/" . $user_image_sequence))
+        mkdir("/var/www/Bubbles/Uploads/" . $uid . "/" . $user_image_sequence, 0777, true);
     // 11 - STORE UPLOADED IMAGE IN DIRECTORY DETERMINED BY PATH, UID, AND IID
     file_put_contents("/var/www/Bubbles/Uploads/" . $uid . "/" .
-        $uiid . "/" . $user_image_name . ".jpg", $decodedUserImage);
+        $user_image_sequence . "/" . $user_image_name . ".jpg", $decodedUserImage);
 
-    echo $uiid;
+    echo $user_image_sequence;
     return;
 }
 /* --------------------------------------------------------------------------------
@@ -402,7 +256,7 @@ function setUserImagePurpose()
     // 2 - DETERMINE BUBBLES USER ID, USER IMAGE ID, AND USER IMAGE PURPOSE LABEL 
     //     FROM THE JSON DECODED STRING ARRAY
     $uid                      = $json_decoded["uid"];
-    $uiid                     = $json_decoded["uiid"];
+    $user_image_sequence      = $json_decoded["userImageSequence"];
     $user_image_purpose_label = $json_decoded["userImagePurposeLabel"];
 
     // 3 - GET THE CODE FOR THE PRIVACY LABEL
@@ -432,9 +286,9 @@ function setUserImagePurpose()
 
         // 4 - PREPARE THE QUERY
         $query = "UPDATE T_USER_IMAGE SET user_image_purpose_code = ? 
-                  WHERE uid = ? AND uiid = ?";
+                  WHERE uid = ? AND user_image_sequence = ?";
         $statement = $conn->prepare($query);
-        $statement->bind_param("iii", $user_image_purpose_code, $uid, $uiid);
+        $statement->bind_param("iii", $user_image_purpose_code, $uid, $user_image_sequence);
 
         // 5 - EXECUTE THE QUERY
         $statement->execute();

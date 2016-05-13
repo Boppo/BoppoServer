@@ -2,15 +2,48 @@
 
 $function = $_GET['function'];
 
+if ($function == 'getImagesByUidAndPurpose')
+	getImagesByUidAndPurpose();
 if ($function == 'getImagesByPrivacyAndPurpose')
 	getImagesByPrivacyAndPurpose();
 if ($function == 'getImageProfileMaxAmount')
 	getImageProfileMaxAmount();
 
 	
+
+/* FUNCTION: getImagesByUidAndPurpose
+ * DESCRIPTION: Gets the images and their data by specified Uid and Purpose.
+ * --------------------------------------------------------------------------------
+ * ================================================================================
+ * -------------------------------------------------------------------------------- */
+function getImagesByUidAndPurpose()
+{
+	/* THE FOLLOWING 3 LINES OF CODE ENABLE ERROR REPORTING. */
+	error_reporting(E_ALL);
+	ini_set('display_errors', TRUE);
+	ini_set('display_startup_errors', TRUE);
+	/* END. */
+
+	// DECODE JSON STRING
+	$json_decoded = json_decode(file_get_contents("php://input"), true);
+	// ASSIGN THE JSON VALUES TO VARIABLES
+	$uid                 = $json_decoded["uid"];
+	$image_purpose_label = $json_decoded["imagePurposeLabel"];
 	
+	require $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBIO/UserImage.php';
+	$images = fetchImagesByUidAndPurpose($uid, $image_purpose_label);
+
+	// RETURN THE EVENT ID
+	echo json_encode($images);
+}
+/* --------------------------------------------------------------------------------
+ * ================================================================================
+ * -------------------------------------------------------------------------------- */
+
+
+
 /* FUNCTION: getImagesByPrivacyAndPurpose
- * DESCRIPTION: Gets the images and their data by
+ * DESCRIPTION: Gets the images and their data by specified privacy and purpose.
  * --------------------------------------------------------------------------------
  * ================================================================================
  * -------------------------------------------------------------------------------- */
