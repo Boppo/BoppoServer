@@ -144,7 +144,7 @@ function fetchEventDataByMember($uid)
 	require $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBConnect/dbConnect.php';
 
 	// EXECUTE THE QUERY
-	$query = "SELECT DISTINCT T_EVENT.eid, event_host_uid, event_name,
+	$query = "SELECT DISTINCT T_EVENT.eid, uid, username, first_name, last_name, event_name,
 		       		 invite_type_label, privacy_label, event_image_upload_allowed_indicator,
 		       		 event_start_datetime, event_end_datetime, event_gps_latitude, event_gps_longitude,
 		       		 event_like_count, event_dislike_count, event_view_count
@@ -154,7 +154,7 @@ function fetchEventDataByMember($uid)
 		       		 LEFT JOIN T_USER ON T_EVENT.event_host_uid = T_USER.uid
 			  WHERE  uid = ? OR event_host_uid = ?";
 	$statement = $conn->prepare($query);
-	$statement->bind_param("i", $uid, $uid);
+	$statement->bind_param("ii", $uid, $uid);
 	$statement->execute();
 	$error = $statement->error;
 	// CHECK FOR AN ERROR, RETURN IT IF ONE EXISTS
@@ -303,7 +303,7 @@ function dbGetEventDataByTopNViews($top_n_views)
 	require $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBConnect/dbConnect.php';
 
 	// EXECUTE THE QUERY
-	$query = "SELECT DISTINCT T_EVENT.eid, event_host_uid, event_name,
+	$query = "SELECT DISTINCT T_EVENT.eid, uid, username, first_name, last_name, event_name,
 		       		 invite_type_label, privacy_label, event_image_upload_allowed_indicator,
 		       		 event_start_datetime, event_end_datetime, event_gps_latitude, event_gps_longitude,
 		       		 event_like_count, event_dislike_count, event_view_count
@@ -382,7 +382,7 @@ function dbGetEventDataByTopNLikes($top_n)
 	require $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBConnect/dbConnect.php';
 
 	// EXECUTE THE QUERY
-	$query = "SELECT DISTINCT T_EVENT.eid, event_host_uid, event_name,
+	$query = "SELECT DISTINCT T_EVENT.eid, uid, username, first_name, last_name, event_name,
 		       		 invite_type_label, privacy_label, event_image_upload_allowed_indicator,
 		       		 event_start_datetime, event_end_datetime, event_gps_latitude, event_gps_longitude,
 		       		 event_like_count, event_dislike_count, event_view_count
@@ -461,7 +461,7 @@ function dbGetEventDataByTopNDislikes($top_n)
 	require $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBConnect/dbConnect.php';
 
 	// EXECUTE THE QUERY
-	$query = "SELECT DISTINCT T_EVENT.eid, event_host_uid, event_name,
+	$query = "SELECT DISTINCT T_EVENT.eid, uid, username, first_name, last_name, event_name,
 		       		 invite_type_label, privacy_label, event_image_upload_allowed_indicator,
 		       		 event_start_datetime, event_end_datetime, event_gps_latitude, event_gps_longitude,
 		       		 event_like_count, event_dislike_count, event_view_count
