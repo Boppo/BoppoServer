@@ -81,8 +81,6 @@ function createEvent()
 			
 	// EXECUTE THE TRANSACTION
 	$queries = array(
-		"INSERT IGNORE INTO T_GEOLOCATION (gps_latitude, gps_longitude) 
-		 	VALUES (?, ?)", 
 		"INSERT INTO T_EVENT 
 		    (event_name, event_host_uid, event_privacy_code, event_invite_type_code, 
 			 event_image_upload_allowed_indicator, event_start_datetime, event_end_datetime, 
@@ -106,14 +104,11 @@ function createEvent()
 		
 		$index = array_search($query, $queries);
 		if ($index === 0) {
-			$statement->bind_param("dd", $event_gps_latitude, $event_gps_longitude);
-		}
-		elseif ($index === 1) {
 			$statement->bind_param("siiiissdd", $event_name, $event_host_uid, $event_privacy_code,
 				$event_invite_type_code, $event_image_upload_allowed_indicator,
 				$event_start_datetime, $event_end_datetime, $event_gps_latitude, $event_gps_longitude);
 		}
-		elseif ($index === 2) {
+		elseif ($index === 1) {
 			$statement->bind_param("ii", $eid, $event_host_uid);	
 		}
 		

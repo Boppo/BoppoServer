@@ -15,14 +15,16 @@ function fetchEventData($eid)
 	require $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBConnect/dbConnect.php';
 	
 	// EXECUTE THE QUERY
-	$query = "SELECT event_host_uid, event_name,
-			         invite_type_label, privacy_label, event_image_upload_allowed_indicator,
-			         event_start_datetime, event_end_datetime, event_gps_latitude, event_gps_longitude,
-			         event_like_count, event_dislike_count, event_view_count
+	$query = "SELECT DISTINCT T_EVENT.eid, uid, username, first_name, last_name, event_name,
+		       		 invite_type_label, privacy_label, event_image_upload_allowed_indicator,
+		       		 event_start_datetime, event_end_datetime, event_gps_latitude, event_gps_longitude,
+		       		 event_like_count, event_dislike_count, event_view_count
 			  FROM   T_EVENT
-			         LEFT JOIN T_INVITE_TYPE ON T_EVENT.event_invite_type_code = T_INVITE_TYPE.invite_type_code
-			         LEFT JOIN T_PRIVACY ON T_EVENT.event_privacy_code = T_PRIVACY.privacy_code
-			  WHERE  eid = ?";
+		       		 LEFT JOIN T_INVITE_TYPE ON T_EVENT.event_invite_type_code = T_INVITE_TYPE.invite_type_code
+		       		 LEFT JOIN T_PRIVACY ON T_EVENT.event_privacy_code = T_PRIVACY.privacy_code
+		       		 LEFT JOIN T_USER ON T_EVENT.event_host_uid = T_USER.uid
+			  WHERE  eid = ? 
+			  ORDER BY event_name";
 	$statement = $conn->prepare($query);
 	$statement->bind_param("i", $eid);
 	$statement->execute();
@@ -31,11 +33,14 @@ function fetchEventData($eid)
 	if ($error != "") { echo "DB ERROR: " . $error; return; }
 	
 	// DEFAULT AND ASSIGN THE EVENT VARIABLES
+	/*
 	$event_start_datetime = "";
 	$event_end_datetime   = "";
 	$event_gps_latitude   = -1.0;
 	$event_gps_longitude  = -1.0;
-	$statement->bind_result($event_host_uid, $event_name,
+	*/
+	$statement->bind_result($eid, $event_host_uid, $event_host_username, 
+		$event_host_first_name, $event_host_last_name, $event_name,
 		$event_invite_type_label, $event_privacy_label,
 		$event_image_upload_allowed_indicator, $event_start_datetime,
 		$event_end_datetime, $event_gps_latitude, $event_gps_longitude,
@@ -44,7 +49,11 @@ function fetchEventData($eid)
 	
 	$event = array
 	(
+		"eid" => $eid, 
 		"eventHostUid" => $event_host_uid,
+		"eventHostUsername" => $event_host_username,
+		"eventHostFirstName" => $event_host_first_name,
+		"eventHostLastName" => $event_host_last_name,
 		"eventName" => $event_name,
 		"eventInviteTypeLabel" => $event_invite_type_label,
 		"eventPrivacyLabel" => $event_privacy_label,
@@ -81,12 +90,14 @@ function fetchEventDataEncoded($eid)
 	require $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBConnect/dbConnect.php';
 
 	// EXECUTE THE QUERY
-	$query = "SELECT event_host_uid, event_name,
+	$query = "SELECT DISTINCT T_EVENT.eid, uid, username, first_name, last_name, event_name,
 			         event_invite_type_code, event_privacy_code, event_image_upload_allowed_indicator,
 			         event_start_datetime, event_end_datetime, event_gps_latitude, event_gps_longitude,
 			         event_like_count, event_dislike_count, event_view_count
-			  FROM   T_EVENT 
-			  WHERE  eid = ?";
+			  FROM   T_EVENT
+		       		 LEFT JOIN T_USER ON T_EVENT.event_host_uid = T_USER.uid
+			  WHERE  eid = ?
+			  ORDER BY event_name";
 	$statement = $conn->prepare($query);
 	$statement->bind_param("i", $eid);
 	$statement->execute();
@@ -95,12 +106,15 @@ function fetchEventDataEncoded($eid)
 	if ($error != "") { echo "DB ERROR: " . $error; return; }
 
 	// DEFAULT AND ASSIGN THE EVENT VARIABLES
+	/*
 	$event_start_datetime = null;
 	$event_end_datetime   = null;
 	$event_gps_latitude   = null;
 	$event_gps_longitude  = null;
-	$statement->bind_result($event_host_uid, $event_name,
-		$event_invite_type_label, $event_privacy_label,
+	*/
+	$statement->bind_result($eid, $event_host_uid, $event_host_username, 
+		$event_host_first_name, $event_host_last_name, $event_name,
+		$event_invite_type_code, $event_privacy_code,
 		$event_image_upload_allowed_indicator, $event_start_datetime,
 		$event_end_datetime, $event_gps_latitude, $event_gps_longitude,
 		$event_like_count, $event_dislike_count, $event_view_count);
@@ -110,8 +124,8 @@ function fetchEventDataEncoded($eid)
 	(
 		"eventHostUid" => $event_host_uid,
 		"eventName" => $event_name,
-		"eventInviteTypeCode" => $event_invite_type_label,
-		"eventPrivacyCode" => $event_privacy_label,
+		"eventInviteTypeCode" => $event_invite_type_code,
+		"eventPrivacyCode" => $event_privacy_code,
 		"eventImageUploadAllowedIndicator" => $event_image_upload_allowed_indicator,
 		"eventStartDatetime" => $event_start_datetime,
 		"eventEndDatetime" => $event_end_datetime,
@@ -152,7 +166,8 @@ function fetchEventDataByMember($uid)
 		       		 LEFT JOIN T_INVITE_TYPE ON T_EVENT.event_invite_type_code = T_INVITE_TYPE.invite_type_code
 		       		 LEFT JOIN T_PRIVACY ON T_EVENT.event_privacy_code = T_PRIVACY.privacy_code
 		       		 LEFT JOIN T_USER ON T_EVENT.event_host_uid = T_USER.uid
-			  WHERE  uid = ? OR event_host_uid = ?";
+			  WHERE  uid = ? OR event_host_uid = ?
+			  ORDER BY event_name";
 	$statement = $conn->prepare($query);
 	$statement->bind_param("ii", $uid, $uid);
 	$statement->execute();
@@ -233,7 +248,8 @@ function fetchEventDataByName($event_name)
 		       		 LEFT JOIN T_INVITE_TYPE ON T_EVENT.event_invite_type_code = T_INVITE_TYPE.invite_type_code
 		       		 LEFT JOIN T_PRIVACY ON T_EVENT.event_privacy_code = T_PRIVACY.privacy_code
 		       		 LEFT JOIN T_USER ON T_EVENT.event_host_uid = T_USER.uid
-			  WHERE  event_name LIKE ?";
+			  WHERE  event_name LIKE ? 
+			  ORDER BY event_name";
 	$statement = $conn->prepare($query);
 	$statement->bind_param("s", $event_name);
 	$statement->execute();

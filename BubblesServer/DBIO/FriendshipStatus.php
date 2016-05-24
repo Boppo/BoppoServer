@@ -7,7 +7,7 @@
  * --------------------------------------------------------------------------------
  * ================================================================================
  * -------------------------------------------------------------------------------- */
-function getFriendshipStatus($uid_1, $uid_2)
+function dbGetFriendshipStatus($uid_1, $uid_2)
 {
 	// IMPORT THE DATABASE CONNECTION
 	require $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBConnect/dbConnect.php';

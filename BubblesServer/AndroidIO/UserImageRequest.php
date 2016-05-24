@@ -60,6 +60,7 @@ function getImagesByPrivacyAndPurpose()
 	// ASSIGN THE JSON VALUES TO VARIABLES
 	$image_privacy_label = $json_decoded["imagePrivacyLabel"];
 	$image_purpose_label = $json_decoded["imagePurposeLabel"];
+	
 	require $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBIO/UserImage.php';
 	$images = fetchImagesByPrivacyAndPurpose($image_privacy_label, $image_purpose_label);
 

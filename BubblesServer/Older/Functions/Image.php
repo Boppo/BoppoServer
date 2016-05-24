@@ -184,27 +184,11 @@ function uploadImage()
     if ($user_image_sequence == "") {
         $user_image_sequence = 1;
     }
-    
-    
-    // 7 - CREATE COORDINATES IN THE GEOLOCATION TABLE BEFORE INSERTING THE IMAGE
-    // 7.1 - PREPARE THE QUERY
-    $query = "INSERT IGNORE INTO T_GEOLOCATION (gps_latitude, gps_longitude)
-			  VALUES (?, ?)";
-    $statement = mysqli_prepare($conn, $query);
-    mysqli_stmt_bind_param($statement, "dd", $user_image_gps_latitude, $user_image_gps_longitude);
-    // 7.2 - EXECUTE THE QUERY
-    mysqli_stmt_execute($statement);
-    $error = mysqli_stmt_error($statement);
-    // 7.3 - CHECK FOR ERROR AND STOP IF EXISTS
-    if ($error != "")
-    {
-    	echo $error;
-    	return;
-    }
+   
     
 
-    // 8 - STORE THE UID, IID (IMAGE ID), AND FILE NAME
-    // 8.1 - PREPARE THE QUERY
+    // 7 - STORE THE UID, IID (IMAGE ID), AND FILE NAME
+    // 7.1 - PREPARE THE QUERY
     $query = "INSERT INTO T_USER_IMAGE (uid, user_image_sequence, user_image_name, user_image_purpose_code, user_image_privacy_code, 
                 user_image_gps_latitude, user_image_gps_longitude)
               VALUES (?, ?, ?, ?, ?, ?, ?)";
@@ -212,24 +196,24 @@ function uploadImage()
     mysqli_stmt_bind_param($statement, "iisiidd", 
         $uid, $user_image_sequence, $user_image_name, $user_image_purpose_code, $user_image_privacy_code, 
         $user_image_gps_latitude, $user_image_gps_longitude);
-    // 8.2 - EXECUTE THE QUERY
+    // 7.2 - EXECUTE THE QUERY
     mysqli_stmt_execute($statement);
     $error = mysqli_stmt_error($statement);
-    // 8.3 - CHECK FOR ERROR AND STOP IF EXISTS
+    // 7.3 - CHECK FOR ERROR AND STOP IF EXISTS
     if ($error != "") 
     {
         echo $error;
         return; 
     }
 
-    // 9 - DECODE THE BINARY-ENCODED IMAGE
+    // 8 - DECODE THE BINARY-ENCODED IMAGE
     $decodedUserImage = base64_decode("$user_image");
-    // 10 - CREATE FOLDERS FOR UPLOADED IMAGE
+    // 9 - CREATE FOLDERS FOR UPLOADED IMAGE
     if (!file_exists("/var/www/Bubbles/Uploads/" . $uid))
         mkdir("/var/www/Bubbles/Uploads/" . $uid, 0777, true);
     if (!file_exists("/var/www/Bubbles/Uploads/" . $uid . "/" . $user_image_sequence))
         mkdir("/var/www/Bubbles/Uploads/" . $uid . "/" . $user_image_sequence, 0777, true);
-    // 11 - STORE UPLOADED IMAGE IN DIRECTORY DETERMINED BY PATH, UID, AND IID
+    // 10 - STORE UPLOADED IMAGE IN DIRECTORY DETERMINED BY PATH, UID, AND IID
     file_put_contents("/var/www/Bubbles/Uploads/" . $uid . "/" .
         $user_image_sequence . "/" . $user_image_name . ".jpg", $decodedUserImage);
 
