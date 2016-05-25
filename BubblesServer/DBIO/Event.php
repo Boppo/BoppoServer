@@ -74,6 +74,93 @@ function fetchEventData($eid)
 
 
 
+/* FUNCTION: fetchEventData
+ * DESCRIPTION: Fetches the data of an entire event for the specified eid
+ *              (Event Identifier).
+ * --------------------------------------------------------------------------------
+ * ================================================================================
+ * -------------------------------------------------------------------------------- */
+function dbGetEventDataByRadius($longitude, $latitude, $radius)
+{
+	// IMPORT REQUIRED METHODS
+	require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/Functions/Miscellaneous.php';
+
+	// IMPORT THE DATABASE CONNECTION
+	require $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBConnect/dbConnect.php';
+
+	// EXECUTE THE QUERY
+	$query = "SELECT DISTINCT T_EVENT.eid, uid, username, first_name, last_name, event_name,
+			       event_invite_type_code, event_privacy_code, event_image_upload_allowed_indicator,
+			       event_start_datetime, event_end_datetime, event_gps_latitude, event_gps_longitude,
+			       event_like_count, event_dislike_count, event_view_count, 
+			  (((acos(sin((? * pi() / 180)) * sin((event_gps_latitude * pi() / 180)) 
+			  + cos((? * pi() / 180)) 
+			  * cos((event_gps_latitude * pi() / 180)) 
+			  	* cos(((? - event_gps_longitude) * pi() / 180)))) * 180 / pi()) * 60 * 1.1515) as distance
+			FROM   T_EVENT
+	       		   LEFT JOIN T_USER ON T_EVENT.event_host_uid = T_USER.uid
+			HAVING distance <= ? 
+			ORDER BY distance DESC";
+	$statement = $conn->prepare($query);
+	$statement->bind_param("dddd", $latitude, $latitude, $longitude, $radius);
+	$statement->execute();
+	$error = $statement->error;
+	// CHECK FOR AN ERROR, RETURN IT IF ONE EXISTS
+	if ($error != "") { echo "DB ERROR: " . $error; return; }
+
+	// DEFAULT AND ASSIGN THE EVENT VARIABLES
+	/*
+	 $event_start_datetime = "";
+	 $event_end_datetime   = "";
+	 $event_gps_latitude   = -1.0;
+	 $event_gps_longitude  = -1.0;
+	 */
+	$statement->bind_result($eid, $event_host_uid, $event_host_username,
+			$event_host_first_name, $event_host_last_name, $event_name,
+			$event_invite_type_label, $event_privacy_label,
+			$event_image_upload_allowed_indicator, $event_start_datetime,
+			$event_end_datetime, $event_gps_latitude, $event_gps_longitude,
+			$event_like_count, $event_dislike_count, $event_view_count, $distance);
+
+	$eventList = array();
+
+	while($statement->fetch())
+	{
+		$event = array
+		(
+			"eid" => $eid,
+			"eventHostUid" => $event_host_uid,
+			"eventHostUsername" => $event_host_username, 
+			"eventHostFirstName" => $event_host_first_name, 
+			"eventHostLastName" => $event_host_last_name, 
+			"eventName" => $event_name,
+			"eventInviteTypeLabel" => $event_invite_type_label,
+			"eventPrivacyLabel" => $event_privacy_label,
+			"eventImageUploadAllowedIndicator" => charToStrBool($event_image_upload_allowed_indicator),
+			"eventStartDatetime" => $event_start_datetime,
+			"eventEndDatetime" => $event_end_datetime,
+			"eventGpsLatitude" => $event_gps_latitude,
+			"eventGpsLongitude" => $event_gps_longitude,
+			"eventLikeCount" => $event_like_count,
+			"eventDislikeCount" => $event_dislike_count,
+			"eventViewCount" => $event_view_count
+		);
+		
+		$eventData = array
+		(
+			"event" => $event, 
+			"distanceFromLocation" => $distance
+		);
+		array_push($eventList, $eventData);
+	}
+
+	$statement->close();
+
+	return $eventList;
+}
+
+
+
 /* FUNCTION: fetchEventDataEncoded
  * DESCRIPTION: Fetches the data of an entire event for the specified eid
  *              (Event Identifier) with all of the labels encoded (i.e. those that

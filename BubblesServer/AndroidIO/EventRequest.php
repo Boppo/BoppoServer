@@ -8,6 +8,8 @@ if ($function == "getEid")
 	getEid();
 if ($function == "getEventData")
 	getEventData();
+if ($function == "getEventDataByRadius")
+	getEventDataByRadius();
 if ($function == "getEventDataByMember")
 	getEventDataByMember();
 if ($function == "getEventDataByName")
@@ -209,6 +211,40 @@ function getEventData()
 	
 	// RETURN THE EVENT ID
     echo json_encode($event);
+}
+
+/* --------------------------------------------------------------------------------
+ * ================================================================================
+ * -------------------------------------------------------------------------------- */
+
+
+
+/* FUNCTION: getEventDataByRadius
+ * DESCRIPTION: Gets the data of an entire event whose coordinates are within the 
+ *              specified radius of the specified coordinates. 
+ * --------------------------------------------------------------------------------
+ * ================================================================================
+ * -------------------------------------------------------------------------------- */
+function getEventDataByRadius()
+{
+	/* THE FOLLOWING 3 LINES OF CODE ENABLE ERROR REPORTING. */
+	error_reporting(E_ALL);
+	ini_set('display_errors', TRUE);
+	ini_set('display_startup_errors', TRUE);
+	/* END. */
+
+	// DECODE JSON STRING
+	$json_decoded = json_decode(file_get_contents("php://input"), true);
+	// ASSIGN THE JSON VALUES TO VARIABLES
+	$longitude = $json_decoded["longitude"];
+	$latitude  = $json_decoded["latitude"];
+	$radius    = $json_decoded["radius"];
+
+	require $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBIO/Event.php';
+	$event = dbGetEventDataByRadius($longitude, $latitude, $radius);
+
+	// RETURN THE EVENT ID
+	echo json_encode($event);
 }
 
 /* --------------------------------------------------------------------------------
