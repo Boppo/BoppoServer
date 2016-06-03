@@ -8,28 +8,42 @@ if ($function == "getEid")
 	getEid();
 if ($function == "getEventData")
 	getEventData();
-if ($function == "getEventDataByRadius")
-	getEventDataByRadius();
+if ($function == "getLiveEventDataByRadius")
+	getLiveEventDataByRadius();
 if ($function == "getEventDataByMember")
 	getEventDataByMember();
+if ($function == "getLiveEventDataByMember")
+	getLiveEventDataByMember();
 if ($function == "getEventDataByName")
 	getEventDataByName();
-if ($function == "incrementEventViewCount")
-	incrementEventViewCount();
+if ($function == "getLiveEventDataByName")
+	getLiveEventDataByName();
 if ($function == "getEventDataByTopNViews")
 	getEventDataByTopNViews();
+if ($function == "getLiveEventDataByTopNViews")
+	getLiveEventDataByTopNViews();
 if ($function == "getEventDataByTopNLikes")
 	getEventDataByTopNLikes();
+if ($function == "getLiveEventDataByTopNLikes")
+	getLiveEventDataByTopNLikes();
 if ($function == "getEventDataByTopNDislikes")
 	getEventDataByTopNDislikes();
+if ($function == "getLiveEventDataByTopNDislikes")
+	getLiveEventDataByTopNDislikes();
+if ($function == "getEventDataByTopNRatings")
+	getEventDataByTopNRatings();
+if ($function == "getLiveEventDataByTopNRatings")
+	getLiveEventDataByTopNRatings();
 if ($function == "deleteEvent")
 	deleteEvent();
 if ($function == "updateEvent")
 	updateEvent();
+if ($function == "incrementEventViewCount")
+	incrementEventViewCount();
 
 	
 	
-/* FUNCTION: createEvent
+/* FUNCTION:    createEvent
  * DESCRIPTION: Adds an event into the corresponding database table.
  * --------------------------------------------------------------------------------
  * ================================================================================
@@ -139,7 +153,7 @@ function createEvent()
 
 
 
-/* FUNCTION: getEid
+/* FUNCTION:    getEid
  * DESCRIPTION: Gets an Event Identifier from the corresponding database table.
  * --------------------------------------------------------------------------------
  * ================================================================================
@@ -187,7 +201,7 @@ function getEid()
 
 
 
-/* FUNCTION: getEventData
+/* FUNCTION:    getEventData
  * DESCRIPTION: Gets the data of an entire event for the specified eid
  *              (Event Identifier).
  * --------------------------------------------------------------------------------
@@ -219,13 +233,15 @@ function getEventData()
 
 
 
-/* FUNCTION: getEventDataByRadius
- * DESCRIPTION: Gets the data of an entire event whose coordinates are within the 
- *              specified radius of the specified coordinates. 
+/* FUNCTION:    getLiveEventDataByRadius
+ * DESCRIPTION: Gets the data of an entire live event for all events whose 
+ *              coordinates are within the specified radius of the specified 
+ *              coordinates. An event whose start-date-to-end-date time period is 
+ *              no more than the configured amount of time is considered live.
  * --------------------------------------------------------------------------------
  * ================================================================================
  * -------------------------------------------------------------------------------- */
-function getEventDataByRadius()
+function getLiveEventDataByRadius()
 {
 	/* THE FOLLOWING 3 LINES OF CODE ENABLE ERROR REPORTING. */
 	error_reporting(E_ALL);
@@ -241,7 +257,7 @@ function getEventDataByRadius()
 	$radius    = $json_decoded["radius"];
 
 	require $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBIO/Event.php';
-	$event = dbGetEventDataByRadius($longitude, $latitude, $radius);
+	$event = dbGetLiveEventDataByRadius($longitude, $latitude, $radius);
 
 	// RETURN THE EVENT ID
 	echo json_encode($event);
@@ -253,7 +269,7 @@ function getEventDataByRadius()
 
 
 
-/* FUNCTION: getEventDataByMember
+/* FUNCTION:    getEventDataByMember
  * DESCRIPTION: Gets the data of an entire event for all of the events of which 
  *  			the specified uid (User Identifier) is a member.
  * --------------------------------------------------------------------------------
@@ -285,7 +301,41 @@ function getEventDataByMember()
 
 
 
-/* FUNCTION: getEventDataByName
+/* FUNCTION:    getLiveEventDataByMember
+ * DESCRIPTION: Gets the data of an entire live event for all of the events of 
+ *              which the specified uid (User Identifier) is a member. An event 
+ *              whose start-date-to-end-date time period is no more than the 
+ *              configured amount of time is considered live.
+ * --------------------------------------------------------------------------------
+ * ================================================================================
+ * -------------------------------------------------------------------------------- */
+function getLiveEventDataByMember()
+{
+	/* THE FOLLOWING 3 LINES OF CODE ENABLE ERROR REPORTING. */
+	error_reporting(E_ALL);
+	ini_set('display_errors', TRUE);
+	ini_set('display_startup_errors', TRUE);
+	/* END. */
+
+	// DECODE JSON STRING
+	$json_decoded = json_decode(file_get_contents("php://input"), true);
+	// ASSIGN THE JSON VALUES TO VARIABLES
+	$uid = $json_decoded["uid"];
+
+	require $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBIO/Event.php';
+	$eventList = dbGetLiveEventDataByMember($uid);
+
+	// RETURN THE EVENT ID
+	echo json_encode($eventList);
+}
+
+/* --------------------------------------------------------------------------------
+ * ================================================================================
+ * -------------------------------------------------------------------------------- */
+
+
+
+/* FUNCTION:    getEventDataByName
  * DESCRIPTION: Gets the data of an entire event for all of the events whose names
  *  			match the specified event name.
  * --------------------------------------------------------------------------------
@@ -317,7 +367,41 @@ function getEventDataByName()
 
 
 
-/* FUNCTION: getEventDataByTopNViews
+/* FUNCTION:    getLiveEventDataByName
+ * DESCRIPTION: Gets the data of an entire live event for all of the events whose 
+ *              names match the specified event name. An event whose 
+ *              start-date-to-end-date time period is no more than the configured 
+ *              amount of time is considered live.
+ * --------------------------------------------------------------------------------
+ * ================================================================================
+ * -------------------------------------------------------------------------------- */
+function getLiveEventDataByName()
+{
+	/* THE FOLLOWING 3 LINES OF CODE ENABLE ERROR REPORTING. */
+	error_reporting(E_ALL);
+	ini_set('display_errors', TRUE);
+	ini_set('display_startup_errors', TRUE);
+	/* END. */
+
+	// DECODE JSON STRING
+	$json_decoded = json_decode(file_get_contents("php://input"), true);
+	// ASSIGN THE JSON VALUES TO VARIABLES
+	$event_name = $json_decoded["eventName"];
+
+	require $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBIO/Event.php';
+	$eventList = dbGetLiveEventDataByName($event_name);
+
+	// RETURN THE EVENT ID
+	echo json_encode($eventList);
+}
+
+/* --------------------------------------------------------------------------------
+ * ================================================================================
+ * -------------------------------------------------------------------------------- */
+
+
+
+/* FUNCTION:    getEventDataByTopNViews
  * DESCRIPTION: Gets the data of an entire event for all of the events that have 
  *              the top N count of views, where N is the input value.
  * --------------------------------------------------------------------------------
@@ -349,7 +433,41 @@ function getEventDataByTopNViews()
 
 
 
-/* FUNCTION: getEventDataByTopNLikes
+/* FUNCTION:    getLiveEventDataByTopNViews
+ * DESCRIPTION: Gets the data of an entire live event for all of the events that 
+ *              have the top N count of views, where N is the input value. An event 
+ *              whose start-date-to-end-date time period is no more than the 
+ *              configured amount of time is considered live.
+ * --------------------------------------------------------------------------------
+ * ================================================================================
+ * -------------------------------------------------------------------------------- */
+function getLiveEventDataByTopNViews()
+{
+	/* THE FOLLOWING 3 LINES OF CODE ENABLE ERROR REPORTING. */
+	error_reporting(E_ALL);
+	ini_set('display_errors', TRUE);
+	ini_set('display_startup_errors', TRUE);
+	/* END. */
+
+	// DECODE JSON STRING
+	$json_decoded = json_decode(file_get_contents("php://input"), true);
+	// ASSIGN THE JSON VALUES TO VARIABLES
+	$top_n_views = $json_decoded["topNViews"];
+
+	require $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBIO/Event.php';
+	$eventList = dbGetLiveEventDataByTopNViews($top_n_views);
+
+	// RETURN THE EVENT ID
+	echo json_encode($eventList);
+}
+
+/* --------------------------------------------------------------------------------
+ * ================================================================================
+ * -------------------------------------------------------------------------------- */
+
+
+
+/* FUNCTION:    getEventDataByTopNLikes
  * DESCRIPTION: Gets the data of an entire event for all of the events that have
  *              the top N count of likes, where N is the input value.
  * --------------------------------------------------------------------------------
@@ -381,7 +499,41 @@ function getEventDataByTopNLikes()
 
 
 
-/* FUNCTION: getEventDataByTopNDislikes
+/* FUNCTION:    getLiveEventDataByTopNLikes
+ * DESCRIPTION: Gets the data of an entire live event for all of the events that 
+ *              have the top N count of likes, where N is the input value. An event 
+ *              whose start-date-to-end-date time period is no more than the 
+ *              configured amount of time is considered live.
+ * --------------------------------------------------------------------------------
+ * ================================================================================
+ * -------------------------------------------------------------------------------- */
+function getLiveEventDataByTopNLikes()
+{
+	/* THE FOLLOWING 3 LINES OF CODE ENABLE ERROR REPORTING. */
+	error_reporting(E_ALL);
+	ini_set('display_errors', TRUE);
+	ini_set('display_startup_errors', TRUE);
+	/* END. */
+
+	// DECODE JSON STRING
+	$json_decoded = json_decode(file_get_contents("php://input"), true);
+	// ASSIGN THE JSON VALUES TO VARIABLES
+	$top_n = $json_decoded["topN"];
+
+	require $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBIO/Event.php';
+	$eventList = dbGetLiveEventDataByTopNLikes($top_n);
+
+	// RETURN THE EVENT ID
+	echo json_encode($eventList);
+}
+
+/* --------------------------------------------------------------------------------
+ * ================================================================================
+ * -------------------------------------------------------------------------------- */
+
+
+
+/* FUNCTION:    getEventDataByTopNDislikes
  * DESCRIPTION: Gets the data of an entire event for all of the events that have
  *              the top N count of dislikes, where N is the input value.
  * --------------------------------------------------------------------------------
@@ -413,7 +565,111 @@ function getEventDataByTopNDislikes()
 
 
 
-/* FUNCTION: deleteEvent
+/* FUNCTION:    getLiveEventDataByTopNDislikes
+ * DESCRIPTION: Gets the data of an entire live event for all of the events that 
+ *              have the top N count of dislikes, where N is the input value. An 
+ *              event whose start-date-to-end-date time period is no more than the 
+ *              configured amount of time is considered live.
+ * --------------------------------------------------------------------------------
+ * ================================================================================
+ * -------------------------------------------------------------------------------- */
+function getLiveEventDataByTopNDislikes()
+{
+	/* THE FOLLOWING 3 LINES OF CODE ENABLE ERROR REPORTING. */
+	error_reporting(E_ALL);
+	ini_set('display_errors', TRUE);
+	ini_set('display_startup_errors', TRUE);
+	/* END. */
+
+	// DECODE JSON STRING
+	$json_decoded = json_decode(file_get_contents("php://input"), true);
+	// ASSIGN THE JSON VALUES TO VARIABLES
+	$top_n = $json_decoded["topN"];
+
+	require $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBIO/Event.php';
+	$eventList = dbGetLiveEventDataByTopNDislikes($top_n);
+
+	// RETURN THE EVENT ID
+	echo json_encode($eventList);
+}
+
+/* --------------------------------------------------------------------------------
+ * ================================================================================
+ * -------------------------------------------------------------------------------- */
+
+
+
+/* FUNCTION:    getEventDataByTopNRated
+ * DESCRIPTION: Gets the data of an entire event for all of the events that
+ *              have the top N ratings, where N is the input value and a rating is
+ *              the ratio of likes to the sum of likes and dislikes (ratings). An
+ *              event whose start-date-to-end-date time period is no more than the
+ *              configured amount of time is considered live.
+ * --------------------------------------------------------------------------------
+ * ================================================================================
+ * -------------------------------------------------------------------------------- */
+function getEventDataByTopNRatings()
+{
+	/* THE FOLLOWING 3 LINES OF CODE ENABLE ERROR REPORTING. */
+	error_reporting(E_ALL);
+	ini_set('display_errors', TRUE);
+	ini_set('display_startup_errors', TRUE);
+	/* END. */
+
+	// DECODE JSON STRING
+	$json_decoded = json_decode(file_get_contents("php://input"), true);
+	// ASSIGN THE JSON VALUES TO VARIABLES
+	$top_n = $json_decoded["topN"];
+
+	require $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBIO/Event.php';
+	$eventList = dbGetEventDataByTopNRatings($top_n);
+
+	// RETURN THE EVENT ID
+	echo json_encode($eventList);
+}
+
+/* --------------------------------------------------------------------------------
+ * ================================================================================
+ * -------------------------------------------------------------------------------- */
+
+
+
+/* FUNCTION:    getLiveEventDataByTopNRated
+ * DESCRIPTION: Gets the data of an entire live event for all of the events that
+ *              have the top N ratings, where N is the input value and a rating is
+ *              the ratio of likes to the sum of likes and dislikes (ratings). An
+ *              event whose start-date-to-end-date time period is no more than the
+ *              configured amount of time is considered live.
+ * --------------------------------------------------------------------------------
+ * ================================================================================
+ * -------------------------------------------------------------------------------- */
+function getLiveEventDataByTopNRatings()
+{
+	/* THE FOLLOWING 3 LINES OF CODE ENABLE ERROR REPORTING. */
+	error_reporting(E_ALL);
+	ini_set('display_errors', TRUE);
+	ini_set('display_startup_errors', TRUE);
+	/* END. */
+
+	// DECODE JSON STRING
+	$json_decoded = json_decode(file_get_contents("php://input"), true);
+	// ASSIGN THE JSON VALUES TO VARIABLES
+	$top_n = $json_decoded["topN"];
+
+	require $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBIO/Event.php';
+	$eventList = dbGetLiveEventDataByTopNRatings($top_n);
+
+	// RETURN THE EVENT ID
+	echo json_encode($eventList);
+}
+
+/* --------------------------------------------------------------------------------
+ * ================================================================================
+ * -------------------------------------------------------------------------------- */
+
+
+
+/* FUNCTION:    deleteEvent
  * DESCRIPTION: Deletes an Event with the specified Event Identifier from the 
  *              corresponding database table.
  * --------------------------------------------------------------------------------
@@ -456,7 +712,7 @@ function deleteEvent()
 
 
 
-/* FUNCTION: updateEvent
+/* FUNCTION:    updateEvent
  * DESCRIPTION: Updates an event into the corresponding database table with the
  *  			newly provided values.
  * --------------------------------------------------------------------------------
@@ -552,7 +808,7 @@ function updateEvent()
 
 
 
-/* FUNCTION: incrementEventViewCount
+/* FUNCTION:    incrementEventViewCount
  * DESCRIPTION: Incremenets the view count of the specified event by 1.
  * --------------------------------------------------------------------------------
  * ================================================================================

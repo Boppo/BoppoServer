@@ -85,9 +85,23 @@ print_r(isFriend(1, 2));
 require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/AndroidIO/UserLikeRequest.php';
 setObjectLikeOrDislike();
 */
-
+/*
 require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/AndroidIO/EventRequest.php';
 updateEvent();
-
+*/
+/*
+require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/Functions/Miscellaneous.php';
+$date_recorded = new DateTime("2016-05-19 04:15:53"); ;
+$date_current  = new DateTime(date('Y-m-d H:i:s'));
+$date_time_unit  = "Months";
+$date_difference_value = compareDates($date_recorded, $date_current, $date_time_unit);
+$date_difference_value_max = 1;
+$result = compareDateDifferences($date_difference_value, $date_difference_value_max);
+echo "RESULT: " . $result . "<br>";
+*/
+/*
+require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/AndroidIO/EventRequest.php';
+getLiveEventDataByRadius();
+*/
 echo "<br><br>!END OF SCRIPT!";
 ?>

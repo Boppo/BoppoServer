@@ -5,6 +5,12 @@
 			"DatetimeValue": 30
 		}
 	},
+	"Event": {
+		"EventLiveDatetimeDurationOffset": {
+			"DatetimeUnit": "DAY",
+			"DatetimeValue": 1
+		}
+	},
 	"Image": {
 		"ImageProfileMaxAmount": 4
 	}, 
