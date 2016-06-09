@@ -103,5 +103,7 @@ echo "RESULT: " . $result . "<br>";
 require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/AndroidIO/EventRequest.php';
 getLiveEventDataByRadius();
 */
+require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/AndroidIO/UserImageRequest.php';
+uploadImageToEvents();
 echo "<br><br>!END OF SCRIPT!";
 ?>
