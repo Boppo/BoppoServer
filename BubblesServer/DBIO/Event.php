@@ -1314,43 +1314,6 @@ function dbGetLiveEventDataByTopNRatings($top_n)
 
 
 
-/* FUNCTION:    incrementEventViewCount
- * DESCRIPTION: Incremenets the view count of the specified event by 1.
- * --------------------------------------------------------------------------------
- * ================================================================================
- * -------------------------------------------------------------------------------- */
-function dbIncrementEventViewCount($eid)
-{
-	// IMPORT THE DATABASE CONNECTION
-	require $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBConnect/dbConnect.php';
-
-	// EXECUTE THE QUERY
-	$query = "UPDATE T_EVENT 
-			  SET event_view_count = event_view_count + 1
-			  WHERE eid = ?;";
-	$statement = $conn->prepare($query);
-	$statement->bind_param("i", $eid);
-	$statement->execute();
-	
-	if ($statement->affected_rows === 1)
-	{
-		return "Event view count successfully incremented by 1.";
-	}
-	else if ($statement->affected_rows === 0)
-	{
-		return "Event view count failed to increment because the event does not exist.";
-	}
-	else
-	{
-		return "QUERY FLAWED: Please contact the database administrator with this method's name 
-			  because something went wrong!";
-	}
-	
-	$statement->close();
-}
-
-
-
 /* FUNCTION:    dbUpdateEvent
  * DESCRIPTION: Updates an event into the corresponding database table with the
  *  			newly provided values.

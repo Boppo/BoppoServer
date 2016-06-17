@@ -38,8 +38,7 @@ if ($function == "deleteEvent")
 	deleteEvent();
 if ($function == "updateEvent")
 	updateEvent();
-if ($function == "incrementEventViewCount")
-	incrementEventViewCount();
+
 
 	
 	
@@ -806,36 +805,4 @@ function updateEvent()
  * ================================================================================
  * -------------------------------------------------------------------------------- */
 
-
-
-/* FUNCTION:    incrementEventViewCount
- * DESCRIPTION: Incremenets the view count of the specified event by 1.
- * --------------------------------------------------------------------------------
- * ================================================================================
- * -------------------------------------------------------------------------------- */
-function incrementEventViewCount()
-{
-	/* THE FOLLOWING 3 LINES OF CODE ENABLE ERROR REPORTING. */
-	error_reporting(E_ALL);
-	ini_set('display_errors', TRUE);
-	ini_set('display_startup_errors', TRUE);
-	/* END. */
-
-	// IMPORT THE DATABASE CONNECTION
-	require $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBConnect/dbConnect.php';
-	// DECODE JSON STRING
-	$json_decoded = json_decode(file_get_contents("php://input"), true);
-	// ASSIGN THE JSON VALUES TO VARIABLES
-	$eid = $json_decoded["eid"];
-
-	// EXECUTE THE DBIO METHOD TO INCREMENT THE EVENT VIEW COUNT AND GET THE RESPONSE
-	require $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBIO/Event.php';
-	$response = dbIncrementEventViewCount($eid);
-
-	// RETURN THE RESPONSE
-	echo $response;
-}
-
-/* --------------------------------------------------------------------------------
- * ================================================================================
- * -------------------------------------------------------------------------------- */
+?>
