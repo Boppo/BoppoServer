@@ -16,6 +16,8 @@ if ($function == "rejectFriend")
 	rejectFriend();
 if ($function == "cancelFriend")
 	cancelFriend();
+if ($function == "unFriend")
+	unFriend();
 
 	
 	
@@ -337,11 +339,11 @@ function rejectFriend()
 
 
 
-/* FUNCTION:    rejectFriend
+/* FUNCTION:    cancelFriend
  * NOTE:        User 1 is THIS user, User 2 is the OTHER user.
- * DESCRIPTION: This method attempts to let User 1 reject a friend request received
- *              from User 2. The resulting string will either state that the reject
- *              was successful or a different message otherwise.
+ * DESCRIPTION: This method attempts to let User 1 cancel a friend request that 
+ *              (s)he sent to User 2. The resulting string will either state that 
+ *              the cancel was successful or a different message otherwise.
  * --------------------------------------------------------------------------------
  * ================================================================================
  * -------------------------------------------------------------------------------- */
@@ -380,6 +382,66 @@ function cancelFriend()
 	else if ($statement->affected_rows === 0)
 	{
 		echo "Friendship request could not be rejected because it does not exist.";
+		return;
+	}
+	else
+	{
+		echo "QUERY FLAWED: Please contact the database administrator because multiple friendships were rejected!";
+		return;
+	}
+
+	$statement->close();
+}
+
+/* --------------------------------------------------------------------------------
+ * ================================================================================
+ * -------------------------------------------------------------------------------- */
+
+
+
+/* FUNCTION:    unFriend
+ * NOTE:        User 1 is THIS user, User 2 is the OTHER user.
+ * DESCRIPTION: This method attempts to let User 1 unfriend a friend whom User 2 
+ *              is. The resulting string will either state that
+ *              the cancel was successful or a different message otherwise.
+ * --------------------------------------------------------------------------------
+ * ================================================================================
+ * -------------------------------------------------------------------------------- */
+function unFriend()
+{
+	/* THE FOLLOWING 3 LINES OF CODE ENABLE ERROR REPORTING. */
+	error_reporting(E_ALL);
+	ini_set('display_errors', TRUE);
+	ini_set('display_startup_errors', TRUE);
+	/* END. */
+
+	// IMPORT THE DATABASE CONNECTION
+	require $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBConnect/dbConnect.php';
+	// DECODE JSON STRING
+	$json_decoded = json_decode(file_get_contents("php://input"), true);
+	// ASSIGN THE JSON VALUES TO VARIABLES
+	$uid_1 = $json_decoded["uid1"];
+	$uid_2 = $json_decoded["uid2"];
+
+	// PREPARE THE QUERY
+	$query = "DELETE
+			  FROM R_USER_RELATIONSHIP
+			  WHERE ((uid_1 = ? AND uid_2 = ?) OR (uid_2 = ? AND uid_1 = ?)) AND user_relationship_type_code =
+			   (SELECT user_relationship_type_code
+			    FROM T_USER_RELATIONSHIP_TYPE
+			    WHERE user_relationship_type_label = 'Friend')";
+	$statement = $conn->prepare($query);
+	$statement->bind_param("iiii", $uid_1, $uid_2, $uid_1, $uid_2);
+	$statement->execute();
+
+	if ($statement->affected_rows === 1)
+	{
+		echo "Friend has been successfully unfriended.";
+		return;
+	}
+	else if ($statement->affected_rows === 0)
+	{
+		echo "Unfriend request failed because such a friendship does not exist.";
 		return;
 	}
 	else

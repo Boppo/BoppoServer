@@ -6,6 +6,8 @@ if ($function == "addUserToEvent")
 	addUserToEvent();
 if ($function == "getEventUserData")
 	getEventUserData();
+if ($function == "getEventUsersData")
+	getEventUsersData();
 
 /* FUNCTION: addUserToEvent
  * DESCRIPTION: Adds a user to an event in the corresponding database table.
@@ -257,6 +259,38 @@ function getEventUserData()
 	echo json_encode($eventUser);
 }
 
+/* --------------------------------------------------------------------------------
+ * ================================================================================
+ * -------------------------------------------------------------------------------- */
+
+
+
+/* FUNCTION: getEventUsersData
+ * DESCRIPTION: Gets the event user and user data for all of the users that are
+ *              a part of the specified event.
+ * --------------------------------------------------------------------------------
+ * ================================================================================
+ * -------------------------------------------------------------------------------- */
+function getEventUsersData()
+{
+	// THE FOLLOWING 3 LINES OF CODE ENABLE ERROR REPORTING. //
+	error_reporting(E_ALL);
+	ini_set('display_errors', TRUE);
+	ini_set('display_startup_errors', TRUE);
+	// END. //
+
+	// DECODE JSON STRING
+	$json_decoded = json_decode(file_get_contents("php://input"), true);
+	// ASSIGN THE JSON VALUES TO VARIABLES
+	$eid = $json_decoded["eid"];
+	$event_user_invite_status_type_label = $json_decoded["eventUserInviteStatusTypeLabel"];
+
+	require $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBIO/EventUser.php';
+	$users = dbGetEventUsersData($eid, $event_user_invite_status_type_label);
+
+	// RETURN THE USERS AND THEIR USER AND EVENT USER DATA
+	echo json_encode($users);
+}
 /* --------------------------------------------------------------------------------
  * ================================================================================
  * -------------------------------------------------------------------------------- */
