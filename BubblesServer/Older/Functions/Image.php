@@ -6,8 +6,6 @@ if ($function == 'deleteImage')
     deleteImage();
 elseif ($function == 'uploadImage')
     uploadImage();
-elseif ($function == 'getImagesByUid')
-    getImagesByUid();
 elseif ($function == 'setUserImagePurpose')
     setUserImagePurpose();
     

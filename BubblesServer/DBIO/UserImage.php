@@ -6,16 +6,16 @@
  * --------------------------------------------------------------------------------
  * ================================================================================
  * -------------------------------------------------------------------------------- */
-function addImageToEvent($eid, $uid, $uiid)
+function addImageToEvent($eid, $uiid)
 {
 	// IMPORT THE DATABASE CONNECTION
 	require $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBConnect/dbConnect.php';
 
 	// ACQUIRE THE USER IMAGE SEQUENCE
-	$query = "INSERT INTO R_EVENT_USER_IMAGE (eid, uid, uiid)
-			  VALUES (?, ?, ?)";
+	$query = "INSERT INTO R_EVENT_USER_IMAGE (eid, uiid)
+			  VALUES (?, ?)";
 	$statement = $conn->prepare($query);
-	$statement->bind_param("iii", $eid, $uid, $uiid);
+	$statement->bind_param("ii", $eid, $uiid);
 	$statement->execute();
 	$statement->error;
 
@@ -142,7 +142,7 @@ function fetchImagesByEid($eid)
  * --------------------------------------------------------------------------------
  * ================================================================================
  * -------------------------------------------------------------------------------- */
-function fetchImagesByUidAndPurpose($uid, $imagePurposeLabel)
+function fetchImagesByUidAndPurpose($uid, $image_purpose_label, $event_indicator)
 {
 	// IMPORT REQUIRED METHODS
 	require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/Functions/Miscellaneous.php';
@@ -151,15 +151,35 @@ function fetchImagesByUidAndPurpose($uid, $imagePurposeLabel)
 	require $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBConnect/dbConnect.php';
 
 	// EXECUTE THE QUERY
-	$query = "SELECT uiid, uid, user_image_sequence, user_image_name, privacy_label, image_purpose_label,
-				     user_image_gps_latitude, user_image_gps_longitude
-			  FROM   T_USER_IMAGE
-				  	 LEFT JOIN T_PRIVACY ON T_USER_IMAGE.user_image_privacy_code = T_PRIVACY.privacy_code
-				  	 LEFT JOIN T_IMAGE_PURPOSE ON T_USER_IMAGE.user_image_purpose_code = T_IMAGE_PURPOSE.image_purpose_code
-			  WHERE
-				  	 uid = ? AND T_IMAGE_PURPOSE.image_purpose_label = ?";
+	if ($event_indicator === true)
+		$query = "SELECT DISTINCT T_USER_IMAGE.uiid, T_USER_IMAGE.uid, user_image_sequence, 
+						 user_image_name, privacy_label, image_purpose_label,
+				     	 user_image_gps_latitude, user_image_gps_longitude
+				  FROM   T_USER_IMAGE
+					  	 LEFT JOIN T_PRIVACY ON T_USER_IMAGE.user_image_privacy_code = T_PRIVACY.privacy_code
+					  	 LEFT JOIN T_IMAGE_PURPOSE ON T_USER_IMAGE.user_image_purpose_code = T_IMAGE_PURPOSE.image_purpose_code
+				  		 INNER JOIN R_EVENT_USER_IMAGE ON T_USER_IMAGE.uiid = R_EVENT_USER_IMAGE.uiid
+				  WHERE  T_USER_IMAGE.uid = ? AND T_IMAGE_PURPOSE.image_purpose_label = ?";
+	else if ($event_indicator === false)
+		$query = "SELECT DISTINCT T_USER_IMAGE.uiid, T_USER_IMAGE.uid, user_image_sequence, 
+						 user_image_name, privacy_label, image_purpose_label,
+				     	 user_image_gps_latitude, user_image_gps_longitude
+				  FROM   T_USER_IMAGE
+					  	 LEFT JOIN T_PRIVACY ON T_USER_IMAGE.user_image_privacy_code = T_PRIVACY.privacy_code
+					  	 LEFT JOIN T_IMAGE_PURPOSE ON T_USER_IMAGE.user_image_purpose_code = T_IMAGE_PURPOSE.image_purpose_code
+				  		 LEFT JOIN R_EVENT_USER_IMAGE ON T_USER_IMAGE.uiid = R_EVENT_USER_IMAGE.uiid
+				  WHERE  R_EVENT_USER_IMAGE.uiid IS NULL AND
+				         T_USER_IMAGE.uid = ? AND T_IMAGE_PURPOSE.image_purpose_label = ?";
+	else if (!$event_indicator)
+		$query = "SELECT DISTINCT uiid, uid, user_image_sequence, user_image_name, privacy_label, 
+						 image_purpose_label, user_image_gps_latitude, user_image_gps_longitude
+				  FROM   T_USER_IMAGE
+					  	 LEFT JOIN T_PRIVACY ON T_USER_IMAGE.user_image_privacy_code = T_PRIVACY.privacy_code
+					  	 LEFT JOIN T_IMAGE_PURPOSE ON T_USER_IMAGE.user_image_purpose_code = T_IMAGE_PURPOSE.image_purpose_code
+				  WHERE  uid = ? AND T_IMAGE_PURPOSE.image_purpose_label = ?";
+	
 	$statement = $conn->prepare($query);
-	$statement->bind_param("is", $uid, $imagePurposeLabel);
+	$statement->bind_param("is", $uid, $image_purpose_label);
 	$statement->execute();
 	$error = $statement->error;
 	// CHECK FOR AN ERROR, RETURN IT IF ONE EXISTS
@@ -207,7 +227,7 @@ function fetchImagesByUidAndPurpose($uid, $imagePurposeLabel)
  * --------------------------------------------------------------------------------
  * ================================================================================
  * -------------------------------------------------------------------------------- */
-function fetchImagesByPrivacyAndPurpose($imagePrivacyLabel, $imagePurposeLabel)
+function fetchImagesByPrivacyAndPurpose($imagePrivacyLabel, $imagePurposeLabel, $event_indicator)
 {
 	// IMPORT REQUIRED METHODS
 	require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/Functions/Miscellaneous.php';
@@ -216,13 +236,32 @@ function fetchImagesByPrivacyAndPurpose($imagePrivacyLabel, $imagePurposeLabel)
 	require $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBConnect/dbConnect.php';
 
 	// EXECUTE THE QUERY
-	$query = "SELECT uiid, uid, user_image_sequence, user_image_name, privacy_label, image_purpose_label, 
-				     user_image_gps_latitude, user_image_gps_longitude
-			  FROM   T_USER_IMAGE
-				  	 LEFT JOIN T_PRIVACY ON T_USER_IMAGE.user_image_privacy_code = T_PRIVACY.privacy_code 
-				  	 LEFT JOIN T_IMAGE_PURPOSE ON T_USER_IMAGE.user_image_purpose_code = T_IMAGE_PURPOSE.image_purpose_code
-			  WHERE 
-				  	 T_PRIVACY.privacy_label = ? AND T_IMAGE_PURPOSE.image_purpose_label = ?";
+	if ($event_indicator === true)
+		$query = "SELECT T_USER_IMAGE.uiid, uid, user_image_sequence, user_image_name, privacy_label, image_purpose_label,
+				     	 user_image_gps_latitude, user_image_gps_longitude
+				  FROM   T_USER_IMAGE
+					  	 LEFT JOIN T_PRIVACY ON T_USER_IMAGE.user_image_privacy_code = T_PRIVACY.privacy_code
+					  	 LEFT JOIN T_IMAGE_PURPOSE ON T_USER_IMAGE.user_image_purpose_code = T_IMAGE_PURPOSE.image_purpose_code
+				  		 INNER JOIN R_EVENT_USER_IMAGE ON T_USER_IMAGE.uiid = R_EVENT_USER_IMAGE.uiid
+				  WHERE
+					  	 T_PRIVACY.privacy_label = ? AND T_IMAGE_PURPOSE.image_purpose_label = ?";
+	else if ($event_indicator === false)
+		$query = "SELECT T_USER_IMAGE.uiid, uid, user_image_sequence, user_image_name, privacy_label, image_purpose_label,
+				     	 user_image_gps_latitude, user_image_gps_longitude
+				  FROM   T_USER_IMAGE
+					  	 LEFT JOIN T_PRIVACY ON T_USER_IMAGE.user_image_privacy_code = T_PRIVACY.privacy_code
+					  	 LEFT JOIN T_IMAGE_PURPOSE ON T_USER_IMAGE.user_image_purpose_code = T_IMAGE_PURPOSE.image_purpose_code
+				  		 LEFT JOIN R_EVENT_USER_IMAGE ON T_USER_IMAGE.uiid = R_EVENT_USER_IMAGE.uiid
+				  WHERE  R_EVENT_USER_IMAGE.uiid IS NULL AND
+					  	 T_PRIVACY.privacy_label = ? AND T_IMAGE_PURPOSE.image_purpose_label = ?";
+	else if (!$event_indicator)
+		$query = "SELECT uiid, uid, user_image_sequence, user_image_name, privacy_label, image_purpose_label, 
+					     user_image_gps_latitude, user_image_gps_longitude
+				  FROM   T_USER_IMAGE
+					  	 LEFT JOIN T_PRIVACY ON T_USER_IMAGE.user_image_privacy_code = T_PRIVACY.privacy_code 
+					  	 LEFT JOIN T_IMAGE_PURPOSE ON T_USER_IMAGE.user_image_purpose_code = T_IMAGE_PURPOSE.image_purpose_code
+				  WHERE 
+					  	 T_PRIVACY.privacy_label = ? AND T_IMAGE_PURPOSE.image_purpose_label = ?";
 	$statement = $conn->prepare($query);
 	$statement->bind_param("ss", $imagePrivacyLabel, $imagePurposeLabel);
 	$statement->execute();

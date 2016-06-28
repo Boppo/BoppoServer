@@ -35,7 +35,6 @@ function addImagesToEvent()
 	$json_decoded = json_decode(file_get_contents("php://input"), true);
 	// ASSIGN THE JSON VALUES TO VARIABLES //
 	$eid   = $json_decoded["eid"];
-	$uid   = $json_decoded["uid"];
 	$uiids = $json_decoded["uiids"];
 
 	// FOR EVERY USER IMAGE IDENTIFIER (UIID), ADD IT IMAGE TO THE EVENT //
@@ -44,7 +43,7 @@ function addImagesToEvent()
 	$responses = array();
 	foreach($uiids as $uiid)
 	{
-		$response = addImageToEvent($eid, $uid, $uiid);
+		$response = addImageToEvent($eid, $uiid);
 		array_push($responses, $response);
 	}
 
@@ -104,9 +103,10 @@ function getImagesByUidAndPurpose()
 	// ASSIGN THE JSON VALUES TO VARIABLES
 	$uid                 = $json_decoded["uid"];
 	$image_purpose_label = $json_decoded["imagePurposeLabel"];
+	$event_indicator     = $json_decoded["eventIndicator"];
 	
 	require $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBIO/UserImage.php';
-	$images = fetchImagesByUidAndPurpose($uid, $image_purpose_label);
+	$images = fetchImagesByUidAndPurpose($uid, $image_purpose_label, $event_indicator);
 
 	// RETURN THE EVENT ID
 	echo json_encode($images);
@@ -135,9 +135,11 @@ function getImagesByPrivacyAndPurpose()
 	// ASSIGN THE JSON VALUES TO VARIABLES
 	$image_privacy_label = $json_decoded["imagePrivacyLabel"];
 	$image_purpose_label = $json_decoded["imagePurposeLabel"];
+	$event_indicator     = $json_decoded["eventIndicator"];
 	
 	require $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBIO/UserImage.php';
-	$images = fetchImagesByPrivacyAndPurpose($image_privacy_label, $image_purpose_label);
+	$images = fetchImagesByPrivacyAndPurpose($image_privacy_label, $image_purpose_label, 
+		$event_indicator);
 
 	// RETURN THE EVENT ID
 	echo json_encode($images);

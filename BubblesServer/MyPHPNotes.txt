@@ -1,0 +1,10 @@
+----------------------------------------------------------------------
+Below is how I can test if a Java Boolean is true, false, or null:
+
+	if ($variable === true)
+		echo "This is true!";
+	else if ($variable === false)
+		echo "This is false!";
+	else if (!$variable)
+		echo "This is null!";
+----------------------------------------------------------------------
