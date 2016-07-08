@@ -197,7 +197,7 @@ function getFriendshipStatus()
 
 	// OBTAIN THE CURRENT RELATIONSHIP BETWEEN USER 1 AND USER 2
 	require $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/Older/getFriendStatus.php';
-	$friendship_status = dbGetFriendshipStatus($uid_1, $uid_2);
+	$friendship_status = fetchFriendshipStatus($uid_1, $uid_2);
 
 	// RETURN THE FRIENDSHIP STATUS
 	echo $friendship_status;

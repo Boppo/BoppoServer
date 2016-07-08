@@ -1,6 +1,6 @@
 <?php
 
-/* FUNCTION:    dbsetObjectLikeOrDislike
+/* FUNCTION:    dbSetObjectLikeOrDislike
  * DESCRIPTION: Sets the specified object in the specified table to be liked or 
  *              disliked (as specified) by the specified user.
  *              In other words, this may set an Event with ID ## to be liked or 
