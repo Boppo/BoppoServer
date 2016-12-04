@@ -106,4 +106,6 @@ getLiveEventDataByRadius();
 require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/AndroidIO/UserImageRequest.php';
 uploadImageToEvents();
 echo "<br><br>!END OF SCRIPT!";
+
+// tEST!
 ?>
