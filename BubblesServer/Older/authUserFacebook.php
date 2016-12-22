@@ -11,7 +11,7 @@
 
 	// 4 - PREPARE THE QUERY
 	$query = "SELECT uid, facebook_uid, googlep_uid, username, password, 
-                first_name, last_name, email, privacy_label
+                first_name, last_name, email, phone, privacy_label
               FROM T_USER, T_PRIVACY
 		      WHERE facebook_uid = ? AND user_account_privacy_code = privacy_code";
 	$statement = mysqli_prepare($conn, $query);
@@ -25,8 +25,8 @@
 
 	// 7 - STORE THE QUERY RESULT IN VARIABLES
 	mysqli_stmt_bind_result($statement, 
-	    $uid, $facebook_uid, $googlep_uid, $username, $password, 
-        $first_name, $last_name, $email, $user_account_privacy_label);
+	    $uid, $facebook_uid, $googlep_uid, $username, $password, $first_name, $last_name, 
+	    $email, $phone, $user_account_creation_timestaamp, $user_account_privacy_label);
 	mysqli_stmt_fetch($statement);
 
 	// 8 - STORE RESULTING VARIABLES IN ASSOC ARRAY
@@ -39,6 +39,8 @@
 		"firstName" => $first_name,
 		"lastName" => $last_name,
 		"email" => $email,
+	    "phone" => $phone, 
+	    "userAccountCreationTimestamp" => $user_account_creation_timestamp, 
         "userAccountPrivacy" => $user_account_privacy_label
 	);
 	

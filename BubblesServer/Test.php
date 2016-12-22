@@ -107,5 +107,5 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/AndroidIO/UserImageRequ
 uploadImageToEvents();
 echo "<br><br>!END OF SCRIPT!";
 
-// TEST 5!
+// TEST FINAL!
 ?>

@@ -65,7 +65,7 @@ function fetchUserImageSequence($uid)
 
 
 
-/* FUNCTION: fetchImageByEid
+/* FUNCTION: fetchImageEncoded
  * DESCRIPTION: Gets the image and its data by specified User Image Identifier
  * (uiid).
  * --------------------------------------------------------------------------------
@@ -452,9 +452,9 @@ function dbSetImage($image)
 	if ($image["userImageName"] != null)
 	  $imageCurrent["userImageName"] = $image["userImageName"];
 	if ($image["userImagePurposeCode"] != null)
-	  $imageCurrent["userImagePurposeLabel"] = $image["userImagePurposeCode"];
+	  $imageCurrent["userImagePurposeCode"] = $image["userImagePurposeCode"];
 	if ($image["userImagePrivacyCode"] != null)
-	  $imageCurrent["userImagePrivacyLabel"] = $image["userImagePrivacyCode"];
+	  $imageCurrent["userImagePrivacyCode"] = $image["userImagePrivacyCode"];
 	if ($image["userImageGpsLatitude"] != null)
 	  $imageCurrent["userImageGpsLatitude"] = $image["userImageGpsLatitude"];
 	if ($image["userImageGpsLongitude"] != null)

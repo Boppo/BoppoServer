@@ -33,12 +33,6 @@ function fetchEventData($eid)
 	if ($error != "") { echo "DB ERROR: " . $error; return; }
 	
 	// DEFAULT AND ASSIGN THE EVENT VARIABLES
-	/*
-	$event_start_datetime = "";
-	$event_end_datetime   = "";
-	$event_gps_latitude   = -1.0;
-	$event_gps_longitude  = -1.0;
-	*/
 	$statement->bind_result($eid, $event_host_uid, $event_host_username, 
 		$event_host_first_name, $event_host_last_name, $event_name,
 		$event_invite_type_label, $event_privacy_label,
@@ -209,12 +203,6 @@ function fetchEventDataEncoded($eid)
 	if ($error != "") { echo "DB ERROR: " . $error; return; }
 
 	// DEFAULT AND ASSIGN THE EVENT VARIABLES
-	/*
-	$event_start_datetime = null;
-	$event_end_datetime   = null;
-	$event_gps_latitude   = null;
-	$event_gps_longitude  = null;
-	*/
 	$statement->bind_result($eid, $event_host_uid, $event_host_username, 
 		$event_host_first_name, $event_host_last_name, $event_name,
 		$event_invite_type_code, $event_privacy_code,

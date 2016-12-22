@@ -11,25 +11,25 @@
  * ================================================================================
  * -------------------------------------------------------------------------------- */
 function dbSetObjectComment($uid, $object_type_code, $oid, $user_comment_set_timestamp, 
-	$user_comment, $parent_ucid)
+  $user_comment, $parent_ucid)
 {
-	// IMPORT THE DATABASE CONNECTION
-	require $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBConnect/dbConnect.php';
+  // IMPORT THE DATABASE CONNECTION
+  require $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBConnect/dbConnect.php';
 
-	// EXECUTE THE QUERY
-	$query = "CALL sp_setObjectComment(?, ?, ?, ?, ?, ?)"; 
-	$statement = $conn->prepare($query);
-	$statement->bind_param("iiissi", $uid, $object_type_code, $oid, $user_comment_set_timestamp, 
-		$user_comment, $parent_ucid);
-	$statement->execute();
-		
-	// CHECK FOR AN ERROR, RETURN IT IF ONE EXISTS
-	$error = $statement->error;
-	if ($error != "") { return "DB ERROR: " . $error; }
+  // EXECUTE THE QUERY
+  $query = "CALL sp_setObjectComment(?, ?, ?, ?, ?, ?)"; 
+  $statement = $conn->prepare($query);
+  $statement->bind_param("iiissi", $uid, $object_type_code, $oid, $user_comment_set_timestamp, 
+    $user_comment, $parent_ucid);
+  $statement->execute();
+    
+  // CHECK FOR AN ERROR, RETURN IT IF ONE EXISTS
+  $error = $statement->error;
+  if ($error != "") { return "DB ERROR: " . $error; }
 
-	return "User has successfully commented the object.";
+  return "User has successfully commented the object.";
 
-	$statement->close();
+  $statement->close();
 }
 
 /* FUNCTION:    dbGetObjectComments
@@ -42,49 +42,54 @@ function dbSetObjectComment($uid, $object_type_code, $oid, $user_comment_set_tim
  * -------------------------------------------------------------------------------- */
 function dbGetObjectComments($object_type_code, $oid)
 {
-	// IMPORT THE DATABASE CONNECTION
-	require $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBConnect/dbConnect.php';
+  // IMPORT THE DATABASE CONNECTION
+  require $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBConnect/dbConnect.php';
 
-	// EXECUTE THE QUERY
-	$query = "SELECT ucid, uid, user_comment_set_timestamp, user_comment, parent_ucid 
-			  FROM T_USER_COMMENT 
-			  WHERE object_type_code = ? AND oid = ?";
-	$statement = $conn->prepare($query);
-	$statement->bind_param("ii", $object_type_code, $oid);
-	$statement->execute();
-	$statement->store_result(); 	// Need this to check the number of rows later
-	
-	// CHECK FOR AN ERROR, RETURN IT IF ONE EXISTS
-	$error = $statement->error;
-	if ($error != "") { echo "DB ERROR: " . $error; return; }
-	
-	// RETURN MESSAGE INSTEAD IF NO ROW EXISTS (I.E. USER WAS NEVER A MEMBER OF EVENT)
-	if ($statement->num_rows === 0)  
-		return "The specified object with the specified ID does not exist, or it has no comments."; 
-	
-	// ASSIGN THE OBJECT COMMENT VARIABLES
-	$statement->bind_result($ucid, $uid, $user_comment_set_timestamp, $user_comment, $parent_ucid);
-	
-	$commentArray = array();
+  // EXECUTE THE QUERY
+  $query = "SELECT ucid, T_USER_COMMENT.uid, username, first_name, last_name, user_comment_set_timestamp, user_comment, parent_ucid 
+            FROM T_USER_COMMENT 
+            JOIN T_USER ON T_USER_COMMENT.uid = T_USER.uid
+            WHERE object_type_code = ? AND oid = ?";
+  $statement = $conn->prepare($query);
+  $statement->bind_param("ii", $object_type_code, $oid);
+  $statement->execute();
+  $statement->store_result();   // Need this to check the number of rows later
+  
+  // CHECK FOR AN ERROR, RETURN IT IF ONE EXISTS
+  $error = $statement->error;
+  if ($error != "") { echo "DB ERROR: " . $error; return; }
+  
+  // RETURN MESSAGE INSTEAD IF NO ROW EXISTS (I.E. USER WAS NEVER A MEMBER OF EVENT)
+  if ($statement->num_rows === 0)  
+    return "The specified object with the specified ID does not exist, or it has no comments."; 
+  
+  // ASSIGN THE OBJECT COMMENT VARIABLES
+  $statement->bind_result($ucid, $uid, $username, $first_name, $last_name, $user_comment_set_timestamp, 
+      $user_comment, $parent_ucid);
+  
+  $commentArray = array();
 
-	while($statement->fetch())
-	{
-		$comment = array(
-			"ucid" => $ucid, 
-			"uid" => $uid, 
-			"objectTypeCode" => $object_type_code, 
-			"oid" => $oid, 
-			"userCommentSetTimestamp" => $user_comment_set_timestamp, 
-			"userComment" => $user_comment, 
-			"parentUcid" => $parent_ucid
-		);
-		array_push($commentArray, $comment);
-	}
-	$commentData = array("comments" => $commentArray);
+  while($statement->fetch())
+  {
+    $comment = array(
+      "ucid" => $ucid, 
+      "uid" => $uid, 
+      "username" => $username, 
+      "firstName" => $first_name, 
+      "lastName" => $last_name, 
+      "objectTypeCode" => $object_type_code, 
+      "oid" => $oid, 
+      "userCommentSetTimestamp" => $user_comment_set_timestamp, 
+      "userComment" => $user_comment, 
+      "parentUcid" => $parent_ucid
+    );
+    array_push($commentArray, $comment);
+  }
+  $commentData = array("comments" => $commentArray);
 
-	$statement->close();
+  $statement->close();
 
-	return $commentData;
+  return $commentData;
 }
 
 ?>

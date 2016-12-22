@@ -236,7 +236,8 @@ function getUserData()
     // 3 - GET THE USER DATA 
     // 3.1 - PREPARE THE QUERY
     $query = "SELECT uid, facebook_uid, googlep_uid, username, password, 
-                first_name, last_name, email, user_account_creation_timestamp, privacy_label
+                first_name, last_name, email, phone, 
+                user_account_creation_timestamp, privacy_label
               FROM T_USER, T_PRIVACY
               WHERE uid = ? AND user_account_privacy_code = privacy_code";
     $statement = $conn->prepare($query);
@@ -253,8 +254,9 @@ function getUserData()
     else {
 
         // 3.4 - STORE THE QUERY RESULT IN VARIABLES
-        $statement->bind_result($uid, $facebook_uid, $googlep_uid, $username, $password,
-            $first_name, $last_name, $email, $user_account_creation_timestamp, $user_account_privacy_label);
+        $statement->bind_result($uid, $facebook_uid, $googlep_uid, $username, $password, 
+            $first_name, $last_name, $email, $phone, 
+            $user_account_creation_timestamp, $user_account_privacy_label);
         $statement->fetch();
 
         // 3.5 - STORE THE QUERY RESULT IN AN ARRAY
@@ -267,6 +269,7 @@ function getUserData()
             "firstName" => $first_name,
             "lastName" => $last_name,
             "email" => $email,
+            "phone" => $phone, 
             "userAccountCreationTimestamp" => $user_account_creation_timestamp, 
             "userAccountPrivacy" => $user_account_privacy_label
         );
