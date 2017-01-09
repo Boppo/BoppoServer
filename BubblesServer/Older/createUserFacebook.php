@@ -1,5 +1,11 @@
 <?php
 
+    /* THE FOLLOWING 3 LINES OF CODE ENABLE ERROR REPORTING. */
+    error_reporting(E_ALL);
+    ini_set('display_errors', TRUE);
+    ini_set('display_startup_errors', TRUE);
+    /* END. */
+
     // 1 - ESTABLISH DATABASE CONNECTION
 	require $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBConnect/dbConnect.php';
 
