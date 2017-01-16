@@ -1,5 +1,11 @@
 <?php
 
+    /* THE FOLLOWING 3 LINES OF CODE ENABLE ERROR REPORTING. */
+    error_reporting(E_ALL);
+    ini_set('display_errors', TRUE);
+    ini_set('display_startup_errors', TRUE);
+    /* END. */
+
     // 1 - ESTABLISH DATABASE CONNECTION
 	require $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBConnect/dbConnect.php';
 
@@ -12,10 +18,11 @@
 
     // 4 - PREPARE THE QUERY
     $query = "SELECT uid, facebook_uid, googlep_uid, username, password, 
-                first_name, last_name, email, 
+                first_name, last_name, email, phone, 
     			user_account_creation_timestamp, privacy_label
               FROM T_USER, T_PRIVACY
               WHERE username = ? AND password = ? AND user_account_privacy_code = privacy_code";
+    
     $statement = mysqli_prepare($conn, $query);
     mysqli_stmt_bind_param($statement, "ss", $username, $password);
     
