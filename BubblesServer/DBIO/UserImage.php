@@ -287,7 +287,7 @@ function fetchImagesByUidAndPurpose($uid, $image_purpose_label, $event_indicator
 				  WHERE  R_EVENT_USER_IMAGE.uiid IS NULL AND
 				         T_USER_IMAGE.uid = ? AND T_IMAGE_PURPOSE.image_purpose_label = ?";
 	else if (!$event_indicator)
-		$query = "SELECT DISTINCT uiid, uid, user_image_sequence, user_image_name, privacy_label, user_image_profile_sequence, 
+		$query = "SELECT DISTINCT uiid, uid, user_image_sequence, user_image_profile_sequence, user_image_name, privacy_label, 
 						 image_purpose_label, user_image_gps_latitude, user_image_gps_longitude
 				  FROM   T_USER_IMAGE
 					  	 LEFT JOIN T_PRIVACY ON T_USER_IMAGE.user_image_privacy_code = T_PRIVACY.privacy_code
