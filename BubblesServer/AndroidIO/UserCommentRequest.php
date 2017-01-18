@@ -73,7 +73,7 @@ function getObjectComments()
 	ini_set('display_errors', TRUE);
 	ini_set('display_startup_errors', TRUE);
 	/* END. */
-
+	
 	// IMPORT THE DATABASE CONNECTION
 	require $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBConnect/dbConnect.php';
 	// DECODE JSON STRING
@@ -81,6 +81,8 @@ function getObjectComments()
 	// ASSIGN THE JSON VALUES TO VARIABLES
 	$object_type_label = $json_decoded["objectTypeLabel"];
 	$oid = $json_decoded["oid"];
+	/*$object_type_label = "Event";
+	$oid = 56;*/
 
 	// CONVERT THE OBJECT TYPE LABEL TO AN OBJECT TYPE CODE
 	require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBIO/ObjectType.php';

@@ -46,10 +46,13 @@ function dbGetObjectComments($object_type_code, $oid)
   require $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBConnect/dbConnect.php';
 
   // EXECUTE THE QUERY
-  $query = "SELECT ucid, T_USER_COMMENT.uid, username, first_name, last_name, user_comment_set_timestamp, user_comment, parent_ucid 
-            FROM T_USER_COMMENT 
-            JOIN T_USER ON T_USER_COMMENT.uid = T_USER.uid
-            WHERE object_type_code = ? AND oid = ?";
+  $query = "SELECT ucid, T_USER_COMMENT.uid, username, first_name, last_name, 
+                   user_image_sequence, user_image_name, 
+                   user_comment_set_timestamp, user_comment, parent_ucid 
+            FROM        T_USER_COMMENT 
+              JOIN      T_USER ON T_USER_COMMENT.uid = T_USER.uid 
+              LEFT JOIN T_USER_IMAGE ON T_USER.uid = T_USER_IMAGE.uid
+            WHERE object_type_code = ? AND oid = ? AND user_image_profile_sequence = 0";
   $statement = $conn->prepare($query);
   $statement->bind_param("ii", $object_type_code, $oid);
   $statement->execute();
@@ -64,24 +67,32 @@ function dbGetObjectComments($object_type_code, $oid)
     return "The specified object with the specified ID does not exist, or it has no comments."; 
   
   // ASSIGN THE OBJECT COMMENT VARIABLES
-  $statement->bind_result($ucid, $uid, $username, $first_name, $last_name, $user_comment_set_timestamp, 
-      $user_comment, $parent_ucid);
+  $statement->bind_result($ucid, $uid, $username, $first_name, $last_name, 
+      $user_image_sequence, $user_image_name, 
+      $user_comment_set_timestamp, $user_comment, $parent_ucid);
   
   $commentArray = array();
 
   while($statement->fetch())
   {
+    $user = array(
+      "username" => $username, 
+      "firstName" => $first_name, 
+      "lastName" => $last_name
+    ); 
+    $image = array(
+        "userImagePath" => $uid . "/" . $user_image_sequence . "/" . $user_image_name
+    );
     $comment = array(
       "ucid" => $ucid, 
       "uid" => $uid, 
-      "username" => $username, 
-      "firstName" => $first_name, 
-      "lastName" => $last_name, 
       "objectTypeCode" => $object_type_code, 
       "oid" => $oid, 
       "userCommentSetTimestamp" => $user_comment_set_timestamp, 
       "userComment" => $user_comment, 
-      "parentUcid" => $parent_ucid
+      "parentUcid" => $parent_ucid, 
+      "user" => $user, 
+      "image" => $image
     );
     array_push($commentArray, $comment);
   }
