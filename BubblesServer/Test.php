@@ -110,7 +110,36 @@ uploadImageToEvents();
 /*
 require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/AndroidIO/UserCommentRequest.php';
 getObjectComments();
-echo "<br><br>!END OF SCRIPT!";
 */
+/*
+require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBIO/NewsFeed.php';
+$result = dbGetNewsFriendCreatedEvents(2, 5);
+echo(json_encode($result) . "<br><br>");
+
+
+require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBIO/NewsFeed.php';
+$result = dbGetNewsFriendsJoinedMutualEvent(2, 5);
+echo(json_encode($result) . "<br><br>");
+
+
+require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBIO/NewsFeed.php';
+$result = dbGetNewsFriendsThatBecameFriends(2, 5);
+echo(json_encode($result) . "<br><br>");
+
+
+require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBIO/NewsFeed.php';
+$result = dbGetNewsFriendUploadedImages(2, 5);
+echo(json_encode($result) . "<br><br>");
+
+
+require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBIO/NewsFeed.php';
+$result = dbGetNewsFriendActiveEvent(2, 5);
+echo(json_encode($result) . "<br><br>");
+*/
+
+require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/AndroidIO/NewsFeedRequest.php';
+$result = getNewsEvents();
+
+echo "<br><br>!END OF SCRIPT!";
 // TEST FINAL!
 ?>

@@ -5,6 +5,9 @@
 			"DatetimeValue": 30
 		}
 	},
+	"MaxAmount": {
+		"NewsFeedMaxAmount": 5
+	}, 
 	"Event": {
 		"EventLiveDatetimeDurationOffset": {
 			"DatetimeUnit": "DAY",
