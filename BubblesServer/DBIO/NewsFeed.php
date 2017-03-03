@@ -23,28 +23,37 @@ function dbGetNewsFriendCreatedEvents($uid, $max)
   // CHECK FOR AN ERROR, RETURN IT IF ONE EXISTS
   if ($error != "") { echo "DB ERROR: " . $error; return; }
 
-  $statement->bind_result($uid, $username, $eid, $event_host_uid, $event_name, $event_creation_timestamp);
+  $statement->bind_result($username, $user_image_sequence, $user_image_name, 
+      $eid, $event_host_uid, $event_name, $event_creation_timestamp);
 
   $friendCreatedEventsList = array();
 
   while($statement->fetch())
   {
+    $eventHostUserProfileImage = array
+    (
+        "uid" => $event_host_uid, 
+        "userImageSequence" => $user_image_sequence, 
+        "userImageName" => $user_image_name, 
+        "userImagePath" => $uid . "/" . $user_image_sequence . "/" . $user_image_name
+    );
     $eventHostUser = array
     (
-        "uid" => $uid, 
-        "username" => $username
+        "uid" => $event_host_uid, 
+        "username" => $username, 
+        "userImage" => $eventHostUserProfileImage
     );
     $event = array
     (
         "eid" => $eid,
         "eventHostUid" => $event_host_uid,
         "eventName" => $event_name,
-        "eventCreationTimestamp" => $event_creation_timestamp 
+        "eventCreationTimestamp" => $event_creation_timestamp, 
+        "eventHostUser" => $eventHostUser
     );
     $friendCreatedEvent = array
     (
-        "event" => $event, 
-        "eventHostUser" => $eventHostUser
+        "event" => $event 
     );
     array_push($friendCreatedEventsList, $friendCreatedEvent);
   }
@@ -137,27 +146,46 @@ function dbGetNewsFriendsThatBecameFriends($uid, $max)
   // CHECK FOR AN ERROR, RETURN IT IF ONE EXISTS
   if ($error != "") { echo "DB ERROR: " . $error; return; }
 
-  $statement->bind_result($uid1, $username1, $uid2, $username2, $user_relationship_start_timestamp);
+  $statement->bind_result(
+      $uid1, $u1_username, $u1pi_user_image_sequence, $u1pi_user_image_name, 
+      $uid2, $u2_username, $u2pi_user_image_sequence, $u2pi_user_image_name, 
+      $user_relationship_start_timestamp);
 
   $userRelationshipList = array();
 
   while($statement->fetch())
   {
+    $user1ProfileImage = array
+    (
+        "uid" => $uid1, 
+        "userImageSequence" => $u1pi_user_image_sequence, 
+        "userImageName" => $u1pi_user_image_name, 
+        "userImagePath" => $uid1 . "/" . $u1pi_user_image_sequence . "/" . $u1pi_user_image_name
+    );
     $user1 = array
     (
         "uid" => $uid1,
-        "username" => $username1
+        "username" => $u1_username, 
+        "userProfileImage" => $user1ProfileImage
+    );
+    $user2ProfileImage = array
+    (
+        "uid" => $uid2,
+        "userImageSequence" => $u2pi_user_image_sequence,
+        "userImageName" => $u2pi_user_image_name, 
+        "userImagePath" => $uid2 . "/" . $u2pi_user_image_sequence . "/" . $u2pi_user_image_name
     );
     $user2 = array
     (
         "uid" => $uid2, 
-        "username" => $username2
+        "username" => $u2_username, 
+        "userProfileImage" => $user2ProfileImage, 
     );
     $userRelationship = array
     (
-        "userRelationshipStartTimestamp" => $user_relationship_start_timestamp, 
         "user1" => $user1, 
-        "user2" => $user2
+        "user2" => $user2, 
+        "userRelationshipStartTimestamp" => $user_relationship_start_timestamp
     );
     array_push($userRelationshipList, $userRelationship);
   }
@@ -191,43 +219,64 @@ function dbGetNewsFriendUploadedImages($uid, $max)
   // CHECK FOR AN ERROR, RETURN IT IF ONE EXISTS
   if ($error != "") { echo "DB ERROR: " . $error; return; }
 
-  $statement->bind_result($uiid, $uid, $user_image_sequence, $user_image_profile_sequence, 
-      $user_image_name, $image_purpose_label, $privacy_label, 
-      $user_image_gps_latitude, $user_image_gps_longitude, $user_image_upload_timestamp, 
-      $user_image_view_count, $user_image_like_count, $user_image_dislike_count, 
-      $user_image_comment_count);
+  $statement->bind_result(
+      $uid, $username, $first_name, $last_name, 
+      $uploadedUI_uiid, $uploadedUI_user_image_sequence, $uploadedUI_user_image_profile_sequence, 
+      $uploadedUI_user_image_name, $uploadedUI_image_purpose_label, $uploadedUI_privacy_label, 
+      $uploadedUI_user_image_gps_latitude, $uploadedUI_user_image_gps_longitude, 
+      $uploadedUI_user_image_upload_timestamp, $uploadedUI_user_image_view_count, 
+      $uploadedUI_user_image_like_count, $uploadedUI_user_image_dislike_count, 
+      $uploadedUI_user_image_comment_count, 
+      $profileUI_user_image_sequence, $profileUI_user_image_name);
 
-  $uploadedImageList = array();
+  $friendUploadedImageList = array();
 
   while($statement->fetch())
   {
-    $userImage = array
+    $profileUserImage = array
     (
-      "uiid" => $uiid, 
+        "uid" => $uid,
+        "userImageSequence" => $profileUI_user_image_sequence,
+        "userImageName" => $profileUI_user_image_name,
+        "userImagePath" => $uid . "/" . $profileUI_user_image_sequence . "/" . $profileUI_user_image_name
+    );
+    $user = array
+    (
       "uid" => $uid, 
-      "userImageSequence" => $user_image_sequence, 
-      "userImageProfileSequence" => $user_image_profile_sequence, 
-      "userImageName" => $user_image_name, 
-      "userImagePurposeLabel" => $image_purpose_label, 
-      "userImagePrivacyLabel" => $privacy_label, 
-      "userImageGpsLatitude" => $user_image_gps_latitude, 
-      "userImageGpsLongitude" => $user_image_gps_longitude, 
-      "userImageUploadTimestamp" => $user_image_upload_timestamp, 
-      "userImageViewCount" => $user_image_view_count, 
-      "userImageLikeCount" => $user_image_like_count, 
-      "userImageDislikeCount" => $user_image_dislike_count, 
-      "userImageCommentCount" => $user_image_comment_count
+      "username" => $username, 
+      "firstName" => $first_name, 
+      "lastName" => $last_name, 
+      "userImage" => $profileUserImage
     );
-    $uploadedImage = array
+    $uploadedUserImage = array
     (
-      "userImage" => $userImage
+      "uiid" => $uploadedUI_uiid, 
+      "uid" => $uid, 
+      "userImageSequence" => $uploadedUI_user_image_sequence, 
+      "userImageProfileSequence" => $uploadedUI_user_image_profile_sequence, 
+      "userImageName" => $uploadedUI_user_image_name, 
+      "userImagePath" => $uid . "/" . $uploadedUI_user_image_sequence . "/" . $uploadedUI_user_image_name,
+      "userImagePurposeLabel" => $uploadedUI_image_purpose_label, 
+      "userImagePrivacyLabel" => $uploadedUI_privacy_label, 
+      "userImageGpsLatitude" => $uploadedUI_user_image_gps_latitude, 
+      "userImageGpsLongitude" => $uploadedUI_user_image_gps_longitude, 
+      "userImageUploadTimestamp" => $uploadedUI_user_image_upload_timestamp, 
+      "userImageViewCount" => $uploadedUI_user_image_view_count, 
+      "userImageLikeCount" => $uploadedUI_user_image_like_count, 
+      "userImageDislikeCount" => $uploadedUI_user_image_dislike_count, 
+      "userImageCommentCount" => $uploadedUI_user_image_comment_count
     );
-    array_push($uploadedImageList, $uploadedImage);
+    $friendUploadedImage = array
+    (
+      "uploadedUserImage" => $uploadedUserImage, 
+      "user" => $user
+    );
+    array_push($friendUploadedImageList, $friendUploadedImage);
   }
 
   $statement->close();
 
-  return $uploadedImageList;
+  return $friendUploadedImageList;
 }
 
 /* FUNCTION:    dbGetNewsFriendActiveEvent

@@ -90,7 +90,7 @@ function getNewsEvents()
   {
     $newsEvent = $newsFriendUploadedImagesList[$i];
     $newsEvent["newsEventType"] = "FriendsUploadedImages";
-    $newsEventList[$newsFriendUploadedImagesList[$i]["userImage"]["userImageUploadTimestamp"]] = $newsEvent;
+    $newsEventList[$newsFriendUploadedImagesList[$i]["uploadedUserImage"]["userImageUploadTimestamp"]] = $newsEvent;
   }
   for ($i = 0; $i < sizeof($newsFriendActiveEventList); $i++)
   {
@@ -102,12 +102,19 @@ function getNewsEvents()
   // SORT THE NEWS EVENT ACTIONS BY DATE STARTING WITH MOST RECENT
   krsort($newsEventList);
   
+  // CREATE AN ARRAY OUT OF THE LIST FOR EASIER ACCESS TO THE DATA
+  $newsEventArray= array();
+  foreach($newsEventList as $k => $v)
+  {
+    array_push($newsEventArray, $v);
+  }
+  
   // IF THERE ARE LESS EVENTS THAN WERE REQUESTED, SET THE MAX TO THAT AMOUNT
   if ($max > sizeof($newsEventList))
     $max = sizeof($newsEventList);
   
   // RETURN THE MAXIMUM ALLOWED NUMBER OF NEWS ACTIONS IN JSON FORMAT
-  echo json_encode(array_slice($newsEventList, 0, $max));
+  echo json_encode(array_slice($newsEventArray, 0, $max));
 }
 
 ?>
