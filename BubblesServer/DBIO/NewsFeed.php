@@ -6,7 +6,7 @@
  * --------------------------------------------------------------------------------
  * ================================================================================
  * -------------------------------------------------------------------------------- */
-function dbGetNewsFriendCreatedEvents($uid, $max)
+function dbGetNewsFriendCreatedEvent($uid, $max)
 {
   // IMPORT REQUIRED METHODS
   require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/Functions/Miscellaneous.php';
@@ -15,7 +15,7 @@ function dbGetNewsFriendCreatedEvents($uid, $max)
   require $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBConnect/dbConnect.php';
 
   // EXECUTE THE QUERY
-  $query = "CALL sp_get_newsFriendCreatedEvents(?, ?)";
+  $query = "CALL sp_get_newsFriendCreatedEvent(?, ?)";
   $statement = $conn->prepare($query);
   $statement->bind_param("ii", $uid, $max);
   $statement->execute();
@@ -26,7 +26,7 @@ function dbGetNewsFriendCreatedEvents($uid, $max)
   $statement->bind_result($username, $user_image_sequence, $user_image_name, 
       $eid, $event_host_uid, $event_name, $event_creation_timestamp);
 
-  $friendCreatedEventsList = array();
+  $friendCreatedEventList = array();
 
   while($statement->fetch())
   {
@@ -35,7 +35,7 @@ function dbGetNewsFriendCreatedEvents($uid, $max)
         "uid" => $event_host_uid, 
         "userImageSequence" => $user_image_sequence, 
         "userImageName" => $user_image_name, 
-        "userImagePath" => $uid . "/" . $user_image_sequence . "/" . $user_image_name
+        "userImagePath" => $event_host_uid . "/" . $user_image_sequence . "/" . $user_image_name
     );
     $eventHostUser = array
     (
@@ -53,14 +53,14 @@ function dbGetNewsFriendCreatedEvents($uid, $max)
     );
     $friendCreatedEvent = array
     (
-        "event" => $event 
+        "friendCreatedEvent" => $event 
     );
-    array_push($friendCreatedEventsList, $friendCreatedEvent);
+    array_push($friendCreatedEventList, $friendCreatedEvent);
   }
 
   $statement->close();
 
-  return $friendCreatedEventsList;
+  return $friendCreatedEventList;
 }
 
 /* FUNCTION:    dbGetNewsFriendsJoinedMutualEvent
@@ -69,7 +69,7 @@ function dbGetNewsFriendCreatedEvents($uid, $max)
  * --------------------------------------------------------------------------------
  * ================================================================================
  * -------------------------------------------------------------------------------- */
-function dbGetNewsFriendsJoinedMutualEvent($uid, $max)
+function dbGetNewsFriendJoinedMutualEvent($uid, $max)
 {
   // IMPORT REQUIRED METHODS
   require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/Functions/Miscellaneous.php';
@@ -78,7 +78,7 @@ function dbGetNewsFriendsJoinedMutualEvent($uid, $max)
   require $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBConnect/dbConnect.php';
 
   // EXECUTE THE QUERY
-  $query = "CALL sp_get_newsFriendsJoinedMutualEvent(?, ?);";
+  $query = "CALL sp_get_newsFriendJoinedMutualEvent(?, ?);";
   $statement = $conn->prepare($query);
   $statement->bind_param("ii", $uid, $max);
 
@@ -88,38 +88,45 @@ function dbGetNewsFriendsJoinedMutualEvent($uid, $max)
   if ($error != "") { echo "DB ERROR: " . $error; return; }
 
   $statement->bind_result($uid, $username, 
+      $user_image_sequence, $user_image_name, 
       $eid, $event_host_uid, $event_name, $event_user_invite_status_action_timestamp);
 
-  $mutualEventList = array();
+  $friendJoinedMutualEventList = array();
 
   while($statement->fetch())
   {
+    $userProfileImage = array
+    (
+      "uid" => $uid,
+      "userImageSequence" => $user_image_sequence,
+      "userImageName" => $user_image_name,
+      "userImagePath" => $uid . "/" . $user_image_sequence . "/" . $user_image_name
+    );
+    $user = array
+    (
+      "uid" => $uid,
+      "username" => $username, 
+      "userProfileImage" => $userProfileImage
+    );
     $event = array
     (
       "eid" => $eid,
       "eventHostUid" => $event_host_uid,
       "eventName" => $event_name,
-      "eventUserInviteStatusActionTimestamp" => $event_user_invite_status_action_timestamp
+      "eventUserInviteStatusActionTimestamp" => $event_user_invite_status_action_timestamp, 
+      "eventUser" => $user
     );
-    $user = array
+    $friendJoinedMutualEvent = array
     (
-      "uid" => $uid, 
-      "username" => $username
-    );
-    $userList = array();
-    array_push($userList, $user); 
-    $mutualEvent = array
-    (
-      "event" => $event, 
-      "userList" => $userList
+      "friendJoinedMutualEvent" => $event
     );
 
-    array_push($mutualEventList, $mutualEvent);
+    array_push($friendJoinedMutualEventList, $friendJoinedMutualEvent);
   }
 
   $statement->close();
 
-  return $mutualEventList;
+  return $friendJoinedMutualEventList;
 }
 
 /* FUNCTION:    dbGetNewsFriendsThatBecameFriends
@@ -151,7 +158,7 @@ function dbGetNewsFriendsThatBecameFriends($uid, $max)
       $uid2, $u2_username, $u2pi_user_image_sequence, $u2pi_user_image_name, 
       $user_relationship_start_timestamp);
 
-  $userRelationshipList = array();
+  $friendsThatBecameFriendsList = array();
 
   while($statement->fetch())
   {
@@ -187,12 +194,16 @@ function dbGetNewsFriendsThatBecameFriends($uid, $max)
         "user2" => $user2, 
         "userRelationshipStartTimestamp" => $user_relationship_start_timestamp
     );
-    array_push($userRelationshipList, $userRelationship);
+    $friendsThatBecameFriends = array
+    (
+        "friendsThatBecameFriends" => $userRelationship
+    ); 
+    array_push($friendsThatBecameFriendsList, $friendsThatBecameFriends);
   }
 
   $statement->close();
 
-  return $userRelationshipList;
+  return $friendsThatBecameFriendsList;
 }
 
 /* FUNCTION:    dbGetNewsFriendUploadedImages
@@ -201,7 +212,7 @@ function dbGetNewsFriendsThatBecameFriends($uid, $max)
  * --------------------------------------------------------------------------------
  * ================================================================================
  * -------------------------------------------------------------------------------- */
-function dbGetNewsFriendUploadedImages($uid, $max)
+function dbGetNewsFriendUploadedImage($uid, $max)
 {
   // IMPORT REQUIRED METHODS
   require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/Functions/Miscellaneous.php';
@@ -210,7 +221,7 @@ function dbGetNewsFriendUploadedImages($uid, $max)
   require $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBConnect/dbConnect.php';
 
   // EXECUTE THE QUERY
-  $query = "CALL sp_get_newsFriendUploadedImages(?, ?);";
+  $query = "CALL sp_get_newsFriendUploadedImage(?, ?);";
   $statement = $conn->prepare($query);
   $statement->bind_param("ii", $uid, $max);
 
@@ -235,10 +246,10 @@ function dbGetNewsFriendUploadedImages($uid, $max)
   {
     $profileUserImage = array
     (
-        "uid" => $uid,
-        "userImageSequence" => $profileUI_user_image_sequence,
-        "userImageName" => $profileUI_user_image_name,
-        "userImagePath" => $uid . "/" . $profileUI_user_image_sequence . "/" . $profileUI_user_image_name
+      "uid" => $uid,
+      "userImageSequence" => $profileUI_user_image_sequence,
+      "userImageName" => $profileUI_user_image_name,
+      "userImagePath" => $uid . "/" . $profileUI_user_image_sequence . "/" . $profileUI_user_image_name
     );
     $user = array
     (
@@ -264,12 +275,12 @@ function dbGetNewsFriendUploadedImages($uid, $max)
       "userImageViewCount" => $uploadedUI_user_image_view_count, 
       "userImageLikeCount" => $uploadedUI_user_image_like_count, 
       "userImageDislikeCount" => $uploadedUI_user_image_dislike_count, 
-      "userImageCommentCount" => $uploadedUI_user_image_comment_count
+      "userImageCommentCount" => $uploadedUI_user_image_comment_count, 
+      "user" => $user
     );
     $friendUploadedImage = array
     (
-      "uploadedUserImage" => $uploadedUserImage, 
-      "user" => $user
+      "friendUploadedImage" => $uploadedUserImage
     );
     array_push($friendUploadedImageList, $friendUploadedImage);
   }
@@ -308,12 +319,26 @@ function dbGetNewsFriendActiveEvent($uid, $max)
       $event_creation_timestamp, $event_start_datetime, $event_end_datetime, 
       $event_gps_longitude, $event_gps_latitude, $event_view_count, 
       $event_like_count, $event_dislike_count, $event_comment_count, 
-      $uid, $username);
+      $uid, $username, 
+      $user_image_sequence, $user_image_name);
 
   $friendActiveEventList = array();
 
   while($statement->fetch())
   {
+    $userProfileImage = array
+    (
+        "uid" => $uid,
+        "userImageSequence" => $user_image_sequence,
+        "userImageName" => $user_image_name,
+        "userImagePath" => $uid . "/" . $user_image_sequence . "/" . $user_image_name
+    );
+    $eventHost = array
+    (
+        "uid" => $uid,
+        "username" => $username, 
+        "userProfileImage" => $userProfileImage
+    );
     $event = array
     (
       "eid" => $eid, 
@@ -330,17 +355,12 @@ function dbGetNewsFriendActiveEvent($uid, $max)
       "eventViewCount" => $event_view_count, 
       "eventLikeCount" => $event_like_count, 
       "eventDislikeCount" => $event_dislike_count, 
-      "eventCommentCount" => $event_comment_count
-    );
-    $user = array
-    (
-      "uid" => $uid, 
-      "username" => $username
+      "eventCommentCount" => $event_comment_count, 
+      "eventHost" => $eventHost
     );
     $friendActiveEvent = array
     (
-      "event" => $event, 
-      "user" => $user
+      "friendActiveEvent" => $event
     );
     array_push($friendActiveEventList, $friendActiveEvent);
   }

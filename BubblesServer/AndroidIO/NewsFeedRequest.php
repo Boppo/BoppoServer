@@ -27,44 +27,76 @@ function getNewsEvents()
   require $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBIO/NewsFeed.php';
   
   // RETRIEVE THE DATA
-  $newsFriendCreatedEventsList = dbGetNewsFriendCreatedEvents($uid, $max);
-  $newsFriendsJoinedMutualEventList = dbGetNewsFriendsJoinedMutualEvent($uid, $max);
+  $newsFriendCreatedEventsList = dbGetNewsFriendCreatedEvent($uid, $max);
+  $newsFriendJoinedMutualEventList = dbGetNewsFriendJoinedMutualEvent($uid, $max);
   $newsFriendsThatBecameFriendsList = dbGetNewsFriendsThatBecameFriends($uid, $max);
-  $newsFriendUploadedImagesList = dbGetNewsFriendUploadedImages($uid, $max);
+  $newsFriendUploadedImageList = dbGetNewsFriendUploadedImage($uid, $max);
   $newsFriendActiveEventList = dbGetNewsFriendActiveEvent($uid, $max);
   
   $newsEventList = array();
   
-  
-  
+  /*
+   // REORGANIZE DATA INTO THE CORRECT JSON FORMAT - PART 1
+   $tempList = array();
+   for ($i = 0; $i < sizeof($newsFriendsJoinedMutualEventList); $i++)
+   {
+   $eid = $newsFriendsJoinedMutualEventList[$i]["event"]["eid"];
+   if (array_key_exists($eid, $tempList))
+   {
+   $userList = $tempList[$eid]["userList"];
+   unset($tempList[$eid]["userList"]);
+   array_push($userList, $newsFriendsJoinedMutualEventList[$i]["userList"][0]);
+   $tempList[$eid]["userList"] = $userList;
+   if ($newsFriendsJoinedMutualEventList[$i]["event"]["eventUserInviteStatusActionTimestamp"] >
+   $tempList[$eid]["eventUserInviteStatusActionTimestamp"])
+     $tempList[$eid]["eventUserInviteStatusActionTimestamp"] =
+     $newsFriendsJoinedMutualEventList[$i]["event"]["eventUserInviteStatusActionTimestamp"];
+     }
+     else
+     {
+     $mutualEventList = array
+     (
+     "event" => $newsFriendsJoinedMutualEventList[$i]["event"],
+     "userList" => $newsFriendsJoinedMutualEventList[$i]["userList"]
+     );
+     $tempList[$eid] = $mutualEventList;
+     }
+     $newsFriendsJoinedMutualEventList = $tempList;
+     }
+   */
   // REORGANIZE DATA INTO THE CORRECT JSON FORMAT - PART 1
   $tempList = array();
+  $newsFriendsJoinedMutualEventList = $newsFriendJoinedMutualEventList;
   for ($i = 0; $i < sizeof($newsFriendsJoinedMutualEventList); $i++)
   {
-    $eid = $newsFriendsJoinedMutualEventList[$i]["event"]["eid"];
+    $eid = $newsFriendsJoinedMutualEventList[$i]["friendJoinedMutualEvent"]["eid"];
     if (array_key_exists($eid, $tempList))
     {
       $userList = $tempList[$eid]["userList"];
       unset($tempList[$eid]["userList"]);
       array_push($userList, $newsFriendsJoinedMutualEventList[$i]["userList"][0]);
       $tempList[$eid]["userList"] = $userList;
-      if ($newsFriendsJoinedMutualEventList[$i]["event"]["eventUserInviteStatusActionTimestamp"] >
+      if ($newsFriendsJoinedMutualEventList[$i]["friendJoinedMutualEvent"]["eventUserInviteStatusActionTimestamp"] >
           $tempList[$eid]["eventUserInviteStatusActionTimestamp"])
-        $tempList[$eid]["eventUserInviteStatusActionTimestamp"] =
-        $newsFriendsJoinedMutualEventList[$i]["event"]["eventUserInviteStatusActionTimestamp"];
+      $tempList[$eid]["eventUserInviteStatusActionTimestamp"] =
+      $newsFriendsJoinedMutualEventList[$i]["friendJoinedMutualEvent"]["eventUserInviteStatusActionTimestamp"];
     }
     else
     {
-      $mutualEventList = array
+      $userList = array();
+      array_push($userList, $newsFriendsJoinedMutualEventList[$i]["friendJoinedMutualEvent"]["eventUser"]); 
+      $friendsJoinedMutualEvent = $newsFriendsJoinedMutualEventList[$i]["friendJoinedMutualEvent"];
+      unset($friendsJoinedMutualEvent["eventUser"]);
+      $friendsJoinedMutualEventList = array
       (
-          "event" => $newsFriendsJoinedMutualEventList[$i]["event"], 
-          "userList" => $newsFriendsJoinedMutualEventList[$i]["userList"]
+          "friendsJoinedMutualEvent" => $friendsJoinedMutualEvent,
+          "userList" => $userList
       );
-      $tempList[$eid] = $mutualEventList;
+      $tempList[$eid] = $friendsJoinedMutualEventList;
     }
     $newsFriendsJoinedMutualEventList = $tempList;
   }
-  
+
   
   
   // REORGANIZE DATA INTO THE CORRECT JSON FORMAT - PART 2
@@ -72,31 +104,34 @@ function getNewsEvents()
   {
     $newsEvent = $newsFriendCreatedEventsList[$i];
     $newsEvent["newsEventType"] = "FriendCreatedEvent";
-    $newsEventList[$newsFriendCreatedEventsList[$i]["event"]["eventCreationTimestamp"]] = $newsEvent;
+    $newsEventList[$newsFriendCreatedEventsList[$i]
+        ["friendCreatedEvent"]["eventCreationTimestamp"]] = $newsEvent;
   }
   foreach ($newsFriendsJoinedMutualEventList as $k => $v)
   {
     $newsEvent = $newsFriendsJoinedMutualEventList[$k];
     $newsEvent["newsEventType"] = "FriendsJoinedMutualEvent";
-    $newsEventList[$newsFriendsJoinedMutualEventList[$k]["event"]["eventUserInviteStatusActionTimestamp"]] = $newsEvent;
+    $newsEventList[$newsFriendsJoinedMutualEventList[$k]
+        ["friendsJoinedMutualEvent"]["eventUserInviteStatusActionTimestamp"]] = $newsEvent;
   }
   for ($i = 0; $i < sizeof($newsFriendsThatBecameFriendsList); $i++)
   {
     $newsEvent = $newsFriendsThatBecameFriendsList[$i];
     $newsEvent["newsEventType"] = "FriendsThatBecameFriends";
-    $newsEventList[$newsFriendsThatBecameFriendsList[$i]["userRelationshipStartTimestamp"]] = $newsEvent;
+    $newsEventList[$newsFriendsThatBecameFriendsList[$i]
+        ["friendsThatBecameFriends"]["userRelationshipStartTimestamp"]] = $newsEvent;
   }
-  for ($i = 0; $i < sizeof($newsFriendUploadedImagesList); $i++)
+  for ($i = 0; $i < sizeof($newsFriendUploadedImageList); $i++)
   {
-    $newsEvent = $newsFriendUploadedImagesList[$i];
-    $newsEvent["newsEventType"] = "FriendsUploadedImages";
-    $newsEventList[$newsFriendUploadedImagesList[$i]["uploadedUserImage"]["userImageUploadTimestamp"]] = $newsEvent;
+    $newsEvent = $newsFriendUploadedImageList[$i];
+    $newsEvent["newsEventType"] = "FriendUploadedImage";
+    $newsEventList[$newsFriendUploadedImageList[$i]["friendUploadedImage"]["userImageUploadTimestamp"]] = $newsEvent;
   }
   for ($i = 0; $i < sizeof($newsFriendActiveEventList); $i++)
   {
     $newsEvent = $newsFriendActiveEventList[$i];
     $newsEvent["newsEventType"] = "FriendActiveEvent";
-    $newsEventList[$newsFriendActiveEventList[$i]["event"]["eventStartDatetime"]] = $newsEvent;
+    $newsEventList[$newsFriendActiveEventList[$i]["friendActiveEvent"]["eventStartDatetime"]] = $newsEvent;
   }
   
   // SORT THE NEWS EVENT ACTIONS BY DATE STARTING WITH MOST RECENT
