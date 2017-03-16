@@ -243,70 +243,92 @@ function fetchEventDataEncoded($eid)
 function fetchEventDataByMember($uid)
 {
 	// IMPORT REQUIRED METHODS
-	require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/Functions/Miscellaneous.php';
+    require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/Functions/Miscellaneous.php';
+    require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBIO/User.php';
+    require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBIO/Privacy.php';
 
 	// IMPORT THE DATABASE CONNECTION
 	require $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBConnect/dbConnect.php';
 
+	// GET THE EVENT USER DATA
+	$eventUser = fetchUserEncoded($uid); 
+	$userAccountPrivacyLabel = fetchPrivacyCode($eventUser["userAccountPrivacyCode"]); 
+	unset($eventUser["userAccountPrivacyCode"]);
+	$eventUser["userAccountPrivacyLabel"] = $userAccountPrivacyLabel; 
+	
 	// EXECUTE THE QUERY
-	$query = "SELECT DISTINCT T_EVENT.eid, uid, username, first_name, last_name, event_name,
-		       		 invite_type_label, privacy_label, event_image_upload_allowed_indicator,
-		       		 event_start_datetime, event_end_datetime, event_gps_latitude, event_gps_longitude,
-		       		 event_like_count, event_dislike_count, event_view_count
-			  FROM   T_EVENT
-		       		 LEFT JOIN T_INVITE_TYPE ON T_EVENT.event_invite_type_code = T_INVITE_TYPE.invite_type_code
-		       		 LEFT JOIN T_PRIVACY ON T_EVENT.event_privacy_code = T_PRIVACY.privacy_code
-		       		 LEFT JOIN T_USER ON T_EVENT.event_host_uid = T_USER.uid
-			  WHERE  uid = ? OR event_host_uid = ?
-			  ORDER BY event_name";
+	$query = "SELECT T_EVENT.eid, event_name,
+	                 event_host_uid, eh.username AS event_host_username,
+                     eh.first_name AS event_host_first_name, eh.last_name AS event_host_last_name,
+	                 invite_type_label, privacy_label, event_image_upload_allowed_indicator,
+                     event_start_datetime, event_end_datetime, event_gps_latitude, event_gps_longitude,
+                     event_like_count, event_dislike_count, event_view_count 
+              FROM   T_EVENT
+              	     LEFT JOIN T_INVITE_TYPE ON T_EVENT.event_invite_type_code = T_INVITE_TYPE.invite_type_code
+                     LEFT JOIN T_PRIVACY ON T_EVENT.event_privacy_code = T_PRIVACY.privacy_code
+                     LEFT JOIN T_EVENT_USER ON T_EVENT.eid = T_EVENT_USER.eid
+                     LEFT JOIN T_USER eh ON T_EVENT.event_host_uid = eh.uid
+                     LEFT JOIN T_USER eu ON T_EVENT_USER.uid = eu.uid
+              WHERE  T_EVENT_USER.uid = ? 
+	
+              ORDER  BY event_name";
 	$statement = $conn->prepare($query);
-	$statement->bind_param("ii", $uid, $uid);
+	$statement->bind_param("i", $uid);
 	$statement->execute();
 	$error = $statement->error;
 	// CHECK FOR AN ERROR, RETURN IT IF ONE EXISTS
 	if ($error != "") { echo "DB ERROR: " . $error; return; }
-
+	
 	// DEFAULT AND ASSIGN THE EVENT VARIABLES
 	/*
-	$event_start_datetime = "";
-	$event_end_datetime   = "";
-	$event_gps_latitude   = -1.0;
-	$event_gps_longitude  = -1.0;
-	*/
-	$statement->bind_result($eid, $event_host_uid, $event_host_username, 
-		$event_host_first_name, $event_host_last_name, $event_name,
-		$event_invite_type_label, $event_privacy_label,
-		$event_image_upload_allowed_indicator, $event_start_datetime,
-		$event_end_datetime, $event_gps_latitude, $event_gps_longitude,
-		$event_like_count, $event_dislike_count, $event_view_count);
+	 $event_start_datetime = "";
+	 $event_end_datetime   = "";
+	 $event_gps_latitude   = -1.0;
+	 $event_gps_longitude  = -1.0;
+	 */
+	$statement->bind_result($eid, $event_name,
+	    $event_host_uid, $event_host_username, $event_host_first_name, $event_host_last_name,
+	    $event_invite_type_label, $event_privacy_label,
+	    $event_image_upload_allowed_indicator, $event_start_datetime,
+	    $event_end_datetime, $event_gps_latitude, $event_gps_longitude,
+	    $event_like_count, $event_dislike_count, $event_view_count);
 	
-	$eventList = array();
+	$events = array();
 	
 	while($statement->fetch())
 	{
-		$event = array
-		(
-			"eid" => $eid, 
-			"eventHostUid" => $event_host_uid,
-			"eventHostUsername" => $event_host_username,
-			"eventHostFirstName" => $event_host_first_name,
-			"eventHostLastName" => $event_host_last_name,
-			"eventName" => $event_name,
-			"eventInviteTypeLabel" => $event_invite_type_label,
-			"eventPrivacyLabel" => $event_privacy_label,
-			"eventImageUploadAllowedIndicator" => charToStrBool($event_image_upload_allowed_indicator),
-			"eventStartDatetime" => $event_start_datetime,
-			"eventEndDatetime" => $event_end_datetime,
-			"eventGpsLatitude" => $event_gps_latitude,
-			"eventGpsLongitude" => $event_gps_longitude,
-			"eventLikeCount" => $event_like_count,
-			"eventDislikeCount" => $event_dislike_count,
-			"eventViewCount" => $event_view_count
-		);
-		array_push($eventList, $event);
+	  $eventHost = array
+	  (
+        "uid" => $event_host_uid,
+        "username" => $event_host_username,
+        "firstName" => $event_host_first_name,
+        "lastName" => $event_host_last_name
+	  );
+	  $event = array
+	  (
+        "eid" => $eid,
+        "eventName" => $event_name,
+        "eventInviteTypeLabel" => $event_invite_type_label,
+        "eventPrivacyLabel" => $event_privacy_label,
+        "eventImageUploadAllowedIndicator" => charToStrBool($event_image_upload_allowed_indicator),
+        "eventStartDatetime" => $event_start_datetime,
+        "eventEndDatetime" => $event_end_datetime,
+        "eventGpsLatitude" => $event_gps_latitude,
+        "eventGpsLongitude" => $event_gps_longitude,
+        "eventLikeCount" => $event_like_count,
+        "eventDislikeCount" => $event_dislike_count,
+        "eventViewCount" => $event_view_count,
+        "eventHost" => $eventHost
+	  );
+	  array_push($events, $event);
 	}
-
 	$statement->close();
+	
+	$eventList = array
+	(
+        "events" => $events, 
+	    "eventUser" => $eventUser
+	);
 
 	return $eventList;
 }
@@ -323,11 +345,19 @@ function fetchEventDataByMember($uid)
  * -------------------------------------------------------------------------------- */
 function dbGetLiveEventDataByMember($uid)
 {
-	// IMPORT REQUIRED METHODS
-	require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/Functions/Miscellaneous.php';
-
-	// IMPORT THE DATABASE CONNECTION
-	require $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBConnect/dbConnect.php';
+    // IMPORT REQUIRED METHODS
+    require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/Functions/Miscellaneous.php';
+    require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBIO/User.php';
+    require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBIO/Privacy.php';
+    
+    // IMPORT THE DATABASE CONNECTION
+    require $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBConnect/dbConnect.php';
+    
+    // GET THE EVENT USER DATA
+    $eventUser = fetchUserEncoded($uid);
+    $userAccountPrivacyLabel = fetchPrivacyCode($eventUser["userAccountPrivacyCode"]);
+    unset($eventUser["userAccountPrivacyCode"]);
+    $eventUser["userAccountPrivacyLabel"] = $userAccountPrivacyLabel;
 	
 	// FETCH THE DATA REPRESENTING THE TIME UNIT AND VALUE OF THE OFFSET OF A LIVE EVENT DURATION
 	$path_gv = $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/Resources/GlobalVariables.json';
@@ -339,22 +369,26 @@ function dbGetLiveEventDataByMember($uid)
 	= $array_gv["Event"]["EventLiveDatetimeDurationOffset"]["DatetimeValue"];
 
 	// EXECUTE THE QUERY
-	$query = "SELECT DISTINCT T_EVENT.eid, uid, username, first_name, last_name, event_name,
-		       		 invite_type_label, privacy_label, event_image_upload_allowed_indicator,
-		       		 event_start_datetime, event_end_datetime, event_gps_latitude, event_gps_longitude,
-		       		 event_like_count, event_dislike_count, event_view_count
-			  FROM   T_EVENT
-		       		 LEFT JOIN T_INVITE_TYPE ON T_EVENT.event_invite_type_code = T_INVITE_TYPE.invite_type_code
-		       		 LEFT JOIN T_PRIVACY ON T_EVENT.event_privacy_code = T_PRIVACY.privacy_code
-		       		 LEFT JOIN T_USER ON T_EVENT.event_host_uid = T_USER.uid
-			  WHERE  uid = ? OR event_host_uid = ? 
+	$query = "SELECT T_EVENT.eid, event_name,
+	                 event_host_uid, eh.username AS event_host_username,
+                     eh.first_name AS event_host_first_name, eh.last_name AS event_host_last_name,
+	                 invite_type_label, privacy_label, event_image_upload_allowed_indicator,
+                     event_start_datetime, event_end_datetime, event_gps_latitude, event_gps_longitude,
+                     event_like_count, event_dislike_count, event_view_count 
+              FROM   T_EVENT
+              	     LEFT JOIN T_INVITE_TYPE ON T_EVENT.event_invite_type_code = T_INVITE_TYPE.invite_type_code
+                     LEFT JOIN T_PRIVACY ON T_EVENT.event_privacy_code = T_PRIVACY.privacy_code
+                     LEFT JOIN T_EVENT_USER ON T_EVENT.eid = T_EVENT_USER.eid
+                     LEFT JOIN T_USER eh ON T_EVENT.event_host_uid = eh.uid
+                     LEFT JOIN T_USER eu ON T_EVENT_USER.uid = eu.uid
+              WHERE  T_EVENT_USER.uid = ? 
   			  HAVING TIMESTAMPDIFF($event_live_datetime_duration_offset_unit, 
 			      	   CURRENT_TIMESTAMP, event_start_datetime) < ? AND 
 			    	 TIMESTAMPDIFF($event_live_datetime_duration_offset_unit, 
 			      	   event_end_datetime, CURRENT_TIMESTAMP) < ?
 			  ORDER BY event_name";
 	$statement = $conn->prepare($query);
-	$statement->bind_param("iiii", $uid, $uid, 
+	$statement->bind_param("iii", $uid, 
 		$event_live_datetime_duration_offset_value, $event_live_datetime_duration_offset_value);
 	$statement->execute();
 	$error = $statement->error;
@@ -368,41 +402,50 @@ function dbGetLiveEventDataByMember($uid)
 	 $event_gps_latitude   = -1.0;
 	 $event_gps_longitude  = -1.0;
 	 */
-	$statement->bind_result($eid, $event_host_uid, $event_host_username,
-			$event_host_first_name, $event_host_last_name, $event_name,
-			$event_invite_type_label, $event_privacy_label,
-			$event_image_upload_allowed_indicator, $event_start_datetime,
-			$event_end_datetime, $event_gps_latitude, $event_gps_longitude,
-			$event_like_count, $event_dislike_count, $event_view_count);
-
-	$eventList = array();
-
+	$statement->bind_result($eid, $event_name,
+	    $event_host_uid, $event_host_username, $event_host_first_name, $event_host_last_name,
+	    $event_invite_type_label, $event_privacy_label,
+	    $event_image_upload_allowed_indicator, $event_start_datetime,
+	    $event_end_datetime, $event_gps_latitude, $event_gps_longitude,
+	    $event_like_count, $event_dislike_count, $event_view_count);
+	
+	$events = array();
+	
 	while($statement->fetch())
 	{
-		$event = array
-		(
-				"eid" => $eid,
-				"eventHostUid" => $event_host_uid,
-				"eventHostUsername" => $event_host_username,
-				"eventHostFirstName" => $event_host_first_name,
-				"eventHostLastName" => $event_host_last_name,
-				"eventName" => $event_name,
-				"eventInviteTypeLabel" => $event_invite_type_label,
-				"eventPrivacyLabel" => $event_privacy_label,
-				"eventImageUploadAllowedIndicator" => charToStrBool($event_image_upload_allowed_indicator),
-				"eventStartDatetime" => $event_start_datetime,
-				"eventEndDatetime" => $event_end_datetime,
-				"eventGpsLatitude" => $event_gps_latitude,
-				"eventGpsLongitude" => $event_gps_longitude,
-				"eventLikeCount" => $event_like_count,
-				"eventDislikeCount" => $event_dislike_count,
-				"eventViewCount" => $event_view_count
-		);
-		array_push($eventList, $event);
+	  $eventHost = array
+	  (
+	      "uid" => $event_host_uid,
+	      "username" => $event_host_username,
+	      "firstName" => $event_host_first_name,
+	      "lastName" => $event_host_last_name
+	  );
+	  $event = array
+	  (
+	      "eid" => $eid,
+	      "eventName" => $event_name,
+	      "eventInviteTypeLabel" => $event_invite_type_label,
+	      "eventPrivacyLabel" => $event_privacy_label,
+	      "eventImageUploadAllowedIndicator" => charToStrBool($event_image_upload_allowed_indicator),
+	      "eventStartDatetime" => $event_start_datetime,
+	      "eventEndDatetime" => $event_end_datetime,
+	      "eventGpsLatitude" => $event_gps_latitude,
+	      "eventGpsLongitude" => $event_gps_longitude,
+	      "eventLikeCount" => $event_like_count,
+	      "eventDislikeCount" => $event_dislike_count,
+	      "eventViewCount" => $event_view_count,
+	      "eventHost" => $eventHost
+	  );
+	  array_push($events, $event);
 	}
-
 	$statement->close();
-
+	
+	$eventList = array
+	(
+	    "events" => $events,
+	    "eventUser" => $eventUser
+	);
+	
 	return $eventList;
 }
 
