@@ -1267,41 +1267,44 @@ function dbGetEventDataByTopNRatings($top_n)
 		$event_end_datetime, $event_gps_latitude, $event_gps_longitude,
 		$event_like_count, $event_dislike_count, $event_view_count, $event_rating_ratio);
 
-	$eventList = array();
-
+	$events = array();
+	
 	while($statement->fetch())
 	{
-		$event = array
-		(
-			"eid" => $eid,
-			"eventHostUid" => $event_host_uid,
-			"eventHostUsername" => $event_host_username,
-			"eventHostFirstName" => $event_host_first_name,
-			"eventHostLastName" => $event_host_last_name,
-			"eventName" => $event_name,
-			"eventInviteTypeLabel" => $event_invite_type_label,
-			"eventPrivacyLabel" => $event_privacy_label,
-			"eventImageUploadAllowedIndicator" => charToStrBool($event_image_upload_allowed_indicator),
-			"eventStartDatetime" => $event_start_datetime,
-			"eventEndDatetime" => $event_end_datetime,
-			"eventGpsLatitude" => $event_gps_latitude,
-			"eventGpsLongitude" => $event_gps_longitude,
-			"eventLikeCount" => $event_like_count,
-			"eventDislikeCount" => $event_dislike_count,
-			"eventViewCount" => $event_view_count,
-			"eventRatingRatio" => $event_rating_ratio
-		);
-		
-		$eventData = array
-		(
-			"event" => $event,
-		);
-		array_push($eventList, $eventData);
-	}
-
-	$statement->close();
-
-	return $eventList;
+      $eventHost = array
+      (
+          "uid" => $event_host_uid,
+          "username" => $event_host_username,
+          "firstName" => $event_host_first_name,
+          "lastName" => $event_host_last_name
+      );
+      $event = array
+      (
+          "eid" => $eid,
+          "eventName" => $event_name,
+          "eventInviteTypeLabel" => $event_invite_type_label,
+          "eventPrivacyLabel" => $event_privacy_label,
+          "eventImageUploadAllowedIndicator" => charToStrBool($event_image_upload_allowed_indicator),
+          "eventStartDatetime" => $event_start_datetime,
+          "eventEndDatetime" => $event_end_datetime,
+          "eventGpsLatitude" => $event_gps_latitude,
+          "eventGpsLongitude" => $event_gps_longitude,
+          "eventLikeCount" => $event_like_count,
+          "eventDislikeCount" => $event_dislike_count,
+          "eventViewCount" => $event_view_count,
+          "eventRatingRatio" => $event_rating_ratio, 
+          "eventHost" => $eventHost
+      );
+      array_push($events, $event);
+    }
+    $statement->close();
+    
+    $eventList = array
+    (
+        "events" => $events
+    );
+    
+    return $eventList;
 }
 
 
@@ -1371,39 +1374,43 @@ function dbGetLiveEventDataByTopNRatings($top_n)
 		$event_end_datetime, $event_gps_latitude, $event_gps_longitude,
 		$event_like_count, $event_dislike_count, $event_view_count, $event_rating_ratio);
 
-	$eventList = array();
-
+	$events = array();
+	
 	while($statement->fetch())
 	{
-		$event = array
-		(
-			"eid" => $eid,
-			"eventHostUid" => $event_host_uid,
-			"eventHostUsername" => $event_host_username,
-			"eventHostFirstName" => $event_host_first_name,
-			"eventHostLastName" => $event_host_last_name,
-			"eventName" => $event_name,
-			"eventInviteTypeLabel" => $event_invite_type_label,
-			"eventPrivacyLabel" => $event_privacy_label,
-			"eventImageUploadAllowedIndicator" => charToStrBool($event_image_upload_allowed_indicator),
-			"eventStartDatetime" => $event_start_datetime,
-			"eventEndDatetime" => $event_end_datetime,
-			"eventGpsLatitude" => $event_gps_latitude,
-			"eventGpsLongitude" => $event_gps_longitude,
-			"eventLikeCount" => $event_like_count,
-			"eventDislikeCount" => $event_dislike_count,
-			"eventViewCount" => $event_view_count,
-			"eventRatingRatio" => $event_rating_ratio
-		);
-		$eventData = array
-		(
-			"event" => $event,
-		);
-		array_push($eventList, $eventData);
+	  $eventHost = array
+	  (
+	      "uid" => $event_host_uid,
+	      "username" => $event_host_username,
+	      "firstName" => $event_host_first_name,
+	      "lastName" => $event_host_last_name
+	  );
+	  $event = array
+	  (
+	      "eid" => $eid,
+	      "eventName" => $event_name,
+	      "eventInviteTypeLabel" => $event_invite_type_label,
+	      "eventPrivacyLabel" => $event_privacy_label,
+	      "eventImageUploadAllowedIndicator" => charToStrBool($event_image_upload_allowed_indicator),
+	      "eventStartDatetime" => $event_start_datetime,
+	      "eventEndDatetime" => $event_end_datetime,
+	      "eventGpsLatitude" => $event_gps_latitude,
+	      "eventGpsLongitude" => $event_gps_longitude,
+	      "eventLikeCount" => $event_like_count,
+	      "eventDislikeCount" => $event_dislike_count,
+	      "eventViewCount" => $event_view_count,
+	      "eventRatingRatio" => $event_rating_ratio,
+	      "eventHost" => $eventHost
+	  );
+	  array_push($events, $event);
 	}
-
 	$statement->close();
-
+	
+	$eventList = array
+	(
+	    "events" => $events
+	);
+	
 	return $eventList;
 }
 
