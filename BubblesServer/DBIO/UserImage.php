@@ -1,36 +1,5 @@
 <?php
 
-/* FUNCTION: addImageToEvent
- * DESCRIPTION: Adds the image with the specified uiid to the event with the
- *              specified eid for the user with the specified uid.
- * --------------------------------------------------------------------------------
- * ================================================================================
- * -------------------------------------------------------------------------------- */
-function addImageToEvent($eid, $uiid)
-{
-	// IMPORT THE DATABASE CONNECTION
-	require $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBConnect/dbConnect.php';
-
-	// ACQUIRE THE USER IMAGE SEQUENCE
-	$query = "INSERT INTO R_EVENT_USER_IMAGE (eid, uiid)
-			  VALUES (?, ?)";
-	$statement = $conn->prepare($query);
-	$statement->bind_param("ii", $eid, $uiid);
-	$statement->execute();
-	$statement->error;
-
-	// CHECK FOR AN ERROR, RETURN IT IF ONE EXISTS
-	$error = $statement->error;
-	if ($error != "") { echo "DB ERROR: " . $error; return; }
-
-	$statement->close();
-
-	// RETURN THE USER IMAGE SEQUENCE
-	return "Success";
-}
-
-
-
 /* FUNCTION: fetchUserImageSequence
  * DESCRIPTION: Retrieves and returns the sequence number of the next possible 
  *              imamge (i.e. the sequence of the image that would be uploaded).
@@ -184,14 +153,20 @@ function fetchImages($uiid)
  * --------------------------------------------------------------------------------
  * ================================================================================
  * -------------------------------------------------------------------------------- */
-function fetchImagesByEid($eid)
+function fetchImagesByEid($eid, $euiProfileIndicator)
 {
 	// IMPORT REQUIRED METHODS
 	require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/Functions/Miscellaneous.php';
 
 	// IMPORT THE DATABASE CONNECTION
-	require $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBConnect/dbConnect.php';
-
+	require $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBConnect/dbConnect.php'; 
+	
+	if ($euiProfileIndicator === true)
+	  $euiProfileSequenceSubquery = " AND eui_event_profile_sequence IS NOT NULL";
+	else if ($euiProfileIndicator === false)
+	  $euiProfileSequenceSubquery = " AND eui_event_profile_sequence IS NULL"; 
+	else 
+	  $euiProfileSequenceSubquery = "";
 	// EXECUTE THE QUERY
 	$query = "SELECT T_USER_IMAGE.uiid, T_USER_IMAGE.uid, user_image_sequence, user_image_profile_sequence, 
 	                 user_image_name, privacy_label, image_purpose_label, 
@@ -201,7 +176,7 @@ function fetchImagesByEid($eid)
 				  	 LEFT JOIN T_IMAGE_PURPOSE ON T_USER_IMAGE.user_image_purpose_code = T_IMAGE_PURPOSE.image_purpose_code
 					 LEFT JOIN R_EVENT_USER_IMAGE ON T_USER_IMAGE.uiid = R_EVENT_USER_IMAGE.uiid
 			  WHERE
-				  	 eid = ?";
+				  	 eid = ?" . $euiProfileSequenceSubquery;
 	$statement = $conn->prepare($query);
 	$statement->bind_param("i", $eid);
 	$statement->execute();

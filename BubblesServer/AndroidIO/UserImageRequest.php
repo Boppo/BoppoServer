@@ -2,8 +2,6 @@
 
 $function = $_GET['function'];
 
-if ($function == "addImagesToEvent")
-  addImagesToEvent();
 if ($function == 'getImagesByEid')
   getImagesByEid();
 if ($function == 'getImagesByUidAndPurpose')
@@ -19,42 +17,6 @@ if ($function == 'uploadImage')
 
   
   
-/* FUNCTION: addImagesToEvent
- * DESCRIPTION: Adds the images with the uiids in the specified list to the
- *              specified event.
- * --------------------------------------------------------------------------------
- * ================================================================================
- * -------------------------------------------------------------------------------- */
-function addImagesToEvent()
-{
-  /* THE FOLLOWING 3 LINES OF CODE ENABLE ERROR REPORTING. */
-  error_reporting(E_ALL);
-  ini_set('display_errors', TRUE);
-  ini_set('display_startup_errors', TRUE);
-  /* END. */
-
-  // DECODE JSON STRING //
-  $json_decoded = json_decode(file_get_contents("php://input"), true);
-  // ASSIGN THE JSON VALUES TO VARIABLES //
-  $eid   = $json_decoded["eid"];
-  $uiids = $json_decoded["uiids"];
-
-  // FOR EVERY USER IMAGE IDENTIFIER (UIID), ADD IT IMAGE TO THE EVENT //
-  require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBIO/UserImage.php';
-
-  $responses = array();
-  foreach($uiids as $uiid)
-  {
-    $response = addImageToEvent($eid, $uiid);
-    array_push($responses, $response);
-  }
-
-  echo json_encode($responses);
-}
-/* --------------------------------------------------------------------------------
- * ================================================================================
- * -------------------------------------------------------------------------------- */
-
 
 
 /* FUNCTION: getImagesByEid
@@ -74,9 +36,10 @@ function getImagesByEid()
   $json_decoded = json_decode(file_get_contents("php://input"), true);
   // ASSIGN THE JSON VALUES TO VARIABLES
   $eid = $json_decoded["eid"];
+  $euiProfileIndicator = $json_decoded["euiProfileIndicator"];
 
   require $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBIO/UserImage.php';
-  $images = fetchImagesByEid($eid);
+  $images = fetchImagesByEid($eid, $euiProfileIndicator); 
 
   // RETURN THE EVENT ID
   echo json_encode($images);

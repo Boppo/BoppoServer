@@ -1,5 +1,6 @@
 ----------------------------------------------------------------------
-Below is how I can test if a Java Boolean is true, false, or null:
+Below is how I can test if a Java Boolean provided through a JSON
+string and stored in "$variable" is true, false, or null:
 
 	if ($variable === true)
 		echo "This is true!";
@@ -7,4 +8,10 @@ Below is how I can test if a Java Boolean is true, false, or null:
 		echo "This is false!";
 	else if (!$variable)
 		echo "This is null!";
+		
+NOTE: On the Java side, the value that is json_encoded should be 
+one of the following (note that they are NOT strings): 
+- true
+- false
+- null
 ----------------------------------------------------------------------
