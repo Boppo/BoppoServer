@@ -41,6 +41,7 @@ if ($function == "deleteEvent")
 if ($function == "updateEvent")
 	updateEvent();
 
+	
 
 	
 	
@@ -64,6 +65,8 @@ function createEvent()
 	// ASSIGN THE JSON VALUES TO VARIABLES
 	$event_host_uid                       = $json_decoded["eventHostUid"];
 	$event_name                           = $json_decoded["eventName"];
+	$event_category_label                 = $json_decoded["eventCategoryLabel"];
+	$event_type_label                     = $json_decoded["eventTypeLabel"];
 	$event_invite_type_label              = $json_decoded["eventInviteTypeLabel"];
 	$event_privacy_label                  = $json_decoded["eventPrivacyLabel"];
 	$event_image_upload_allowed_indicator = $json_decoded["eventImageUploadAllowedIndicator"];
@@ -71,6 +74,21 @@ function createEvent()
 	$event_end_datetime                   = $json_decoded["eventEndDatetime"];
 	$event_gps_latitude                   = $json_decoded["eventGpsLatitude"];
 	$event_gps_longitude                  = $json_decoded["eventGpsLongitude"];
+	
+	// ENCODE THE EVENT TYPE LABEL
+	require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBIO/ReferenceData.php';
+	$event_type_code = dbGetEventTypeCode($event_type_label);
+	if (!($json_decoded["eventTypeLabel"] == null || $event_type_label != null)) {
+        echo "ERROR: Incorrect event type specified.";
+        return; }
+	   
+    // ENCODE THE EVENT CATEGORY LABEL
+    require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBIO/ReferenceData.php';
+    $event_category_code = dbGetEventCategoryCode($event_category_label, $event_type_label);
+    if (!($json_decoded["eventCategoryLabel"] == null || $event_category_label != null ||
+            $json_decoded["eventTypeLabel"] == null || $event_type_label != null)) {
+        echo "ERROR: Incorrect event category or event type specified.";
+        return; }
 		
 	// ENCODE THE PRIVACY LABEL
 	require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBIO/Privacy.php';
@@ -99,13 +117,15 @@ function createEvent()
 	// EXECUTE THE TRANSACTION
 	$queries = array(
 		"INSERT INTO T_EVENT 
-		    (event_name, event_host_uid, event_privacy_code, event_invite_type_code, 
+		    (event_name, event_host_uid, event_category_code, event_type_code, 
+	         event_privacy_code, event_invite_type_code, 
 			 event_image_upload_allowed_indicator, event_start_datetime, event_end_datetime, 
 		     event_gps_latitude, event_gps_longitude)
 		 VALUES 
-		 	(?, ?, ?, ?, ?, ?, ?, ?, ?)",
+		 	(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
 		"INSERT INTO T_EVENT_USER
-			(eid, uid, event_user_type_code, event_user_invite_status_type_code) 
+			(eid, uid, event_category_code, event_type_code, event_user_type_code, 
+	         event_user_invite_status_type_code) 
 		 VALUES 
 			(?, ?, 3, 1)" 	// As of this moment, the 3 was = 'Administrator' & 1 was = 'Joined'
 	);
@@ -121,8 +141,9 @@ function createEvent()
 		
 		$index = array_search($query, $queries);
 		if ($index === 0) {
-			$statement->bind_param("siiiissdd", $event_name, $event_host_uid, $event_privacy_code,
-				$event_invite_type_code, $event_image_upload_allowed_indicator,
+			$statement->bind_param("siiiiiissdd", $event_name, $event_host_uid, 
+			    $event_category_code, $event_type_code, 
+			    $event_privacy_code, $event_invite_type_code, $event_image_upload_allowed_indicator,
 				$event_start_datetime, $event_end_datetime, $event_gps_latitude, $event_gps_longitude);
 		}
 		elseif ($index === 1) {
@@ -222,7 +243,7 @@ function getEventData()
 	$eid = $json_decoded["eid"];
 
 	require $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBIO/Event.php';
-	$event = fetchEventData($eid);
+	$event = dbGetEventData($eid);
 	
 	// RETURN THE EVENT ID
     echo json_encode($event);
@@ -324,7 +345,7 @@ function getEventDataByMember()
 	$uid = $json_decoded["uid"];
 
 	require $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBIO/Event.php';
-	$eventList = fetchEventDataByMember($uid);
+	$eventList = dbGetEventDataByMember($uid);
 
 	// RETURN THE EVENT ID
 	echo json_encode($eventList);
@@ -390,7 +411,7 @@ function getEventDataByName()
 	$event_name = $json_decoded["eventName"];
 
 	require $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBIO/Event.php';
-	$eventList = fetchEventDataByName($event_name);
+	$eventList = dbGetEventDataByName($event_name);
 
 	// RETURN THE EVENT ID
 	echo json_encode($eventList);
@@ -781,6 +802,8 @@ function updateEvent()
 	$eid 								  = $json_decoded["eid"];
 	$event_host_uid                       = $json_decoded["eventHostUid"];
 	$event_name                           = $json_decoded["eventName"];
+	$event_category_label                 = $json_decoded["eventCategoryLabel"];
+	$event_type_label                     = $json_decoded["eventTypeLabel"];
 	$event_invite_type_label              = $json_decoded["eventInviteTypeLabel"];
 	$event_privacy_label                  = $json_decoded["eventPrivacyLabel"];
 	$event_image_upload_allowed_indicator = filter_var($json_decoded["eventImageUploadAllowedIndicator"], 
@@ -794,6 +817,21 @@ function updateEvent()
 	if ($eid <= 0) {
 		echo "ERROR: Incorrect event identifier specified.";
 		return; }
+		
+	// ENCODE THE EVENT TYPE LABEL
+	require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBIO/ReferenceData.php';
+	$event_type_code = dbGetEventTypeCode($event_type_label);
+	if (!($json_decoded["eventTypeLabel"] == null || $event_type_label != null)) {
+	  echo "ERROR: Incorrect event type specified.";
+	  return; }
+	  
+    // ENCODE THE EVENT CATEGORY LABEL
+    require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBIO/ReferenceData.php';
+    $event_category_code = dbGetEventCategoryCode($event_category_label, $event_type_label);
+    if (!($json_decoded["eventCategoryLabel"] == null || $event_category_label != null ||
+            $json_decoded["eventTypeLabel"] == null || $event_type_label != null)) {
+      echo "ERROR: Incorrect event category or event type specified.";
+      return; }
 	
 	// ENCODE THE INVITE TYPE LABEL
 	require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBIO/InviteType.php';
@@ -822,7 +860,9 @@ function updateEvent()
 	(
 		"eid" => $eid, 
 		"eventHostUid" => $event_host_uid,
-		"eventName" => $event_name,
+		"eventName" => $event_name, 
+	    "eventCategoryCode" => $event_category_code, 
+	    "eventTypeCode" => $event_type_code, 
 		"eventInviteTypeCode" => $event_invite_type_code,
 		"eventPrivacyCode" => $event_privacy_code,
 		"eventImageUploadAllowedIndicator" => $event_image_upload_allowed_indicator,

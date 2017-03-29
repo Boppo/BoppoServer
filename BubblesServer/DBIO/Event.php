@@ -1,12 +1,12 @@
 <?php
 
-/* FUNCTION:    fetchEventData
- * DESCRIPTION: Fetches the data of an entire event for the specified eid
+/* FUNCTION:    dbGetEventData
+ * DESCRIPTION: Gets the data of an entire event for the specified eid
  *              (Event Identifier).
  * --------------------------------------------------------------------------------
  * ================================================================================
  * -------------------------------------------------------------------------------- */
-function fetchEventData($eid)
+function dbGetEventData($eid)
 {
 	// IMPORT REQUIRED METHODS
 	require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/Functions/Miscellaneous.php';
@@ -16,39 +16,52 @@ function fetchEventData($eid)
 	
 	// EXECUTE THE QUERY
 	$query = "SELECT DISTINCT T_EVENT.eid, uid, username, first_name, last_name, event_name,
-		       		 invite_type_label, privacy_label, event_image_upload_allowed_indicator,
+		       		 event_category_label, event_type_label, 
+	                 invite_type_label, privacy_label, event_image_upload_allowed_indicator,
 		       		 event_start_datetime, event_end_datetime, event_gps_latitude, event_gps_longitude,
 		       		 event_like_count, event_dislike_count, event_view_count
 			  FROM   T_EVENT
 		       		 LEFT JOIN T_INVITE_TYPE ON T_EVENT.event_invite_type_code = T_INVITE_TYPE.invite_type_code
 		       		 LEFT JOIN T_PRIVACY ON T_EVENT.event_privacy_code = T_PRIVACY.privacy_code
-		       		 LEFT JOIN T_USER ON T_EVENT.event_host_uid = T_USER.uid
+		       		 LEFT JOIN T_USER ON T_EVENT.event_host_uid = T_USER.uid 
+	                 LEFT JOIN T_EVENT_TYPE ON T_EVENT.event_type_code = T_EVENT_TYPE.event_type_code 
+	                   AND T_EVENT.event_category_code = T_EVENT_TYPE.event_category_code 
+	                 LEFT JOIN T_EVENT_CATEGORY ON T_EVENT_TYPE.event_category_code = T_EVENT_CATEGORY.event_category_code
 			  WHERE  eid = ? 
 			  ORDER BY event_name";
 	$statement = $conn->prepare($query);
 	$statement->bind_param("i", $eid);
 	$statement->execute();
+	$statement->store_result(); 	// Need this to check the number of rows later
 	$error = $statement->error;
 	// CHECK FOR AN ERROR, RETURN IT IF ONE EXISTS
 	if ($error != "") { echo "DB ERROR: " . $error; return; }
+	// CHECK FOR THE COUNT OF RESULTS, RETURN A MESSAGE IF NONE EXIST
+	if ($statement->num_rows === 0) { echo "No such event exists."; return; }
 	
 	// DEFAULT AND ASSIGN THE EVENT VARIABLES
 	$statement->bind_result($eid, $event_host_uid, $event_host_username, 
 		$event_host_first_name, $event_host_last_name, $event_name,
+	    $event_category_label, $event_type_label, 
 		$event_invite_type_label, $event_privacy_label,
 		$event_image_upload_allowed_indicator, $event_start_datetime,
 		$event_end_datetime, $event_gps_latitude, $event_gps_longitude,
 		$event_like_count, $event_dislike_count, $event_view_count);
 	$statement->fetch();
 	
+	$eventHost = array
+	(
+	    "uid" => $event_host_uid,
+	    "username" => $event_host_username,
+	    "firstName" => $event_host_first_name,
+	    "lastName" => $event_host_last_name
+	);
 	$event = array
 	(
 		"eid" => $eid, 
-		"eventHostUid" => $event_host_uid,
-		"eventHostUsername" => $event_host_username,
-		"eventHostFirstName" => $event_host_first_name,
-		"eventHostLastName" => $event_host_last_name,
-		"eventName" => $event_name,
+		"eventName" => $event_name, 
+	    "eventCategoryLabel" => $event_category_label, 
+	    "eventTypeLabel" => $event_type_label, 
 		"eventInviteTypeLabel" => $event_invite_type_label,
 		"eventPrivacyLabel" => $event_privacy_label,
 		"eventImageUploadAllowedIndicator" => charToStrBool($event_image_upload_allowed_indicator),
@@ -58,7 +71,8 @@ function fetchEventData($eid)
 		"eventGpsLongitude" => $event_gps_longitude,
 		"eventLikeCount" => $event_like_count,
 		"eventDislikeCount" => $event_dislike_count,
-		"eventViewCount" => $event_view_count
+		"eventViewCount" => $event_view_count, 
+	    "eventHost" => $eventHost
 	);
 	
 	$statement->close();
@@ -84,23 +98,30 @@ function dbGetEventDataByRadius($longitude, $latitude, $radius)
 
   // EXECUTE THE QUERY
   $query = "SELECT DISTINCT T_EVENT.eid, uid, username, first_name, last_name, event_name,
+	       		   event_category_label, event_type_label, 
                    event_invite_type_code, event_privacy_code, event_image_upload_allowed_indicator,
                    event_start_datetime, event_end_datetime, event_gps_latitude, event_gps_longitude,
                    event_like_count, event_dislike_count, event_view_count,
                    (((acos(sin((? * pi() / 180)) * sin((event_gps_latitude * pi() / 180))
-                   + cos((? * pi() / 180))
-                   * cos((event_gps_latitude * pi() / 180))
-                   * cos(((? - event_gps_longitude) * pi() / 180)))) * 180 / pi()) * 60 * 1.1515) as distance
+                     + cos((? * pi() / 180))
+                     * cos((event_gps_latitude * pi() / 180))
+                     * cos(((? - event_gps_longitude) * pi() / 180)))) * 180 / pi()) * 60 * 1.1515) as distance
             FROM   T_EVENT
-                   LEFT JOIN T_USER ON T_EVENT.event_host_uid = T_USER.uid
+                   LEFT JOIN T_USER ON T_EVENT.event_host_uid = T_USER.uid 
+                   LEFT JOIN T_EVENT_TYPE ON T_EVENT.event_type_code = T_EVENT_TYPE.event_type_code 
+                     AND T_EVENT.event_category_code = T_EVENT_TYPE.event_category_code 
+                   LEFT JOIN T_EVENT_CATEGORY ON T_EVENT_TYPE.event_category_code = T_EVENT_CATEGORY.event_category_code
             HAVING distance <= ?
             ORDER BY distance DESC";
   $statement = $conn->prepare($query);
   $statement->bind_param("dddd", $latitude, $latitude, $longitude, $radius);
   $statement->execute();
+  $statement->store_result(); 	// Need this to check the number of rows later
   $error = $statement->error;
   // CHECK FOR AN ERROR, RETURN IT IF ONE EXISTS
   if ($error != "") { echo "DB ERROR: " . $error; return; }
+  if ($statement->num_rows === 0) { echo "No such event exists."; return; }
+  
 
   // DEFAULT AND ASSIGN THE EVENT VARIABLES
   /*
@@ -111,6 +132,7 @@ function dbGetEventDataByRadius($longitude, $latitude, $radius)
    */
   $statement->bind_result($eid, $event_host_uid, $event_host_username,
       $event_host_first_name, $event_host_last_name, $event_name,
+      $event_category_label, $event_type_label,
       $event_invite_type_label, $event_privacy_label,
       $event_image_upload_allowed_indicator, $event_start_datetime,
       $event_end_datetime, $event_gps_latitude, $event_gps_longitude,
@@ -130,7 +152,9 @@ function dbGetEventDataByRadius($longitude, $latitude, $radius)
     $event = array
     (
         "eid" => $eid,
-        "eventName" => $event_name,
+        "eventName" => $event_name, 
+        "eventCategoryLabel" => $event_category_label,
+        "eventTypeLabel" => $event_type_label,
         "eventInviteTypeLabel" => $event_invite_type_label,
         "eventPrivacyLabel" => $event_privacy_label,
         "eventImageUploadAllowedIndicator" => charToStrBool($event_image_upload_allowed_indicator),
@@ -185,28 +209,34 @@ function dbGetLiveEventDataByRadius($longitude, $latitude, $radius)
 
 	// EXECUTE THE QUERY
 	$query = "SELECT DISTINCT T_EVENT.eid, uid, username, first_name, last_name, event_name,
-			    event_invite_type_code, event_privacy_code, event_image_upload_allowed_indicator,
-			    event_start_datetime, event_end_datetime, event_gps_latitude, event_gps_longitude,
-			    event_like_count, event_dislike_count, event_view_count, 
-			    (((acos(sin((? * pi() / 180)) * sin((event_gps_latitude * pi() / 180)) 
-			    + cos((? * pi() / 180)) 
-			    * cos((event_gps_latitude * pi() / 180)) 
-			  	  * cos(((? - event_gps_longitude) * pi() / 180)))) * 180 / pi()) * 60 * 1.1515) as distance
-			  FROM T_EVENT
-	       	    LEFT JOIN T_USER ON T_EVENT.event_host_uid = T_USER.uid
+		       		 event_category_label, event_type_label, 
+      			     event_invite_type_code, event_privacy_code, event_image_upload_allowed_indicator,
+      			     event_start_datetime, event_end_datetime, event_gps_latitude, event_gps_longitude,
+      			     event_like_count, event_dislike_count, event_view_count, 
+      			     (((acos(sin((? * pi() / 180)) * sin((event_gps_latitude * pi() / 180)) 
+      			       + cos((? * pi() / 180)) 
+      			       * cos((event_gps_latitude * pi() / 180)) 
+      			  	   * cos(((? - event_gps_longitude) * pi() / 180)))) * 180 / pi()) * 60 * 1.1515) as distance
+			  FROM   T_EVENT
+	       	         LEFT JOIN T_USER ON T_EVENT.event_host_uid = T_USER.uid 
+                     LEFT JOIN T_EVENT_TYPE ON T_EVENT.event_type_code = T_EVENT_TYPE.event_type_code 
+                       AND T_EVENT.event_category_code = T_EVENT_TYPE.event_category_code 
+                     LEFT JOIN T_EVENT_CATEGORY ON T_EVENT_TYPE.event_category_code = T_EVENT_CATEGORY.event_category_code
 			  HAVING distance <= ? 
-			    AND TIMESTAMPDIFF($event_live_datetime_duration_offset_unit, 
-			      CURRENT_TIMESTAMP, event_start_datetime) < ? 
-			    AND TIMESTAMPDIFF($event_live_datetime_duration_offset_unit, 
-			      event_end_datetime, CURRENT_TIMESTAMP) < ?
+			         AND TIMESTAMPDIFF($event_live_datetime_duration_offset_unit, 
+			         CURRENT_TIMESTAMP, event_start_datetime) < ? 
+			         AND TIMESTAMPDIFF($event_live_datetime_duration_offset_unit, 
+			         event_end_datetime, CURRENT_TIMESTAMP) < ?
 			  ORDER BY distance DESC";
 	$statement = $conn->prepare($query);
 	$statement->bind_param("ddddii", $latitude, $latitude, $longitude, $radius, 
 		$event_live_datetime_duration_offset_value, $event_live_datetime_duration_offset_value);
 	$statement->execute();
+	$statement->store_result(); 	// Need this to check the number of rows later
 	$error = $statement->error;
 	// CHECK FOR AN ERROR, RETURN IT IF ONE EXISTS
 	if ($error != "") { echo "DB ERROR: " . $error; return; }
+	if ($statement->num_rows === 0) return "No such event exists.";
 
 	// DEFAULT AND ASSIGN THE EVENT VARIABLES
 	/*
@@ -216,11 +246,12 @@ function dbGetLiveEventDataByRadius($longitude, $latitude, $radius)
 	 $event_gps_longitude  = -1.0;
 	 */
 	$statement->bind_result($eid, $event_host_uid, $event_host_username,
-			$event_host_first_name, $event_host_last_name, $event_name,
-			$event_invite_type_label, $event_privacy_label,
-			$event_image_upload_allowed_indicator, $event_start_datetime,
-			$event_end_datetime, $event_gps_latitude, $event_gps_longitude,
-			$event_like_count, $event_dislike_count, $event_view_count, $distance);
+        $event_host_first_name, $event_host_last_name, $event_name,
+        $event_category_label, $event_type_label,
+        $event_invite_type_label, $event_privacy_label,
+        $event_image_upload_allowed_indicator, $event_start_datetime,
+        $event_end_datetime, $event_gps_latitude, $event_gps_longitude,
+        $event_like_count, $event_dislike_count, $event_view_count, $distance);
 	
 	$events = array();
 	
@@ -237,6 +268,8 @@ function dbGetLiveEventDataByRadius($longitude, $latitude, $radius)
 	  (
 	      "eid" => $eid,
 	      "eventName" => $event_name,
+	      "eventCategoryLabel" => $event_category_label,
+	      "eventTypeLabel" => $event_type_label,
 	      "eventInviteTypeLabel" => $event_invite_type_label,
 	      "eventPrivacyLabel" => $event_privacy_label,
 	      "eventImageUploadAllowedIndicator" => charToStrBool($event_image_upload_allowed_indicator),
@@ -264,14 +297,14 @@ function dbGetLiveEventDataByRadius($longitude, $latitude, $radius)
 
 
 
-/* FUNCTION:    fetchEventDataEncoded
- * DESCRIPTION: Fetches the data of an entire event for the specified eid
+/* FUNCTION:    dbGetEventDataEncoded
+ * DESCRIPTION: Gets the data of an entire event for the specified eid
  *              (Event Identifier) with all of the labels encoded (i.e. those that
  *              are stored in reference/lookup tables).
  * --------------------------------------------------------------------------------
  * ================================================================================
  * -------------------------------------------------------------------------------- */
-function fetchEventDataEncoded($eid)
+function dbGetEventDataEncoded($eid)
 {
 	// IMPORT REQUIRED METHODS
 	require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/Functions/Miscellaneous.php';
@@ -281,6 +314,7 @@ function fetchEventDataEncoded($eid)
 
 	// EXECUTE THE QUERY
 	$query = "SELECT DISTINCT T_EVENT.eid, uid, username, first_name, last_name, event_name,
+	                 event_category_code, event_type_code, 
 			         event_invite_type_code, event_privacy_code, event_image_upload_allowed_indicator,
 			         event_start_datetime, event_end_datetime, event_gps_latitude, event_gps_longitude,
 			         event_like_count, event_dislike_count, event_view_count
@@ -291,13 +325,16 @@ function fetchEventDataEncoded($eid)
 	$statement = $conn->prepare($query);
 	$statement->bind_param("i", $eid);
 	$statement->execute();
+	$statement->store_result(); 	// Need this to check the number of rows later
 	$error = $statement->error;
 	// CHECK FOR AN ERROR, RETURN IT IF ONE EXISTS
 	if ($error != "") { echo "DB ERROR: " . $error; return; }
+	if ($statement->num_rows === 0) return "No such event exists.";
 
 	// DEFAULT AND ASSIGN THE EVENT VARIABLES
 	$statement->bind_result($eid, $event_host_uid, $event_host_username, 
 		$event_host_first_name, $event_host_last_name, $event_name,
+	    $event_category_code, $event_type_code, 
 		$event_invite_type_code, $event_privacy_code,
 		$event_image_upload_allowed_indicator, $event_start_datetime,
 		$event_end_datetime, $event_gps_latitude, $event_gps_longitude,
@@ -307,7 +344,9 @@ function fetchEventDataEncoded($eid)
 	$event = array
 	(
 		"eventHostUid" => $event_host_uid,
-		"eventName" => $event_name,
+		"eventName" => $event_name, 
+	    "eventCategoryCode" => $event_category_code, 
+	    "eventTypeCode" => $event_type_code, 
 		"eventInviteTypeCode" => $event_invite_type_code,
 		"eventPrivacyCode" => $event_privacy_code,
 		"eventImageUploadAllowedIndicator" => $event_image_upload_allowed_indicator,
@@ -327,13 +366,13 @@ function fetchEventDataEncoded($eid)
 
 
 
-/* FUNCTION:    fetchEventDataByMember
- * DESCRIPTION: Fetches the data of an entire event for the specified eid
+/* FUNCTION:    dbGetEventDataByMember
+ * DESCRIPTION: Gets the data of an entire event for the specified eid
  *              (Event Identifier).
  * --------------------------------------------------------------------------------
  * ================================================================================
  * -------------------------------------------------------------------------------- */
-function fetchEventDataByMember($uid)
+function dbGetEventDataByMember($uid)
 {
 	// IMPORT REQUIRED METHODS
     require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/Functions/Miscellaneous.php';
@@ -352,7 +391,8 @@ function fetchEventDataByMember($uid)
 	// EXECUTE THE QUERY
 	$query = "SELECT T_EVENT.eid, event_name,
 	                 event_host_uid, eh.username AS event_host_username,
-                     eh.first_name AS event_host_first_name, eh.last_name AS event_host_last_name,
+                     eh.first_name AS event_host_first_name, eh.last_name AS event_host_last_name, 
+	                 event_category_label, event_type_label,
 	                 invite_type_label, privacy_label, event_image_upload_allowed_indicator,
                      event_start_datetime, event_end_datetime, event_gps_latitude, event_gps_longitude,
                      event_like_count, event_dislike_count, event_view_count 
@@ -361,16 +401,20 @@ function fetchEventDataByMember($uid)
                      LEFT JOIN T_PRIVACY ON T_EVENT.event_privacy_code = T_PRIVACY.privacy_code
                      LEFT JOIN T_EVENT_USER ON T_EVENT.eid = T_EVENT_USER.eid
                      LEFT JOIN T_USER eh ON T_EVENT.event_host_uid = eh.uid
-                     LEFT JOIN T_USER eu ON T_EVENT_USER.uid = eu.uid
+                     LEFT JOIN T_USER eu ON T_EVENT_USER.uid = eu.uid 
+                     LEFT JOIN T_EVENT_TYPE ON T_EVENT.event_type_code = T_EVENT_TYPE.event_type_code 
+                       AND T_EVENT.event_category_code = T_EVENT_TYPE.event_category_code 
+                     LEFT JOIN T_EVENT_CATEGORY ON T_EVENT_TYPE.event_category_code = T_EVENT_CATEGORY.event_category_code
               WHERE  T_EVENT_USER.uid = ? 
-	
               ORDER  BY event_name";
 	$statement = $conn->prepare($query);
 	$statement->bind_param("i", $uid);
 	$statement->execute();
+	$statement->store_result(); 	// Need this to check the number of rows later
 	$error = $statement->error;
 	// CHECK FOR AN ERROR, RETURN IT IF ONE EXISTS
 	if ($error != "") { echo "DB ERROR: " . $error; return; }
+	if ($statement->num_rows === 0) return "No such event exists.";
 	
 	// DEFAULT AND ASSIGN THE EVENT VARIABLES
 	/*
@@ -380,7 +424,8 @@ function fetchEventDataByMember($uid)
 	 $event_gps_longitude  = -1.0;
 	 */
 	$statement->bind_result($eid, $event_name,
-	    $event_host_uid, $event_host_username, $event_host_first_name, $event_host_last_name,
+	    $event_host_uid, $event_host_username, $event_host_first_name, $event_host_last_name, 
+	    $event_category_label, $event_type_label,
 	    $event_invite_type_label, $event_privacy_label,
 	    $event_image_upload_allowed_indicator, $event_start_datetime,
 	    $event_end_datetime, $event_gps_latitude, $event_gps_longitude,
@@ -400,7 +445,9 @@ function fetchEventDataByMember($uid)
 	  $event = array
 	  (
         "eid" => $eid,
-        "eventName" => $event_name,
+        "eventName" => $event_name, 
+        "eventCategoryLabel" => $event_category_label,
+        "eventTypeLabel" => $event_type_label,
         "eventInviteTypeLabel" => $event_invite_type_label,
         "eventPrivacyLabel" => $event_privacy_label,
         "eventImageUploadAllowedIndicator" => charToStrBool($event_image_upload_allowed_indicator),
@@ -464,7 +511,8 @@ function dbGetLiveEventDataByMember($uid)
 	// EXECUTE THE QUERY
 	$query = "SELECT T_EVENT.eid, event_name,
 	                 event_host_uid, eh.username AS event_host_username,
-                     eh.first_name AS event_host_first_name, eh.last_name AS event_host_last_name,
+                     eh.first_name AS event_host_first_name, eh.last_name AS event_host_last_name, 
+                     event_category_label, event_type_label,
 	                 invite_type_label, privacy_label, event_image_upload_allowed_indicator,
                      event_start_datetime, event_end_datetime, event_gps_latitude, event_gps_longitude,
                      event_like_count, event_dislike_count, event_view_count 
@@ -473,7 +521,10 @@ function dbGetLiveEventDataByMember($uid)
                      LEFT JOIN T_PRIVACY ON T_EVENT.event_privacy_code = T_PRIVACY.privacy_code
                      LEFT JOIN T_EVENT_USER ON T_EVENT.eid = T_EVENT_USER.eid
                      LEFT JOIN T_USER eh ON T_EVENT.event_host_uid = eh.uid
-                     LEFT JOIN T_USER eu ON T_EVENT_USER.uid = eu.uid
+                     LEFT JOIN T_USER eu ON T_EVENT_USER.uid = eu.uid 
+                     LEFT JOIN T_EVENT_TYPE ON T_EVENT.event_type_code = T_EVENT_TYPE.event_type_code 
+                       AND T_EVENT.event_category_code = T_EVENT_TYPE.event_category_code 
+                     LEFT JOIN T_EVENT_CATEGORY ON T_EVENT_TYPE.event_category_code = T_EVENT_CATEGORY.event_category_code
               WHERE  T_EVENT_USER.uid = ? 
   			  HAVING TIMESTAMPDIFF($event_live_datetime_duration_offset_unit, 
 			      	   CURRENT_TIMESTAMP, event_start_datetime) < ? AND 
@@ -484,9 +535,11 @@ function dbGetLiveEventDataByMember($uid)
 	$statement->bind_param("iii", $uid, 
 		$event_live_datetime_duration_offset_value, $event_live_datetime_duration_offset_value);
 	$statement->execute();
+	$statement->store_result(); 	// Need this to check the number of rows later
 	$error = $statement->error;
 	// CHECK FOR AN ERROR, RETURN IT IF ONE EXISTS
 	if ($error != "") { echo "DB ERROR: " . $error; return; }
+	if ($statement->num_rows === 0) return "No such event exists.";
 
 	// DEFAULT AND ASSIGN THE EVENT VARIABLES
 	/*
@@ -496,7 +549,8 @@ function dbGetLiveEventDataByMember($uid)
 	 $event_gps_longitude  = -1.0;
 	 */
 	$statement->bind_result($eid, $event_name,
-	    $event_host_uid, $event_host_username, $event_host_first_name, $event_host_last_name,
+	    $event_host_uid, $event_host_username, $event_host_first_name, $event_host_last_name, 
+	    $event_category_label, $event_type_label,
 	    $event_invite_type_label, $event_privacy_label,
 	    $event_image_upload_allowed_indicator, $event_start_datetime,
 	    $event_end_datetime, $event_gps_latitude, $event_gps_longitude,
@@ -516,7 +570,9 @@ function dbGetLiveEventDataByMember($uid)
 	  $event = array
 	  (
 	      "eid" => $eid,
-	      "eventName" => $event_name,
+	      "eventName" => $event_name, 
+	      "eventCategoryLabel" => $event_category_label,
+	      "eventTypeLabel" => $event_type_label,
 	      "eventInviteTypeLabel" => $event_invite_type_label,
 	      "eventPrivacyLabel" => $event_privacy_label,
 	      "eventImageUploadAllowedIndicator" => charToStrBool($event_image_upload_allowed_indicator),
@@ -544,13 +600,13 @@ function dbGetLiveEventDataByMember($uid)
 
 
 
-/* FUNCTION:    fetchEventDataByMember
- * DESCRIPTION: Fetches the data of an entire event for all of the events of which 
+/* FUNCTION:    dbGetEventDataByMember
+ * DESCRIPTION: Gets the data of an entire event for all of the events of which 
  *  			the specified uid (User Identifier) is a member.
  * --------------------------------------------------------------------------------
  * ================================================================================
  * -------------------------------------------------------------------------------- */
-function fetchEventDataByName($event_name)
+function dbGetEventDataByName($event_name)
 {
 	// IMPORT REQUIRED METHODS
 	require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/Functions/Miscellaneous.php';
@@ -563,21 +619,27 @@ function fetchEventDataByName($event_name)
 
 	// EXECUTE THE QUERY
 	$query = "SELECT DISTINCT T_EVENT.eid, uid, username, first_name, last_name, event_name,
+	                 event_category_label, event_type_label,
 		       		 invite_type_label, privacy_label, event_image_upload_allowed_indicator,
 		       		 event_start_datetime, event_end_datetime, event_gps_latitude, event_gps_longitude,
 		       		 event_like_count, event_dislike_count, event_view_count
 			  FROM   T_EVENT
 		       		 LEFT JOIN T_INVITE_TYPE ON T_EVENT.event_invite_type_code = T_INVITE_TYPE.invite_type_code
 		       		 LEFT JOIN T_PRIVACY ON T_EVENT.event_privacy_code = T_PRIVACY.privacy_code
-		       		 LEFT JOIN T_USER ON T_EVENT.event_host_uid = T_USER.uid
+		       		 LEFT JOIN T_USER ON T_EVENT.event_host_uid = T_USER.uid 
+                     LEFT JOIN T_EVENT_TYPE ON T_EVENT.event_type_code = T_EVENT_TYPE.event_type_code 
+                       AND T_EVENT.event_category_code = T_EVENT_TYPE.event_category_code 
+                     LEFT JOIN T_EVENT_CATEGORY ON T_EVENT_TYPE.event_category_code = T_EVENT_CATEGORY.event_category_code
 			  WHERE  event_name LIKE ? 
 			  ORDER BY event_name";
 	$statement = $conn->prepare($query);
 	$statement->bind_param("s", $event_name);
 	$statement->execute();
+	$statement->store_result(); 	// Need this to check the number of rows later
 	$error = $statement->error;
 	// CHECK FOR AN ERROR, RETURN IT IF ONE EXISTS
 	if ($error != "") { echo "DB ERROR: " . $error; return; }
+	if ($statement->num_rows === 0) return "No such event exists.";
 
 	// DEFAULT AND ASSIGN THE EVENT VARIABLES
 	/*
@@ -587,11 +649,12 @@ function fetchEventDataByName($event_name)
 	 $event_gps_longitude  = -1.0;
 	 */
 	$statement->bind_result($eid, $event_host_uid, $event_host_username, 
-			$event_host_first_name, $event_host_last_name, $event_name,
-			$event_invite_type_label, $event_privacy_label,
-			$event_image_upload_allowed_indicator, $event_start_datetime,
-			$event_end_datetime, $event_gps_latitude, $event_gps_longitude,
-			$event_like_count, $event_dislike_count, $event_view_count);
+        $event_host_first_name, $event_host_last_name, $event_name, 
+        $event_category_label, $event_type_label,
+        $event_invite_type_label, $event_privacy_label,
+        $event_image_upload_allowed_indicator, $event_start_datetime,
+        $event_end_datetime, $event_gps_latitude, $event_gps_longitude,
+        $event_like_count, $event_dislike_count, $event_view_count);
 
 	$events = array();
 
@@ -607,7 +670,9 @@ function fetchEventDataByName($event_name)
 		$event = array
 		(
 			"eid" => $eid,
-			"eventName" => $event_name,
+			"eventName" => $event_name, 
+		    "eventCategoryLabel" => $event_category_label,
+		    "eventTypeLabel" => $event_type_label,
 			"eventInviteTypeLabel" => $event_invite_type_label,
 			"eventPrivacyLabel" => $event_privacy_label,
 			"eventImageUploadAllowedIndicator" => charToStrBool($event_image_upload_allowed_indicator),
@@ -664,13 +729,17 @@ function dbGetLiveEventDataByName($event_name)
 
 	// EXECUTE THE QUERY
 	$query = "SELECT DISTINCT T_EVENT.eid, uid, username, first_name, last_name, event_name,
+                     event_category_label, event_type_label, 
 		       		 invite_type_label, privacy_label, event_image_upload_allowed_indicator,
 		       		 event_start_datetime, event_end_datetime, event_gps_latitude, event_gps_longitude,
 		       		 event_like_count, event_dislike_count, event_view_count
 			  FROM   T_EVENT
 		       		 LEFT JOIN T_INVITE_TYPE ON T_EVENT.event_invite_type_code = T_INVITE_TYPE.invite_type_code
 		       		 LEFT JOIN T_PRIVACY ON T_EVENT.event_privacy_code = T_PRIVACY.privacy_code
-		       		 LEFT JOIN T_USER ON T_EVENT.event_host_uid = T_USER.uid
+		       		 LEFT JOIN T_USER ON T_EVENT.event_host_uid = T_USER.uid 
+                     LEFT JOIN T_EVENT_TYPE ON T_EVENT.event_type_code = T_EVENT_TYPE.event_type_code 
+                       AND T_EVENT.event_category_code = T_EVENT_TYPE.event_category_code 
+                     LEFT JOIN T_EVENT_CATEGORY ON T_EVENT_TYPE.event_category_code = T_EVENT_CATEGORY.event_category_code
 			  WHERE  event_name LIKE ?
   			  HAVING TIMESTAMPDIFF($event_live_datetime_duration_offset_unit, 
 			      	   CURRENT_TIMESTAMP, event_start_datetime) < ? AND 
@@ -681,9 +750,11 @@ function dbGetLiveEventDataByName($event_name)
 	$statement->bind_param("sii", $event_name, 
 		$event_live_datetime_duration_offset_value, $event_live_datetime_duration_offset_value);
 	$statement->execute();
+	$statement->store_result(); 	// Need this to check the number of rows later
 	$error = $statement->error;
 	// CHECK FOR AN ERROR, RETURN IT IF ONE EXISTS
 	if ($error != "") { echo "DB ERROR: " . $error; return; }
+	if ($statement->num_rows === 0) return "No such event exists.";
 
 	// DEFAULT AND ASSIGN THE EVENT VARIABLES
 	/*
@@ -693,7 +764,8 @@ function dbGetLiveEventDataByName($event_name)
 	 $event_gps_longitude  = -1.0;
 	 */
 	$statement->bind_result($eid, $event_host_uid, $event_host_username,
-		$event_host_first_name, $event_host_last_name, $event_name,
+		$event_host_first_name, $event_host_last_name, $event_name, 
+	    $event_category_label, $event_type_label, 
 		$event_invite_type_label, $event_privacy_label,
 		$event_image_upload_allowed_indicator, $event_start_datetime,
 		$event_end_datetime, $event_gps_latitude, $event_gps_longitude,
@@ -713,7 +785,9 @@ function dbGetLiveEventDataByName($event_name)
 	  $event = array
 	  (
 	      "eid" => $eid,
-	      "eventName" => $event_name,
+	      "eventName" => $event_name, 
+	      "eventCategoryLabel" => $event_category_label,
+	      "eventTypeLabel" => $event_type_label,
 	      "eventInviteTypeLabel" => $event_invite_type_label,
 	      "eventPrivacyLabel" => $event_privacy_label,
 	      "eventImageUploadAllowedIndicator" => charToStrBool($event_image_upload_allowed_indicator),
@@ -755,22 +829,28 @@ function dbGetEventDataByTopNViews($top_n_views)
 	require $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBConnect/dbConnect.php';
 
 	// EXECUTE THE QUERY
-	$query = "SELECT DISTINCT T_EVENT.eid, uid, username, first_name, last_name, event_name,
+	$query = "SELECT DISTINCT T_EVENT.eid, uid, username, first_name, last_name, event_name, 
+	                 event_category_label, event_type_label,
 		       		 invite_type_label, privacy_label, event_image_upload_allowed_indicator,
 		       		 event_start_datetime, event_end_datetime, event_gps_latitude, event_gps_longitude,
 		       		 event_like_count, event_dislike_count, event_view_count
 			  FROM   T_EVENT
 		       		 LEFT JOIN T_INVITE_TYPE ON T_EVENT.event_invite_type_code = T_INVITE_TYPE.invite_type_code
 		       		 LEFT JOIN T_PRIVACY ON T_EVENT.event_privacy_code = T_PRIVACY.privacy_code
-		       		 LEFT JOIN T_USER ON T_EVENT.event_host_uid = T_USER.uid
+		       		 LEFT JOIN T_USER ON T_EVENT.event_host_uid = T_USER.uid 
+                     LEFT JOIN T_EVENT_TYPE ON T_EVENT.event_type_code = T_EVENT_TYPE.event_type_code 
+                       AND T_EVENT.event_category_code = T_EVENT_TYPE.event_category_code 
+                     LEFT JOIN T_EVENT_CATEGORY ON T_EVENT_TYPE.event_category_code = T_EVENT_CATEGORY.event_category_code
 			  ORDER BY event_view_count DESC
 			  LIMIT ?;";
 	$statement = $conn->prepare($query);
 	$statement->bind_param("i", $top_n_views);
 	$statement->execute();
+	$statement->store_result(); 	// Need this to check the number of rows later
 	$error = $statement->error;
 	// CHECK FOR AN ERROR, RETURN IT IF ONE EXISTS
 	if ($error != "") { echo "DB ERROR: " . $error; return; }
+	if ($statement->num_rows === 0) return "No such event exists.";
 
 	// DEFAULT AND ASSIGN THE EVENT VARIABLES
 	/*
@@ -780,11 +860,12 @@ function dbGetEventDataByTopNViews($top_n_views)
 	 $event_gps_longitude  = -1.0; 
 	 */
 	$statement->bind_result($eid, $event_host_uid, $event_host_username, 
-			$event_host_first_name, $event_host_last_name, $event_name,
-			$event_invite_type_label, $event_privacy_label,
-			$event_image_upload_allowed_indicator, $event_start_datetime,
-			$event_end_datetime, $event_gps_latitude, $event_gps_longitude,
-			$event_like_count, $event_dislike_count, $event_view_count);
+        $event_host_first_name, $event_host_last_name, $event_name, 
+        $event_category_label, $event_type_label,
+        $event_invite_type_label, $event_privacy_label,
+        $event_image_upload_allowed_indicator, $event_start_datetime,
+        $event_end_datetime, $event_gps_latitude, $event_gps_longitude,
+        $event_like_count, $event_dislike_count, $event_view_count);
 
 	$events = array();
 	
@@ -800,7 +881,9 @@ function dbGetEventDataByTopNViews($top_n_views)
 	  $event = array
 	  (
 	      "eid" => $eid,
-	      "eventName" => $event_name,
+	      "eventName" => $event_name, 
+	      "eventCategoryLabel" => $event_category_label,
+	      "eventTypeLabel" => $event_type_label,
 	      "eventInviteTypeLabel" => $event_invite_type_label,
 	      "eventPrivacyLabel" => $event_privacy_label,
 	      "eventImageUploadAllowedIndicator" => charToStrBool($event_image_upload_allowed_indicator),
@@ -854,13 +937,17 @@ function dbGetLiveEventDataByTopNViews($top_n_views)
 
 	// EXECUTE THE QUERY
 	$query = "SELECT DISTINCT T_EVENT.eid, uid, username, first_name, last_name, event_name,
+	                 event_category_label, event_type_label,
 		       		 invite_type_label, privacy_label, event_image_upload_allowed_indicator,
 		       		 event_start_datetime, event_end_datetime, event_gps_latitude, event_gps_longitude,
 		       		 event_like_count, event_dislike_count, event_view_count
 			  FROM   T_EVENT
 		       		 LEFT JOIN T_INVITE_TYPE ON T_EVENT.event_invite_type_code = T_INVITE_TYPE.invite_type_code
 		       		 LEFT JOIN T_PRIVACY ON T_EVENT.event_privacy_code = T_PRIVACY.privacy_code
-		       		 LEFT JOIN T_USER ON T_EVENT.event_host_uid = T_USER.uid
+		       		 LEFT JOIN T_USER ON T_EVENT.event_host_uid = T_USER.uid 
+                     LEFT JOIN T_EVENT_TYPE ON T_EVENT.event_type_code = T_EVENT_TYPE.event_type_code 
+                       AND T_EVENT.event_category_code = T_EVENT_TYPE.event_category_code 
+                     LEFT JOIN T_EVENT_CATEGORY ON T_EVENT_TYPE.event_category_code = T_EVENT_CATEGORY.event_category_code
   			  HAVING TIMESTAMPDIFF($event_live_datetime_duration_offset_unit, 
 			      	   CURRENT_TIMESTAMP, event_start_datetime) < ? AND 
 			    	 TIMESTAMPDIFF($event_live_datetime_duration_offset_unit, 
@@ -872,9 +959,11 @@ function dbGetLiveEventDataByTopNViews($top_n_views)
 		$event_live_datetime_duration_offset_value, $event_live_datetime_duration_offset_value, 
 		$top_n_views);
 	$statement->execute();
+	$statement->store_result(); 	// Need this to check the number of rows later
 	$error = $statement->error;
 	// CHECK FOR AN ERROR, RETURN IT IF ONE EXISTS
 	if ($error != "") { echo "DB ERROR: " . $error; return; }
+	if ($statement->num_rows === 0) return "No such event exists.";
 
 	// DEFAULT AND ASSIGN THE EVENT VARIABLES
 	/*
@@ -884,11 +973,12 @@ function dbGetLiveEventDataByTopNViews($top_n_views)
 	 $event_gps_longitude  = -1.0;
 	 */
 	$statement->bind_result($eid, $event_host_uid, $event_host_username,
-			$event_host_first_name, $event_host_last_name, $event_name,
-			$event_invite_type_label, $event_privacy_label,
-			$event_image_upload_allowed_indicator, $event_start_datetime,
-			$event_end_datetime, $event_gps_latitude, $event_gps_longitude,
-			$event_like_count, $event_dislike_count, $event_view_count);
+        $event_host_first_name, $event_host_last_name, $event_name, 
+        $event_category_label, $event_type_label,
+        $event_invite_type_label, $event_privacy_label,
+        $event_image_upload_allowed_indicator, $event_start_datetime,
+        $event_end_datetime, $event_gps_latitude, $event_gps_longitude,
+        $event_like_count, $event_dislike_count, $event_view_count);
 
 	$events = array();
 	
@@ -904,7 +994,9 @@ function dbGetLiveEventDataByTopNViews($top_n_views)
 	  $event = array
 	  (
 	      "eid" => $eid,
-	      "eventName" => $event_name,
+	      "eventName" => $event_name, 
+	      "eventCategoryLabel" => $event_category_label,
+	      "eventTypeLabel" => $event_type_label,
 	      "eventInviteTypeLabel" => $event_invite_type_label,
 	      "eventPrivacyLabel" => $event_privacy_label,
 	      "eventImageUploadAllowedIndicator" => charToStrBool($event_image_upload_allowed_indicator),
@@ -946,22 +1038,28 @@ function dbGetEventDataByTopNLikes($top_n)
 	require $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBConnect/dbConnect.php';
 
 	// EXECUTE THE QUERY
-	$query = "SELECT DISTINCT T_EVENT.eid, uid, username, first_name, last_name, event_name,
+	$query = "SELECT DISTINCT T_EVENT.eid, uid, username, first_name, last_name, event_name, 
+	                 event_category_label, event_type_label,
 		       		 invite_type_label, privacy_label, event_image_upload_allowed_indicator,
 		       		 event_start_datetime, event_end_datetime, event_gps_latitude, event_gps_longitude,
 		       		 event_like_count, event_dislike_count, event_view_count
 			  FROM   T_EVENT
 		       		 LEFT JOIN T_INVITE_TYPE ON T_EVENT.event_invite_type_code = T_INVITE_TYPE.invite_type_code
 		       		 LEFT JOIN T_PRIVACY ON T_EVENT.event_privacy_code = T_PRIVACY.privacy_code
-		       		 LEFT JOIN T_USER ON T_EVENT.event_host_uid = T_USER.uid
+		       		 LEFT JOIN T_USER ON T_EVENT.event_host_uid = T_USER.uid 
+                     LEFT JOIN T_EVENT_TYPE ON T_EVENT.event_type_code = T_EVENT_TYPE.event_type_code 
+                       AND T_EVENT.event_category_code = T_EVENT_TYPE.event_category_code 
+                     LEFT JOIN T_EVENT_CATEGORY ON T_EVENT_TYPE.event_category_code = T_EVENT_CATEGORY.event_category_code
 			  ORDER BY event_like_count DESC
 			  LIMIT ?;";
 	$statement = $conn->prepare($query);
 	$statement->bind_param("i", $top_n);
 	$statement->execute();
+	$statement->store_result(); 	// Need this to check the number of rows later
 	$error = $statement->error;
 	// CHECK FOR AN ERROR, RETURN IT IF ONE EXISTS
 	if ($error != "") { echo "DB ERROR: " . $error; return; }
+	if ($statement->num_rows === 0) return "No such event exists.";
 
 	// DEFAULT AND ASSIGN THE EVENT VARIABLES
 	/*
@@ -971,11 +1069,12 @@ function dbGetEventDataByTopNLikes($top_n)
 	 $event_gps_longitude  = -1.0;
 	 */
 	$statement->bind_result($eid, $event_host_uid, $event_host_username, 
-			$event_host_first_name, $event_host_last_name, $event_name,
-			$event_invite_type_label, $event_privacy_label,
-			$event_image_upload_allowed_indicator, $event_start_datetime,
-			$event_end_datetime, $event_gps_latitude, $event_gps_longitude,
-			$event_like_count, $event_dislike_count, $event_view_count);
+        $event_host_first_name, $event_host_last_name, $event_name, 
+        $event_category_label, $event_type_label, 
+        $event_invite_type_label, $event_privacy_label,
+        $event_image_upload_allowed_indicator, $event_start_datetime,
+        $event_end_datetime, $event_gps_latitude, $event_gps_longitude,
+        $event_like_count, $event_dislike_count, $event_view_count);
 
 	$events = array();
 	
@@ -991,7 +1090,9 @@ function dbGetEventDataByTopNLikes($top_n)
 	  $event = array
 	  (
 	      "eid" => $eid,
-	      "eventName" => $event_name,
+	      "eventName" => $event_name, 
+	      "eventCategoryLabel" => $event_category_label,
+	      "eventTypeLabel" => $event_type_label,
 	      "eventInviteTypeLabel" => $event_invite_type_label,
 	      "eventPrivacyLabel" => $event_privacy_label,
 	      "eventImageUploadAllowedIndicator" => charToStrBool($event_image_upload_allowed_indicator),
@@ -1044,14 +1145,18 @@ function dbGetLiveEventDataByTopNLikes($top_n)
 	= $array_gv["Event"]["EventLiveDatetimeDurationOffset"]["DatetimeValue"];
 
 	// EXECUTE THE QUERY
-	$query = "SELECT DISTINCT T_EVENT.eid, uid, username, first_name, last_name, event_name,
+	$query = "SELECT DISTINCT T_EVENT.eid, uid, username, first_name, last_name, event_name, 
+	                 event_category_label, event_type_label,
 		       		 invite_type_label, privacy_label, event_image_upload_allowed_indicator,
 		       		 event_start_datetime, event_end_datetime, event_gps_latitude, event_gps_longitude,
 		       		 event_like_count, event_dislike_count, event_view_count
 			  FROM   T_EVENT
 		       		 LEFT JOIN T_INVITE_TYPE ON T_EVENT.event_invite_type_code = T_INVITE_TYPE.invite_type_code
 		       		 LEFT JOIN T_PRIVACY ON T_EVENT.event_privacy_code = T_PRIVACY.privacy_code
-		       		 LEFT JOIN T_USER ON T_EVENT.event_host_uid = T_USER.uid
+		       		 LEFT JOIN T_USER ON T_EVENT.event_host_uid = T_USER.uid 
+                     LEFT JOIN T_EVENT_TYPE ON T_EVENT.event_type_code = T_EVENT_TYPE.event_type_code 
+                       AND T_EVENT.event_category_code = T_EVENT_TYPE.event_category_code 
+                     LEFT JOIN T_EVENT_CATEGORY ON T_EVENT_TYPE.event_category_code = T_EVENT_CATEGORY.event_category_code
   			  HAVING TIMESTAMPDIFF($event_live_datetime_duration_offset_unit, 
 			      	   CURRENT_TIMESTAMP, event_start_datetime) < ? AND 
 			    	 TIMESTAMPDIFF($event_live_datetime_duration_offset_unit, 
@@ -1063,9 +1168,11 @@ function dbGetLiveEventDataByTopNLikes($top_n)
 		$event_live_datetime_duration_offset_value, $event_live_datetime_duration_offset_value,
 		$top_n);
 	$statement->execute();
+	$statement->store_result(); 	// Need this to check the number of rows later
 	$error = $statement->error;
 	// CHECK FOR AN ERROR, RETURN IT IF ONE EXISTS
 	if ($error != "") { echo "DB ERROR: " . $error; return; }
+	if ($statement->num_rows === 0) return "No such event exists.";
 
 	// DEFAULT AND ASSIGN THE EVENT VARIABLES
 	/*
@@ -1075,7 +1182,8 @@ function dbGetLiveEventDataByTopNLikes($top_n)
 	 $event_gps_longitude  = -1.0;
 	 */
 	$statement->bind_result($eid, $event_host_uid, $event_host_username,
-		$event_host_first_name, $event_host_last_name, $event_name,
+		$event_host_first_name, $event_host_last_name, $event_name, 
+	    $event_category_label, $event_type_label,
 		$event_invite_type_label, $event_privacy_label,
 		$event_image_upload_allowed_indicator, $event_start_datetime,
 		$event_end_datetime, $event_gps_latitude, $event_gps_longitude,
@@ -1095,7 +1203,9 @@ function dbGetLiveEventDataByTopNLikes($top_n)
 	  $event = array
 	  (
 	      "eid" => $eid,
-	      "eventName" => $event_name,
+	      "eventName" => $event_name, 
+	      "eventCategoryLabel" => $event_category_label,
+	      "eventTypeLabel" => $event_type_label,
 	      "eventInviteTypeLabel" => $event_invite_type_label,
 	      "eventPrivacyLabel" => $event_privacy_label,
 	      "eventImageUploadAllowedIndicator" => charToStrBool($event_image_upload_allowed_indicator),
@@ -1137,22 +1247,28 @@ function dbGetEventDataByTopNDislikes($top_n)
 	require $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBConnect/dbConnect.php';
 
 	// EXECUTE THE QUERY
-	$query = "SELECT DISTINCT T_EVENT.eid, uid, username, first_name, last_name, event_name,
+	$query = "SELECT DISTINCT T_EVENT.eid, uid, username, first_name, last_name, event_name, 
+	                 event_category_label, event_type_label,
 		       		 invite_type_label, privacy_label, event_image_upload_allowed_indicator,
 		       		 event_start_datetime, event_end_datetime, event_gps_latitude, event_gps_longitude,
 		       		 event_like_count, event_dislike_count, event_view_count
 			  FROM   T_EVENT
 		       		 LEFT JOIN T_INVITE_TYPE ON T_EVENT.event_invite_type_code = T_INVITE_TYPE.invite_type_code
 		       		 LEFT JOIN T_PRIVACY ON T_EVENT.event_privacy_code = T_PRIVACY.privacy_code
-		       		 LEFT JOIN T_USER ON T_EVENT.event_host_uid = T_USER.uid
+		       		 LEFT JOIN T_USER ON T_EVENT.event_host_uid = T_USER.uid 
+                     LEFT JOIN T_EVENT_TYPE ON T_EVENT.event_type_code = T_EVENT_TYPE.event_type_code 
+                       AND T_EVENT.event_category_code = T_EVENT_TYPE.event_category_code 
+                     LEFT JOIN T_EVENT_CATEGORY ON T_EVENT_TYPE.event_category_code = T_EVENT_CATEGORY.event_category_code
 			  ORDER BY event_dislike_count DESC
 			  LIMIT ?;";
 	$statement = $conn->prepare($query);
 	$statement->bind_param("i", $top_n);
 	$statement->execute();
+	$statement->store_result(); 	// Need this to check the number of rows later
 	$error = $statement->error;
 	// CHECK FOR AN ERROR, RETURN IT IF ONE EXISTS
 	if ($error != "") { echo "DB ERROR: " . $error; return; }
+	if ($statement->num_rows === 0) return "No such event exists."; 
 
 	// DEFAULT AND ASSIGN THE EVENT VARIABLES
 	/*
@@ -1162,11 +1278,12 @@ function dbGetEventDataByTopNDislikes($top_n)
 	 $event_gps_longitude  = -1.0;
 	 */
 	$statement->bind_result($eid, $event_host_uid, $event_host_username, 
-			$event_host_first_name, $event_host_last_name, $event_name,
-			$event_invite_type_label, $event_privacy_label,
-			$event_image_upload_allowed_indicator, $event_start_datetime,
-			$event_end_datetime, $event_gps_latitude, $event_gps_longitude,
-			$event_like_count, $event_dislike_count, $event_view_count);
+        $event_host_first_name, $event_host_last_name, $event_name, 
+        $event_category_label, $event_type_label,
+        $event_invite_type_label, $event_privacy_label,
+        $event_image_upload_allowed_indicator, $event_start_datetime,
+        $event_end_datetime, $event_gps_latitude, $event_gps_longitude,
+        $event_like_count, $event_dislike_count, $event_view_count);
 
 	$events = array();
 	
@@ -1182,7 +1299,9 @@ function dbGetEventDataByTopNDislikes($top_n)
 	  $event = array
 	  (
 	      "eid" => $eid,
-	      "eventName" => $event_name,
+	      "eventName" => $event_name, 
+	      "eventCategoryLabel" => $event_category_label,
+	      "eventTypeLabel" => $event_type_label,
 	      "eventInviteTypeLabel" => $event_invite_type_label,
 	      "eventPrivacyLabel" => $event_privacy_label,
 	      "eventImageUploadAllowedIndicator" => charToStrBool($event_image_upload_allowed_indicator),
@@ -1235,14 +1354,18 @@ function dbGetLiveEventDataByTopNDislikes($top_n)
 	= $array_gv["Event"]["EventLiveDatetimeDurationOffset"]["DatetimeValue"];
 
 	// EXECUTE THE QUERY
-	$query = "SELECT DISTINCT T_EVENT.eid, uid, username, first_name, last_name, event_name,
+	$query = "SELECT DISTINCT T_EVENT.eid, uid, username, first_name, last_name, event_name, 
+	                 event_category_label, event_type_label, 
 		       		 invite_type_label, privacy_label, event_image_upload_allowed_indicator,
 		       		 event_start_datetime, event_end_datetime, event_gps_latitude, event_gps_longitude,
 		       		 event_like_count, event_dislike_count, event_view_count
 			  FROM   T_EVENT
 		       		 LEFT JOIN T_INVITE_TYPE ON T_EVENT.event_invite_type_code = T_INVITE_TYPE.invite_type_code
 		       		 LEFT JOIN T_PRIVACY ON T_EVENT.event_privacy_code = T_PRIVACY.privacy_code
-		       		 LEFT JOIN T_USER ON T_EVENT.event_host_uid = T_USER.uid
+		       		 LEFT JOIN T_USER ON T_EVENT.event_host_uid = T_USER.uid 
+                     LEFT JOIN T_EVENT_TYPE ON T_EVENT.event_type_code = T_EVENT_TYPE.event_type_code 
+                       AND T_EVENT.event_category_code = T_EVENT_TYPE.event_category_code 
+                     LEFT JOIN T_EVENT_CATEGORY ON T_EVENT_TYPE.event_category_code = T_EVENT_CATEGORY.event_category_code
   			  HAVING TIMESTAMPDIFF($event_live_datetime_duration_offset_unit, 
 			      	   CURRENT_TIMESTAMP, event_start_datetime) < ? AND 
 			    	 TIMESTAMPDIFF($event_live_datetime_duration_offset_unit, 
@@ -1254,9 +1377,11 @@ function dbGetLiveEventDataByTopNDislikes($top_n)
 		$event_live_datetime_duration_offset_value, $event_live_datetime_duration_offset_value, 
 		$top_n);
 	$statement->execute();
+	$statement->store_result(); 	// Need this to check the number of rows later
 	$error = $statement->error;
 	// CHECK FOR AN ERROR, RETURN IT IF ONE EXISTS
 	if ($error != "") { echo "DB ERROR: " . $error; return; }
+	if ($statement->num_rows === 0) return "No such event exists.";
 
 	// DEFAULT AND ASSIGN THE EVENT VARIABLES
 	/*
@@ -1266,7 +1391,8 @@ function dbGetLiveEventDataByTopNDislikes($top_n)
 	 $event_gps_longitude  = -1.0;
 	 */
 	$statement->bind_result($eid, $event_host_uid, $event_host_username,
-		$event_host_first_name, $event_host_last_name, $event_name,
+		$event_host_first_name, $event_host_last_name, $event_name, 
+	    $event_category_label, $event_type_label,
 		$event_invite_type_label, $event_privacy_label,
 		$event_image_upload_allowed_indicator, $event_start_datetime,
 		$event_end_datetime, $event_gps_latitude, $event_gps_longitude,
@@ -1286,7 +1412,9 @@ function dbGetLiveEventDataByTopNDislikes($top_n)
 	  $event = array
 	  (
 	      "eid" => $eid,
-	      "eventName" => $event_name,
+	      "eventName" => $event_name, 
+	      "eventCategoryLabel" => $event_category_label,
+	      "eventTypeLabel" => $event_type_label,
 	      "eventInviteTypeLabel" => $event_invite_type_label,
 	      "eventPrivacyLabel" => $event_privacy_label,
 	      "eventImageUploadAllowedIndicator" => charToStrBool($event_image_upload_allowed_indicator),
@@ -1328,7 +1456,8 @@ function dbGetEventDataByTopNRatings($top_n)
 	require $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBConnect/dbConnect.php';
 
 	// EXECUTE THE QUERY
-	$query = "SELECT DISTINCT T_EVENT.eid, uid, username, first_name, last_name, event_name,
+	$query = "SELECT DISTINCT T_EVENT.eid, uid, username, first_name, last_name, event_name, 
+	                 event_category_label, event_type_label, 
 		       		 invite_type_label, privacy_label, event_image_upload_allowed_indicator,
 		       		 event_start_datetime, event_end_datetime, event_gps_latitude, event_gps_longitude,
 		       		 event_like_count, event_dislike_count, event_view_count,
@@ -1336,15 +1465,20 @@ function dbGetEventDataByTopNRatings($top_n)
 			  FROM   T_EVENT
 		       		 LEFT JOIN T_INVITE_TYPE ON T_EVENT.event_invite_type_code = T_INVITE_TYPE.invite_type_code
 		       		 LEFT JOIN T_PRIVACY ON T_EVENT.event_privacy_code = T_PRIVACY.privacy_code
-		       		 LEFT JOIN T_USER ON T_EVENT.event_host_uid = T_USER.uid
+		       		 LEFT JOIN T_USER ON T_EVENT.event_host_uid = T_USER.uid 
+                     LEFT JOIN T_EVENT_TYPE ON T_EVENT.event_type_code = T_EVENT_TYPE.event_type_code 
+                       AND T_EVENT.event_category_code = T_EVENT_TYPE.event_category_code 
+                     LEFT JOIN T_EVENT_CATEGORY ON T_EVENT_TYPE.event_category_code = T_EVENT_CATEGORY.event_category_code
 			  ORDER BY event_rating_ratio DESC
 			  LIMIT ?";
 	$statement = $conn->prepare($query);
 	$statement->bind_param("i", $top_n);
 	$statement->execute();
+	$statement->store_result(); 	// Need this to check the number of rows later
 	$error = $statement->error;
 	// CHECK FOR AN ERROR, RETURN IT IF ONE EXISTS
 	if ($error != "") { echo "DB ERROR: " . $error; return; }
+	if ($statement->num_rows === 0) return "No such event exists.";
 
 	// DEFAULT AND ASSIGN THE EVENT VARIABLES
 	/*
@@ -1354,7 +1488,8 @@ function dbGetEventDataByTopNRatings($top_n)
 	 $event_gps_longitude  = -1.0;
 	 */
 	$statement->bind_result($eid, $event_host_uid, $event_host_username,
-		$event_host_first_name, $event_host_last_name, $event_name,
+		$event_host_first_name, $event_host_last_name, $event_name, 
+	    $event_category_label, $event_type_label, 
 		$event_invite_type_label, $event_privacy_label,
 		$event_image_upload_allowed_indicator, $event_start_datetime,
 		$event_end_datetime, $event_gps_latitude, $event_gps_longitude,
@@ -1374,7 +1509,9 @@ function dbGetEventDataByTopNRatings($top_n)
       $event = array
       (
           "eid" => $eid,
-          "eventName" => $event_name,
+          "eventName" => $event_name, 
+          "eventCategoryLabel" => $event_category_label,
+          "eventTypeLabel" => $event_type_label,
           "eventInviteTypeLabel" => $event_invite_type_label,
           "eventPrivacyLabel" => $event_privacy_label,
           "eventImageUploadAllowedIndicator" => charToStrBool($event_image_upload_allowed_indicator),
@@ -1429,7 +1566,8 @@ function dbGetLiveEventDataByTopNRatings($top_n)
 	= $array_gv["Event"]["EventLiveDatetimeDurationOffset"]["DatetimeValue"];
 
 	// EXECUTE THE QUERY
-	$query = "SELECT DISTINCT T_EVENT.eid, uid, username, first_name, last_name, event_name,
+	$query = "SELECT DISTINCT T_EVENT.eid, uid, username, first_name, last_name, event_name, 
+	                 event_category_label, event_type_label, 
 		       		 invite_type_label, privacy_label, event_image_upload_allowed_indicator,
 		       		 event_start_datetime, event_end_datetime, event_gps_latitude, event_gps_longitude,
 		       		 event_like_count, event_dislike_count, event_view_count,
@@ -1437,7 +1575,10 @@ function dbGetLiveEventDataByTopNRatings($top_n)
 			  FROM   T_EVENT
 		       		 LEFT JOIN T_INVITE_TYPE ON T_EVENT.event_invite_type_code = T_INVITE_TYPE.invite_type_code
 		       		 LEFT JOIN T_PRIVACY ON T_EVENT.event_privacy_code = T_PRIVACY.privacy_code
-		       		 LEFT JOIN T_USER ON T_EVENT.event_host_uid = T_USER.uid
+		       		 LEFT JOIN T_USER ON T_EVENT.event_host_uid = T_USER.uid 
+                     LEFT JOIN T_EVENT_TYPE ON T_EVENT.event_type_code = T_EVENT_TYPE.event_type_code 
+                       AND T_EVENT.event_category_code = T_EVENT_TYPE.event_category_code 
+                     LEFT JOIN T_EVENT_CATEGORY ON T_EVENT_TYPE.event_category_code = T_EVENT_CATEGORY.event_category_code
   			  HAVING TIMESTAMPDIFF($event_live_datetime_duration_offset_unit, 
 			      	   CURRENT_TIMESTAMP, event_start_datetime) < ? AND 
 			    	 TIMESTAMPDIFF($event_live_datetime_duration_offset_unit, 
@@ -1449,9 +1590,11 @@ function dbGetLiveEventDataByTopNRatings($top_n)
 		$event_live_datetime_duration_offset_value, $event_live_datetime_duration_offset_value, 
 		$top_n);
 	$statement->execute();
+	$statement->store_result(); 	// Need this to check the number of rows later
 	$error = $statement->error;
 	// CHECK FOR AN ERROR, RETURN IT IF ONE EXISTS
 	if ($error != "") { echo "DB ERROR: " . $error; return; }
+	if ($statement->num_rows === 0) return "No such event exists.";
 
 	// DEFAULT AND ASSIGN THE EVENT VARIABLES
 	/*
@@ -1461,7 +1604,8 @@ function dbGetLiveEventDataByTopNRatings($top_n)
 	 $event_gps_longitude  = -1.0;
 	 */
 	$statement->bind_result($eid, $event_host_uid, $event_host_username,
-		$event_host_first_name, $event_host_last_name, $event_name,
+		$event_host_first_name, $event_host_last_name, $event_name, 
+	    $event_category_label, $event_type_label,
 		$event_invite_type_label, $event_privacy_label,
 		$event_image_upload_allowed_indicator, $event_start_datetime,
 		$event_end_datetime, $event_gps_latitude, $event_gps_longitude,
@@ -1481,7 +1625,9 @@ function dbGetLiveEventDataByTopNRatings($top_n)
 	  $event = array
 	  (
 	      "eid" => $eid,
-	      "eventName" => $event_name,
+	      "eventName" => $event_name, 
+	      "eventCategoryLabel" => $event_category_label,
+	      "eventTypeLabel" => $event_type_label,
 	      "eventInviteTypeLabel" => $event_invite_type_label,
 	      "eventPrivacyLabel" => $event_privacy_label,
 	      "eventImageUploadAllowedIndicator" => charToStrBool($event_image_upload_allowed_indicator),
@@ -1521,13 +1667,17 @@ function dbUpdateEvent($event)
 	require $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBConnect/dbConnect.php';
 	
 	// FETCH THE CURRENT VALUES FOR THIS EVENT
-	$eventCurrent = fetchEventDataEncoded($event["eid"]);
+	$eventCurrent = dbGetEventDataEncoded($event["eid"]);
 	
 	// UPDATE THE CURRENT VALUES WITH VALID NEW VALUES
 	if ($event["eventHostUid"] != null)
 		$eventCurrent["eventHostUid"] = $event["eventHostUid"];
 	if ($event["eventName"] != null)
 		$eventCurrent["eventName"] = $event["eventName"];
+	if ($event["eventCategoryCode"] != null)
+        $eventCurrent["eventCategoryCode"] = $event["eventCategoryCode"];
+    if ($event["eventTypeCode"] != null)
+        $eventCurrent["eventTypeCode"] = $event["eventTypeCode"];
 	if ($event["eventInviteTypeCode"] != null)
 		$eventCurrent["eventInviteTypeCode"] = $event["eventInviteTypeCode"];
 	if ($event["eventPrivacyCode"] != null)
@@ -1546,7 +1696,9 @@ function dbUpdateEvent($event)
 	// EXECUTE THE QUERY
 	$query = "UPDATE T_EVENT 
 			  SET event_host_uid = ?, 
-			      event_name = ?,
+			      event_name = ?, 
+	              event_category_code = ?, 
+	              event_type_code = ?, 
 			      event_invite_type_code = ?,
 			      event_privacy_code = ?, 
 			      event_image_upload_allowed_indicator = ?,
@@ -1558,7 +1710,8 @@ function dbUpdateEvent($event)
 		
 	$statement = $conn->prepare($query);
 		
-	$statement->bind_param("isiiissddi", $eventCurrent["eventHostUid"], $eventCurrent["eventName"], 
+	$statement->bind_param("isiiiiissddi", $eventCurrent["eventHostUid"], $eventCurrent["eventName"], 
+	    $eventCurrent["eventCategoryCode"], $eventCurrent["eventTypeCode"], 
 		$eventCurrent["eventInviteTypeCode"], $eventCurrent["eventPrivacyCode"], 
 		$eventCurrent["eventImageUploadAllowedIndicator"], $eventCurrent["eventStartDatetime"], 
 		$eventCurrent["eventEndDatetime"], $eventCurrent["eventGpsLatitude"], 

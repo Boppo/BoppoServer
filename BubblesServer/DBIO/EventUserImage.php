@@ -59,7 +59,7 @@ function dbSetEuiEventProfileSequence($eid, $uiid, $euiEventProfileSequence)
     return "Event user image event profile sequence has failed to update:
             no event user image has been updated.";
   else if ($statement->affected_rows === 1)
-    return "Event user image event profile sequence has been successfully updated";
+    return "Event user image event profile sequence has been successfully updated.";
   else
     return "Event user image event profile sequence has failed to update: 
             multiple event user images have been updated.";

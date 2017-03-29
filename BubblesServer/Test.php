@@ -136,9 +136,15 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBIO/NewsFeed.php';
 $result = dbGetNewsFriendActiveEvent(2, 5);
 echo(json_encode($result) . "<br><br>");
 */
-
+/*
 require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/AndroidIO/NewsFeedRequest.php';
 $result = getNewsEvents();
+*/
+require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBIO/ReferenceData.php';
+$result1 = dbGetEventCategoryCode("Sport");
+$result2 = dbGetEventTypeCode("Sport", "Soccer");
+echo "Event Category Code: " . $result1 . "<br>";
+echo "Event Type Label:" . $result2 . "<br>";
 
 echo "<br><br>!END OF SCRIPT!";
 // TEST FINAL!
