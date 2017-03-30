@@ -15,8 +15,9 @@ function dbGetEventData($eid)
 	require $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBConnect/dbConnect.php';
 	
 	// EXECUTE THE QUERY
-	$query = "SELECT DISTINCT T_EVENT.eid, uid, username, first_name, last_name, event_name,
-		       		 event_category_label, event_type_label, 
+	$query = "SELECT DISTINCT T_EVENT.eid, T_USER.uid, username, first_name, last_name,  
+	                 user_image_sequence, user_image_name, 
+		       		 event_name, event_category_label, event_type_label, 
 	                 invite_type_label, privacy_label, event_image_upload_allowed_indicator,
 		       		 event_start_datetime, event_end_datetime, event_gps_latitude, event_gps_longitude,
 		       		 event_like_count, event_dislike_count, event_view_count
@@ -26,8 +27,10 @@ function dbGetEventData($eid)
 		       		 LEFT JOIN T_USER ON T_EVENT.event_host_uid = T_USER.uid 
 	                 LEFT JOIN T_EVENT_TYPE ON T_EVENT.event_type_code = T_EVENT_TYPE.event_type_code 
 	                   AND T_EVENT.event_category_code = T_EVENT_TYPE.event_category_code 
-	                 LEFT JOIN T_EVENT_CATEGORY ON T_EVENT_TYPE.event_category_code = T_EVENT_CATEGORY.event_category_code
+	                 LEFT JOIN T_EVENT_CATEGORY ON T_EVENT_TYPE.event_category_code = T_EVENT_CATEGORY.event_category_code 
+                     LEFT JOIN T_USER_IMAGE ON T_USER.uid = T_USER_IMAGE.uid
 			  WHERE  eid = ? 
+                     AND user_image_profile_sequence = 0 
 			  ORDER BY event_name";
 	$statement = $conn->prepare($query);
 	$statement->bind_param("i", $eid);
@@ -41,20 +44,29 @@ function dbGetEventData($eid)
 	
 	// DEFAULT AND ASSIGN THE EVENT VARIABLES
 	$statement->bind_result($eid, $event_host_uid, $event_host_username, 
-		$event_host_first_name, $event_host_last_name, $event_name,
-	    $event_category_label, $event_type_label, 
+		$event_host_first_name, $event_host_last_name, 
+	    $user_image_sequence, $user_image_name,
+	    $event_name, $event_category_label, $event_type_label, 
 		$event_invite_type_label, $event_privacy_label,
 		$event_image_upload_allowed_indicator, $event_start_datetime,
 		$event_end_datetime, $event_gps_latitude, $event_gps_longitude,
 		$event_like_count, $event_dislike_count, $event_view_count);
 	$statement->fetch();
 	
+	$eventHostUserProfileImage = array
+	(
+	    "uid" => $event_host_uid,
+	    "userImageSequence" => $user_image_sequence,
+	    "userImageName" => $user_image_name,
+	    "userImagePath" => $event_host_uid . "/" . $user_image_sequence . "/" . $user_image_name
+	);
 	$eventHost = array
 	(
 	    "uid" => $event_host_uid,
 	    "username" => $event_host_username,
 	    "firstName" => $event_host_first_name,
-	    "lastName" => $event_host_last_name
+	    "lastName" => $event_host_last_name, 
+	    "eventHostUserProfileImage" => $eventHostUserProfileImage
 	);
 	$event = array
 	(

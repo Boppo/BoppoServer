@@ -65,7 +65,7 @@ function setEuiEventProfileSequence()
   // DECODE JSON STRING //
   $json_decoded = json_decode(file_get_contents("php://input"), true);
   // ASSIGN THE JSON VALUES TO VARIABLES //
-  $eid   = $json_decoded["eid"];
+  $eid  = $json_decoded["eid"];
   $uiid = $json_decoded["uiid"];
   $euiEventProfileSequence = $json_decoded["euiEventProfileSequence"];
 
