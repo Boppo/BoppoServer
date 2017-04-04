@@ -77,7 +77,7 @@ function createEvent()
 	
 	// ENCODE THE EVENT TYPE LABEL
 	require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBIO/ReferenceData.php';
-	$event_type_code = dbGetEventTypeCode($event_type_label);
+	$event_type_code = dbGetEventTypeCode($event_category_label, $event_type_label);
 	if (!($json_decoded["eventTypeLabel"] == null || $event_type_label != null)) {
         echo "ERROR: Incorrect event type specified.";
         return; }
@@ -124,7 +124,7 @@ function createEvent()
 		 VALUES 
 		 	(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
 		"INSERT INTO T_EVENT_USER
-			(eid, uid, event_category_code, event_type_code, event_user_type_code, 
+			(eid, uid, event_user_type_code, 
 	         event_user_invite_status_type_code) 
 		 VALUES 
 			(?, ?, 3, 1)" 	// As of this moment, the 3 was = 'Administrator' & 1 was = 'Joined'

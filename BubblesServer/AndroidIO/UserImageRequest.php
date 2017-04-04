@@ -235,6 +235,7 @@ function uploadImage()
   $json_decoded = json_decode(file_get_contents("php://input"), true);
 
   $uid = $json_decoded["uid"];
+  $user_image_profile_sequence = $json_decoded["userImageProfileSequence"];
   $user_image_name = $json_decoded["userImageName"];
   $user_image_purpose_label = $json_decoded["userImagePurposeLabel"];
   $user_image_privacy_label = $json_decoded["userImagePrivacyLabel"];
@@ -251,13 +252,14 @@ function uploadImage()
   $user_image_sequence = fetchUserImageSequence($uid);
   
   // UPLOAD THE IMAGE TO THE DATABASE // 
-  $query = "INSERT INTO T_USER_IMAGE (uid, user_image_sequence, user_image_name, 
+  $query = "INSERT INTO T_USER_IMAGE (uid, user_image_profile_sequence, user_image_sequence, user_image_name, 
             user_image_purpose_code, user_image_privacy_code,
                   user_image_gps_latitude, user_image_gps_longitude)
-                VALUES (?, ?, ?, ?, ?, ?, ?)";
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
   $statement = $conn->prepare($query);
-  $statement->bind_param("iisssdd", $uid, $user_image_sequence, $user_image_name, $user_image_purpose_code, 
-    $user_image_privacy_code, $user_image_gps_latitude, $user_image_gps_longitude);
+  $statement->bind_param("iiisssdd", $uid, $user_image_profile_sequence, $user_image_sequence, 
+    $user_image_name, $user_image_purpose_code,  $user_image_privacy_code, 
+    $user_image_gps_latitude, $user_image_gps_longitude);
   $statement->execute();
   $statement->error;
   
