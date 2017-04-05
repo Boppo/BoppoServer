@@ -174,6 +174,129 @@ function dbSetUser($user)
 
 
 
+/* FUNCTION:    dbGetUsersSearchedByName
+ * DESCRIPTION: Gets the users and their related data whose first names, last 
+ *              names, and/or usernames match the input substring, and are 
+ *              visible to the searched-by user. 
+ * --------------------------------------------------------------------------------
+ * ================================================================================
+ * -------------------------------------------------------------------------------- */
+function dbGetUsersSearchedByName($searched_by_uid, $searched_name)
+{
+  // IMPORT REQUIRED METHODS
+  require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/Functions/Miscellaneous.php';
 
+  // IMPORT THE DATABASE CONNECTION
+  require $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBConnect/dbConnect.php'; 
+  
+  // PREPARE VARIABLE SUBQUERY TO FILTER BY THE SEARCHED NAME
+  $names = explode(" ", $searched_name); 
+  print_r($names);
+  for ($i = 0; $i < count($names); $i++)
+  {
+    $names[$i] = "%" . $names[$i] . "%";
+  }
+  if (count($names) == 1)
+  {
+    $subquery = "username LIKE ? OR first_name LIKE ? OR last_name LIKE ?";
+  }
+  else if (count($names) > 1)
+  {
+    $subquery = "(first_name LIKE ? AND last_name LIKE ?) OR (last_name LIKE ? AND first_name LIKE ?)"; 
+  }
+  else { return "A search string has not been specified."; }
+
+  // EXECUTE THE QUERY
+  $query = "SELECT T_USER.uid, facebook_uid, googlep_uid, username, first_name, last_name, email, phone, 
+                   privacy_label, user_comment_count, user_account_creation_timestamp, 
+                   user_image_sequence, user_image_name 
+            FROM   T_USER 
+                   INNER JOIN T_PRIVACY ON user_account_privacy_code = privacy_code 
+                   LEFT JOIN T_USER_IMAGE ON T_USER.uid = T_USER_IMAGE.uid 
+            WHERE  user_image_profile_sequence = 0 
+                   AND (" . $subquery . ")
+                   AND 
+                   ( (
+                       privacy_label = 'Public' 
+                       AND T_USER.uid <> ?
+                     )
+                     OR
+                     (
+                       T_USER.uid IN
+                       (
+                         SELECT F.uid_1 AS uid
+                         FROM 
+                         T_USER 
+                           INNER JOIN R_USER_RELATIONSHIP F ON uid = F.uid_1 
+                         WHERE F.uid_2 = ? 
+                           AND F.user_relationship_type_code = 2
+                    
+                         UNION
+                    
+                         SELECT F.uid_2 AS uid
+                         FROM 
+                         T_USER 
+                           INNER JOIN R_USER_RELATIONSHIP F ON uid = F.uid_2 
+                         WHERE F.uid_1 = ? 
+                           AND F.user_relationship_type_code = 2
+                  ) ) )";
+  $statement = $conn->prepare($query);
+  if (count($names) == 1)
+  {
+    $statement->bind_param("sssiii", $names[0], $names[0], $names[0], 
+      $searched_by_uid, $searched_by_uid, $searched_by_uid);
+  }
+  else if (count($names) > 1)
+  {
+    $statement->bind_param("ssssiii", $names[0], $names[1], $names[0], $names[1], 
+      $searched_by_uid, $searched_by_uid, $searched_by_uid);
+  }
+  $statement->execute();
+  $error = $statement->error;
+  // CHECK FOR AN ERROR, RETURN IT IF ONE EXISTS
+  if ($error != "") { echo "DB ERROR: " . $error; return; }
+
+  // DEFAULT AND ASSIGN THE EVENT VARIABLES
+  $statement->bind_result($uid, $facebook_uid, $googlep_uid, $username, $first_name, $last_name, 
+      $email, $phone, $privacy_label, $user_comment_count, $user_account_creation_timestamp, 
+      $user_image_sequence, $user_image_name); 
+
+  $users = array();
+
+  while($statement->fetch())
+  {
+    $user_image = array
+    (
+        "uid" => $uid,
+        "userImageSequence" => $user_image_sequence,
+        "userImageName" => $user_image_name,
+        "userImagePath" => $uid . "/" . $user_image_sequence . "/" . $user_image_name
+    );
+    $user = array
+    (
+        "uid" => $uid,
+        "facebookUid" => $facebook_uid, 
+        "googlepUid" => $googlep_uid, 
+        "username" => $username, 
+        "firstName" => $first_name, 
+        "lastName" => $last_name, 
+        "email" => $email, 
+        "phone" => $phone, 
+        "privacyLabel" => $privacy_label, 
+        "userCommentCount" => $user_comment_count, 
+        "userAccountCreationTimestamp" => $user_account_creation_timestamp, 
+        "userImage" => $user_image, 
+    );
+    array_push($users, $user);
+  }
+  $statement->close();
+  
+  $userList = array
+  (
+      "users" => $users
+  );
+
+  return $userList;
+}
 
 ?>

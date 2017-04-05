@@ -4,6 +4,8 @@ $function = $_GET['function'];
 
 if ($function == "setUser")
   setUser();
+if ($function == "getUsersSearchedByName")
+  getUsersSearchedByName();
 
   
   
@@ -60,6 +62,39 @@ function setUser()
   $response = dbSetUser($user);
 
   echo $response;
+}
+/* --------------------------------------------------------------------------------
+ * ================================================================================
+ * -------------------------------------------------------------------------------- */
+
+
+
+/* FUNCTION:    getUsersSearchedByName
+ * DESCRIPTION: Gets the users and their related data whose first names, last 
+ *              names, and/or usernames match the input substring, and are 
+ *              visible to the searched-by user. 
+ * --------------------------------------------------------------------------------
+ * ================================================================================
+ * -------------------------------------------------------------------------------- */
+function getUsersSearchedByName()
+{
+  /* THE FOLLOWING 3 LINES OF CODE ENABLE ERROR REPORTING. */
+  error_reporting(E_ALL);
+  ini_set('display_errors', TRUE);
+  ini_set('display_startup_errors', TRUE);
+  /* END. */
+
+  // DECODE JSON STRING
+  $json_decoded = json_decode(file_get_contents("php://input"), true);
+  // ASSIGN THE JSON VALUES TO VARIABLES
+  $searched_by_uid = $json_decoded["searchedByUid"];
+  $searched_name  = $json_decoded["searchedName"];
+
+  require $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBIO/User.php';
+  $images = dbGetUsersSearchedByName($searched_by_uid, $searched_name);
+
+  // RETURN THE EVENT ID
+  echo json_encode($images);
 }
 /* --------------------------------------------------------------------------------
  * ================================================================================
