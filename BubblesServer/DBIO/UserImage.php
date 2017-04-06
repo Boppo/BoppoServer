@@ -403,6 +403,61 @@ function fetchImagesByPrivacyAndPurpose($imagePrivacyLabel, $imagePurposeLabel, 
 
 
 
+/* FUNCTION:    dbGetImagesFirstNProfile
+ * DESCRIPTION: Gets the first N profile images for the specified UID user.
+ * --------------------------------------------------------------------------------
+ * ================================================================================
+ * -------------------------------------------------------------------------------- */
+function dbGetImagesFirstNProfileByUid($uid)
+{
+  // IMPORT REQUIRED METHODS
+  require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/Functions/Miscellaneous.php';
+
+  // IMPORT THE DATABASE CONNECTION
+  require $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBConnect/dbConnect.php';
+  
+  // IMPORT THE NECESSARY GLOBAL VARIABLES
+  $path_gv = $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/Resources/GlobalVariables.json';
+  $file_gv = file_get_contents($path_gv);
+  $array_gv = json_decode($file_gv, true);
+  $firstN = $array_gv["Image"]["ImageProfileMaxAmount"];
+
+  // EXECUTE THE QUERY
+  $query = "SELECT    user_image_profile_sequence, user_image_sequence, user_image_name 
+            FROM      T_USER_IMAGE 
+            WHERE     uid = ? 
+                      AND user_image_profile_sequence IS NOT NULL
+            ORDER BY  user_image_profile_sequence 
+            LIMIT     ?";
+  $statement = $conn->prepare($query);
+  $statement->bind_param("ii", $uid, $firstN);
+  $statement->execute();
+  $error = $statement->error;
+  // CHECK FOR AN ERROR, RETURN IT IF ONE EXISTS
+  if ($error != "") { echo "DB ERROR: " . $error; return; }
+
+  // DEFAULT AND ASSIGN THE IMAGE VARIABLES
+  $statement->bind_result($user_image_profile_sequence, $user_image_sequence, $user_image_name);
+  
+  $imageList = array();
+
+  while($statement->fetch())
+  {
+    $image = array
+    (
+      "userImageProfileSequence" => $user_image_profile_sequence,
+      "userImagePath" => $uid . "/" . $user_image_sequence . "/" . $user_image_name
+    );
+    array_push($imageList, $image);
+  }
+
+  $statement->close();
+
+  return $imageList;
+}
+
+
+
 /* FUNCTION:    dbSetImage
  * DESCRIPTION: Updates the image's properties in the database and filesystem.
  * --------------------------------------------------------------------------------

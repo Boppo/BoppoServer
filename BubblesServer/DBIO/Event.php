@@ -10,6 +10,7 @@ function dbGetEventData($eid)
 {
 	// IMPORT REQUIRED METHODS
 	require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/Functions/Miscellaneous.php';
+	require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBIO/UserImage.php';
 	
 	// IMPORT THE DATABASE CONNECTION
 	require $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBConnect/dbConnect.php';
@@ -53,20 +54,15 @@ function dbGetEventData($eid)
 		$event_like_count, $event_dislike_count, $event_view_count);
 	$statement->fetch();
 	
-	$eventHostUserProfileImage = array
-	(
-	    "uid" => $event_host_uid,
-	    "userImageSequence" => $user_image_sequence,
-	    "userImageName" => $user_image_name,
-	    "userImagePath" => $event_host_uid . "/" . $user_image_sequence . "/" . $user_image_name
-	);
+	$user_profile_images = dbGetImagesFirstNProfileByUid($event_host_uid);
+	
 	$eventHost = array
 	(
 	    "uid" => $event_host_uid,
 	    "username" => $event_host_username,
 	    "firstName" => $event_host_first_name,
 	    "lastName" => $event_host_last_name, 
-	    "eventHostUserProfileImage" => $eventHostUserProfileImage
+	    "userProfileImages" => $user_profile_images
 	);
 	$event = array
 	(

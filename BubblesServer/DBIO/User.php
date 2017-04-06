@@ -185,13 +185,13 @@ function dbGetUsersSearchedByName($searched_by_uid, $searched_name)
 {
   // IMPORT REQUIRED METHODS
   require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/Functions/Miscellaneous.php';
+  require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBIO/UserImage.php';
 
   // IMPORT THE DATABASE CONNECTION
   require $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBConnect/dbConnect.php'; 
   
   // PREPARE VARIABLE SUBQUERY TO FILTER BY THE SEARCHED NAME
   $names = explode(" ", $searched_name); 
-  print_r($names);
   for ($i = 0; $i < count($names); $i++)
   {
     $names[$i] = "%" . $names[$i] . "%";
@@ -207,14 +207,12 @@ function dbGetUsersSearchedByName($searched_by_uid, $searched_name)
   else { return "A search string has not been specified."; }
 
   // EXECUTE THE QUERY
+  //                    user_image_sequence, user_image_name 
   $query = "SELECT T_USER.uid, facebook_uid, googlep_uid, username, first_name, last_name, email, phone, 
-                   privacy_label, user_comment_count, user_account_creation_timestamp, 
-                   user_image_sequence, user_image_name 
+                   privacy_label, user_comment_count, user_account_creation_timestamp
             FROM   T_USER 
                    INNER JOIN T_PRIVACY ON user_account_privacy_code = privacy_code 
-                   LEFT JOIN T_USER_IMAGE ON T_USER.uid = T_USER_IMAGE.uid 
-            WHERE  user_image_profile_sequence = 0 
-                   AND (" . $subquery . ")
+            WHERE  (" . $subquery . ")
                    AND 
                    ( (
                        privacy_label = 'Public' 
@@ -258,20 +256,14 @@ function dbGetUsersSearchedByName($searched_by_uid, $searched_name)
 
   // DEFAULT AND ASSIGN THE EVENT VARIABLES
   $statement->bind_result($uid, $facebook_uid, $googlep_uid, $username, $first_name, $last_name, 
-      $email, $phone, $privacy_label, $user_comment_count, $user_account_creation_timestamp, 
-      $user_image_sequence, $user_image_name); 
+      $email, $phone, $privacy_label, $user_comment_count, $user_account_creation_timestamp);
+//      $user_image_sequence, $user_image_name); 
 
   $users = array();
 
   while($statement->fetch())
   {
-    $user_image = array
-    (
-        "uid" => $uid,
-        "userImageSequence" => $user_image_sequence,
-        "userImageName" => $user_image_name,
-        "userImagePath" => $uid . "/" . $user_image_sequence . "/" . $user_image_name
-    );
+    $user_profile_images = dbGetImagesFirstNProfileByUid($uid);
     $user = array
     (
         "uid" => $uid,
@@ -285,7 +277,7 @@ function dbGetUsersSearchedByName($searched_by_uid, $searched_name)
         "privacyLabel" => $privacy_label, 
         "userCommentCount" => $user_comment_count, 
         "userAccountCreationTimestamp" => $user_account_creation_timestamp, 
-        "userImage" => $user_image, 
+        "userProfileImages" => $user_profile_images
     );
     array_push($users, $user);
   }
@@ -297,6 +289,88 @@ function dbGetUsersSearchedByName($searched_by_uid, $searched_name)
   );
 
   return $userList;
+}
+
+
+
+/* FUNCTION:    dbGetFriends
+ * DESCRIPTION: Returns all of the friends and their data of the specified user.
+ * --------------------------------------------------------------------------------
+ * ================================================================================
+ * -------------------------------------------------------------------------------- */
+function dbGetFriends($uid)
+{
+  // IMPORT REQUIRED METHODS
+  require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/Functions/Miscellaneous.php';
+  require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBIO/UserImage.php';
+
+  // IMPORT THE DATABASE CONNECTION
+  require $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBConnect/dbConnect.php';
+
+  // EXECUTE THE QUERY
+  $query = "SELECT T_USER.uid, facebook_uid, googlep_uid, username, first_name, last_name, email, phone,
+                   privacy_label, user_comment_count, user_account_creation_timestamp
+            FROM   T_USER
+                   INNER JOIN T_PRIVACY ON user_account_privacy_code = privacy_code
+            WHERE  T_USER.uid IN
+                   (
+                     SELECT F.uid_1 AS uid
+                     FROM
+                     T_USER
+                       INNER JOIN R_USER_RELATIONSHIP F ON uid = F.uid_1
+                     WHERE F.uid_2 = ?
+                       AND F.user_relationship_type_code = 2
+
+                     UNION
+
+                     SELECT F.uid_2 AS uid
+                     FROM
+                     T_USER
+                       INNER JOIN R_USER_RELATIONSHIP F ON uid = F.uid_2
+                     WHERE F.uid_1 = ?
+                       AND F.user_relationship_type_code = 2
+                   )";
+  $statement = $conn->prepare($query);
+  $statement->bind_param("ii", $uid, $uid);
+  $statement->execute();
+  $error = $statement->error;
+  // CHECK FOR AN ERROR, RETURN IT IF ONE EXISTS
+  if ($error != "") { echo "DB ERROR: " . $error; return; }
+
+  // DEFAULT AND ASSIGN THE EVENT VARIABLES
+  $statement->bind_result($uid, $facebook_uid, $googlep_uid, $username, $first_name, $last_name,
+      $email, $phone, $privacy_label, $user_comment_count, $user_account_creation_timestamp);
+
+  $friends = array();
+
+  while($statement->fetch())
+  {
+    $user_profile_images = dbGetImagesFirstNProfileByUid($uid);
+    $user = array
+    (
+        "uid" => $uid,
+        "facebookUid" => $facebook_uid,
+        "googlepUid" => $googlep_uid,
+        "username" => $username,
+        "firstName" => $first_name,
+        "lastName" => $last_name,
+        "email" => $email,
+        "phone" => $phone,
+        "privacyLabel" => $privacy_label,
+        "userCommentCount" => $user_comment_count,
+        "userAccountCreationTimestamp" => $user_account_creation_timestamp,
+        "userProfileImages" => $user_profile_images
+    );
+    array_push($friends, $user);
+  }
+  $statement->close();
+
+  $friendList = array
+  (
+      "friends" => $friends
+  );
+
+  return $friendList;
 }
 
 ?>
