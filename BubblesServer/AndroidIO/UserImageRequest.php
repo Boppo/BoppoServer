@@ -172,7 +172,8 @@ function setImage()
   $user_image_privacy_label = $json_decoded["userImagePrivacyLabel"];
   $user_image_gps_latitude = $json_decoded["userImageGpsLatitude"];
   $user_image_gps_longitude = $json_decoded["userImageGpsLongitude"];
-  
+  $set_or_not = $json_decoded["setOrNot"];
+    
   // MAKE SURE THAT A VALID USER IMAGE IDENTIFIER WAS PROVIDED
   if ($uiid <= 0) {
     echo "ERROR: Incorrect user image identifier specified.";
@@ -181,12 +182,16 @@ function setImage()
   // ENCODE THE USER IMAGE PURPOSE LABEL
   require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBIO/ImagePurpose.php';
   $user_image_purpose_code = fetchImagePurposeCode($user_image_purpose_label);
+  $set_or_not["userImagePurposeCode"] = $set_or_not["userImagePurposeLabel"];
+  unset($set_or_not["userImagePurposeLabel"]);
   if (!($json_decoded["userImagePurposeLabel"] == null || $user_image_purpose_code != null)) {
     echo "ERROR: Incorrect user image purpose label specified.";
     return; }
     
   // ENCODE THE PRIVACY LABEL
   require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBIO/Privacy.php';
+  $set_or_not["userImagePrivacyCode"] = $set_or_not["userImagePrivacyLabel"];
+  unset($set_or_not["userImagePrivacyLabel"]);
   $user_image_privacy_code = fetchPrivacyCode($user_image_privacy_label);
   if (!($json_decoded["userImagePrivacyLabel"] == null || $user_image_privacy_code != null)) {
     echo "ERROR: Incorrect user image privacy specified.";
@@ -204,7 +209,7 @@ function setImage()
     "userImageGpsLongitude" => $user_image_gps_longitude
   );
   require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBIO/UserImage.php';
-  $response = dbSetImage($image);
+  $response = dbSetImage($image, $set_or_not);
   
   echo $response;
 }

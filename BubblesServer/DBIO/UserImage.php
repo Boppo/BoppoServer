@@ -463,7 +463,7 @@ function dbGetImagesFirstNProfileByUid($uid)
  * --------------------------------------------------------------------------------
  * ================================================================================
  * -------------------------------------------------------------------------------- */
-function dbSetImage($image)
+function dbSetImage($image, $set_or_not)
 {
     /* THE FOLLOWING 3 LINES OF CODE ENABLE ERROR REPORTING. */
     error_reporting(E_ALL);
@@ -476,18 +476,18 @@ function dbSetImage($image)
 	
 	// FETCH THE CURRENT VALUES FOR THIS EVENT
 	$imageCurrent = fetchImageEncoded($image["uiid"]);
-	
-	if ($image["userImageProfileSequence"] != null)
+		
+	if ($set_or_not["userImageProfileSequence"] === true)
 	  $imageCurrent["userImageProfileSequence"] = $image["userImageProfileSequence"];
-	if ($image["userImageName"] != null)
+	if ($set_or_not["userImageName"] === true)
 	  $imageCurrent["userImageName"] = $image["userImageName"];
-	if ($image["userImagePurposeCode"] != null)
+	if ($set_or_not["userImagePurposeCode"] === true)
 	  $imageCurrent["userImagePurposeCode"] = $image["userImagePurposeCode"];
-	if ($image["userImagePrivacyCode"] != null)
+	if ($set_or_not["userImagePrivacyCode"] === true)
 	  $imageCurrent["userImagePrivacyCode"] = $image["userImagePrivacyCode"];
-	if ($image["userImageGpsLatitude"] != null)
+	if ($set_or_not["userImageGpsLatitude"] === true)
 	  $imageCurrent["userImageGpsLatitude"] = $image["userImageGpsLatitude"];
-	if ($image["userImageGpsLongitude"] != null)
+	if ($set_or_not["userImageGpsLongitude"] === true)
 	  $imageCurrent["userImageGpsLongitude"] = $image["userImageGpsLongitude"];
 	
 	// EXECUTE THE QUERY
@@ -511,10 +511,12 @@ function dbSetImage($image)
 	if ($error != "") { return "DB ERROR: " . $error; }
 		
 	// RETURN A SUCCESS CONFIRMATION MESSAGE
+	if ($statement->affected_rows === 0)
+	  return "Image has failed to update: no image has been updated, possibly because the input data is not new.";
 	if ($statement->affected_rows === 1)
-		return "Image has been successfully updated.";
-	else 
-		return "Image has failed to update: no image or multiple images have been updated.";
+      return "Image has been successfully updated.";
+	else
+      return "Image has failed to update: no image or multiple images have been updated.";
 	
 	$statement->close();
 }
