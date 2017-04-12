@@ -46,7 +46,7 @@ function dbGetEventTypeCode($event_category_label, $event_type_label)
   
   $event_category_code = dbGetEventCategoryCode($event_category_label);
 
-  // ACQUIRE THE INVITE TYPE LABEL
+  // ACQUIRE THE INVITE TYPE CODE
   $query = "SELECT event_type_code
 			FROM T_EVENT_TYPE
 			WHERE event_category_code = ? AND event_type_label = ?";
@@ -68,4 +68,39 @@ function dbGetEventTypeCode($event_category_label, $event_type_label)
   // RETURN THE INVITE TYPE CODE
   return $event_type_code;
 }
+
+/* FUNCTION:    dbGetEventUserInviteStatusTypeCode
+ * DESCRIPTION: Retrieves and returns the code representing a type of an 
+ * \            event user invite status.
+ * --------------------------------------------------------------------------------
+ * ================================================================================
+ * -------------------------------------------------------------------------------- */
+function dbGetEventUserInviteStatusTypeCode($event_user_invite_status_type_label)
+{
+  // IMPORT THE DATABASE CONNECTION
+  require $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBConnect/dbConnect.php';
+
+  // ACQUIRE THE EVENT USER INVITE STATUS TYPE CODE
+  $query = "SELECT event_user_invite_status_type_code
+			FROM T_EVENT_USER_INVITE_STATUS_TYPE
+			WHERE event_user_invite_status_type_label = ?";
+  $statement = $conn->prepare($query);
+  $statement->bind_param("s", $event_user_invite_status_type_label);
+  $statement->execute();
+  $statement->error;
+
+  // CHECK FOR AN ERROR, RETURN IT IF ONE EXISTS
+  $error = $statement->error;
+  if ($error != "") { echo "DB ERROR: " . $error; return; }
+
+  // DEFAULT AND ASSIGN THE EVENT USER INVITE STATUS TYPE CODE
+  $event_type_code = null;
+  $statement->bind_result($event_user_invite_status_type_code);
+  $statement->fetch();
+  $statement->close();
+
+  // RETURN THE INVITE TYPE CODE
+  return $event_user_invite_status_type_code;
+}
+
 ?>

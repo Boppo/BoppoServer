@@ -8,6 +8,8 @@ if ($function == "getEventUserData")
 	getEventUserData();
 if ($function == "getEventUsersData")
 	getEventUsersData();
+if ($function == "setEventUser")
+  setEventUser();
 
 /* FUNCTION: addUserToEvent
  * DESCRIPTION: Adds a user to an event in the corresponding database table.
@@ -290,6 +292,79 @@ function getEventUsersData()
 
 	// RETURN THE USERS AND THEIR USER AND EVENT USER DATA
 	echo json_encode($users);
+}
+/* --------------------------------------------------------------------------------
+ * ================================================================================
+ * -------------------------------------------------------------------------------- */
+
+
+
+/* FUNCTION:    setEventUser
+ * DESCRIPTION: Updates the input Event User data for the input User of the input
+ *              Event.
+ * --------------------------------------------------------------------------------
+ * ================================================================================
+ * -------------------------------------------------------------------------------- */
+
+function setEventUser()
+{
+  // THE FOLLOWING 3 LINES OF CODE ENABLE ERROR REPORTING. //
+  error_reporting(E_ALL);
+  ini_set('display_errors', TRUE);
+  ini_set('display_startup_errors', TRUE);
+  // END. //
+
+  // ESTABLISH DATABASE CONNECTION //
+  require $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBConnect/dbConnect.php';
+
+  // DECODE INCOMING JSON CONTENTS //
+  $json_decoded = json_decode(file_get_contents("php://input"), true);
+
+  $eid = $json_decoded["eid"];
+  $uid = $json_decoded["uid"];
+  $event_user_type_label = $json_decoded["eventUserTypeLabel"];
+  $event_user_invite_status_type_label = $json_decoded["eventUserInviteStatusTypeLabel"];
+  $set_or_not = $json_decoded["setOrNot"];
+
+  // MAKE SURE THAT VALID IDENTIFIER(S) WERE PROVIDED
+  if ($eid <= 0) {
+    echo "ERROR: Incorrect event user identifier specified.";
+    return; }
+  if ($uid <= 0) {
+    echo "ERROR: Incorrect user identifier specified.";
+    return; }
+  
+  // ENCODE THE EVENT USER TYPE LABEL
+  require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBIO/EventUserType.php';
+  $event_user_type_code = fetchEventUserTypeCode($event_user_type_label);
+  $set_or_not["eventUserTypeCode"] = $set_or_not["eventUserTypeLabel"];
+  unset($set_or_not["eventUserTypeLabel"]);
+  if ($json_decoded["eventUserTypeLabel"] != null && $event_user_type_code == null) {
+    echo "ERROR: Incorrect event user type label specified.";
+    return; }
+
+  // ENCODE THE EVENT USER INVITE STATUS TYPE LABEL
+  require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBIO/ReferenceData.php';
+  $event_user_invite_status_type_code = 
+    dbGetEventUserInviteStatusTypeCode($event_user_invite_status_type_label);
+  $set_or_not["eventUserInviteStatusTypeCode"] = $set_or_not["eventUserInviteStatusTypeLabel"];
+  unset($set_or_not["eventUserInviteStatusTypeLabel"]);
+  if ($json_decoded["eventUserInviteStatusTypeLabel"] != null && $event_user_invite_status_type_code == null) {
+    echo "ERROR: Incorrect event user invite status type label specified.";
+    return; }
+
+  // SEND THE NEW VALUES IN AN EVENT OBJECT TO THE CORRESPONDING DBIO METHOD
+  $eventUser = array
+  (
+      "eid" => $eid,
+      "uid" => $uid,
+      "eventUserTypeCode" => $event_user_type_code,
+      "eventUserInviteStatusTypeCode" => $event_user_invite_status_type_code
+  );
+  require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBIO/EventUser.php';
+  $response = dbSetEventUser($eventUser, $set_or_not);
+
+  echo $response;
 }
 /* --------------------------------------------------------------------------------
  * ================================================================================

@@ -821,15 +821,15 @@ function updateEvent()
 	// ENCODE THE EVENT TYPE LABEL
 	require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBIO/ReferenceData.php';
 	$event_type_code = dbGetEventTypeCode($event_type_label);
-	if (!($json_decoded["eventTypeLabel"] == null || $event_type_label != null)) {
+	if (!($json_decoded["eventTypeLabel"] == null || $event_type_code != null)) {
 	  echo "ERROR: Incorrect event type specified.";
 	  return; }
 	  
     // ENCODE THE EVENT CATEGORY LABEL
     require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBIO/ReferenceData.php';
     $event_category_code = dbGetEventCategoryCode($event_category_label, $event_type_label);
-    if (!($json_decoded["eventCategoryLabel"] == null || $event_category_label != null ||
-            $json_decoded["eventTypeLabel"] == null || $event_type_label != null)) {
+    if (!($json_decoded["eventCategoryLabel"] == null || $event_category_code != null ||
+            $json_decoded["eventTypeLabel"] == null || $event_type_code != null)) {
       echo "ERROR: Incorrect event category or event type specified.";
       return; }
 	
