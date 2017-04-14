@@ -14,8 +14,9 @@
 			"DatetimeValue": 1
 		}
 	},
-	"Image": {
-		"ImageProfileMaxAmount": 4
+	"UserImage": {
+		"UserImageProfileMaxAmount": 4,  
+		"EventUserImageEventProfileMaxAmount": 4 
 	}, 
 	"Permission": {
 		"EventUserReinviteUserTypeCode": 2

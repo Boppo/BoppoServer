@@ -55,32 +55,34 @@ function dbGetEventData($eid)
 	$statement->fetch();
 	
 	$user_profile_images = dbGetImagesFirstNProfileByUid($event_host_uid);
+	$event_profile_images = dbGetImagesFirstNEventProfileByEid($eid);
 	
 	$eventHost = array
 	(
-	    "uid" => $event_host_uid,
-	    "username" => $event_host_username,
-	    "firstName" => $event_host_first_name,
-	    "lastName" => $event_host_last_name, 
-	    "userProfileImages" => $user_profile_images
+      "uid" => $event_host_uid,
+      "username" => $event_host_username,
+      "firstName" => $event_host_first_name,
+      "lastName" => $event_host_last_name, 
+      "userProfileImages" => $user_profile_images
 	);
 	$event = array
 	(
-		"eid" => $eid, 
-		"eventName" => $event_name, 
-	    "eventCategoryLabel" => $event_category_label, 
-	    "eventTypeLabel" => $event_type_label, 
-		"eventInviteTypeLabel" => $event_invite_type_label,
-		"eventPrivacyLabel" => $event_privacy_label,
-		"eventImageUploadAllowedIndicator" => charToStrBool($event_image_upload_allowed_indicator),
-		"eventStartDatetime" => $event_start_datetime,
-		"eventEndDatetime" => $event_end_datetime,
-		"eventGpsLatitude" => $event_gps_latitude,
-		"eventGpsLongitude" => $event_gps_longitude,
-		"eventLikeCount" => $event_like_count,
-		"eventDislikeCount" => $event_dislike_count,
-		"eventViewCount" => $event_view_count, 
-	    "eventHost" => $eventHost
+      "eid" => $eid, 
+      "eventName" => $event_name, 
+      "eventCategoryLabel" => $event_category_label, 
+      "eventTypeLabel" => $event_type_label, 
+      "eventInviteTypeLabel" => $event_invite_type_label,
+      "eventPrivacyLabel" => $event_privacy_label,
+      "eventImageUploadAllowedIndicator" => charToStrBool($event_image_upload_allowed_indicator),
+      "eventStartDatetime" => $event_start_datetime,
+      "eventEndDatetime" => $event_end_datetime,
+      "eventGpsLatitude" => $event_gps_latitude,
+      "eventGpsLongitude" => $event_gps_longitude,
+      "eventLikeCount" => $event_like_count,
+      "eventDislikeCount" => $event_dislike_count,
+      "eventViewCount" => $event_view_count, 
+      "eventHost" => $eventHost, 
+      "eventProfileImages" => $event_profile_images
 	);
 	
 	$statement->close();
@@ -100,6 +102,7 @@ function dbGetEventDataByRadius($longitude, $latitude, $radius)
 {
   // IMPORT REQUIRED METHODS
   require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/Functions/Miscellaneous.php';
+  require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBIO/UserImage.php';
 
   // IMPORT THE DATABASE CONNECTION
   require $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBConnect/dbConnect.php';
@@ -150,31 +153,34 @@ function dbGetEventDataByRadius($longitude, $latitude, $radius)
 
   while($statement->fetch())
   {
+    $event_profile_images = dbGetImagesFirstNEventProfileByEid($eid);
+    
     $eventHost = array
     (
-        "uid" => $event_host_uid,
-        "username" => $event_host_username,
-        "firstName" => $event_host_first_name,
-        "lastName" => $event_host_last_name
+      "uid" => $event_host_uid,
+      "username" => $event_host_username,
+      "firstName" => $event_host_first_name,
+      "lastName" => $event_host_last_name
     );
     $event = array
     (
-        "eid" => $eid,
-        "eventName" => $event_name, 
-        "eventCategoryLabel" => $event_category_label,
-        "eventTypeLabel" => $event_type_label,
-        "eventInviteTypeLabel" => $event_invite_type_label,
-        "eventPrivacyLabel" => $event_privacy_label,
-        "eventImageUploadAllowedIndicator" => charToStrBool($event_image_upload_allowed_indicator),
-        "eventStartDatetime" => $event_start_datetime,
-        "eventEndDatetime" => $event_end_datetime,
-        "eventGpsLatitude" => $event_gps_latitude,
-        "eventGpsLongitude" => $event_gps_longitude,
-        "eventLikeCount" => $event_like_count,
-        "eventDislikeCount" => $event_dislike_count,
-        "eventViewCount" => $event_view_count,
-        "distanceFromLocation" => $distance,
-        "eventHost" => $eventHost
+      "eid" => $eid,
+      "eventName" => $event_name, 
+      "eventCategoryLabel" => $event_category_label,
+      "eventTypeLabel" => $event_type_label,
+      "eventInviteTypeLabel" => $event_invite_type_label,
+      "eventPrivacyLabel" => $event_privacy_label,
+      "eventImageUploadAllowedIndicator" => charToStrBool($event_image_upload_allowed_indicator),
+      "eventStartDatetime" => $event_start_datetime,
+      "eventEndDatetime" => $event_end_datetime,
+      "eventGpsLatitude" => $event_gps_latitude,
+      "eventGpsLongitude" => $event_gps_longitude,
+      "eventLikeCount" => $event_like_count,
+      "eventDislikeCount" => $event_dislike_count,
+      "eventViewCount" => $event_view_count,
+      "distanceFromLocation" => $distance,
+      "eventHost" => $eventHost, 
+      "eventProfileImages" => $event_profile_images
     );
     array_push($events, $event);
   }
@@ -202,6 +208,7 @@ function dbGetLiveEventDataByRadius($longitude, $latitude, $radius)
 {
 	// IMPORT REQUIRED METHODS
 	require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/Functions/Miscellaneous.php';
+	require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBIO/UserImage.php';
 
 	// IMPORT THE DATABASE CONNECTION
 	require $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBConnect/dbConnect.php';
@@ -265,31 +272,34 @@ function dbGetLiveEventDataByRadius($longitude, $latitude, $radius)
 	
 	while($statement->fetch())
 	{
+	  $event_profile_images = dbGetImagesFirstNEventProfileByEid($eid);
+	  
 	  $eventHost = array
 	  (
-	      "uid" => $event_host_uid,
-	      "username" => $event_host_username,
-	      "firstName" => $event_host_first_name,
-	      "lastName" => $event_host_last_name
+        "uid" => $event_host_uid,
+        "username" => $event_host_username,
+        "firstName" => $event_host_first_name,
+        "lastName" => $event_host_last_name
 	  );
 	  $event = array
 	  (
-	      "eid" => $eid,
-	      "eventName" => $event_name,
-	      "eventCategoryLabel" => $event_category_label,
-	      "eventTypeLabel" => $event_type_label,
-	      "eventInviteTypeLabel" => $event_invite_type_label,
-	      "eventPrivacyLabel" => $event_privacy_label,
-	      "eventImageUploadAllowedIndicator" => charToStrBool($event_image_upload_allowed_indicator),
-	      "eventStartDatetime" => $event_start_datetime,
-	      "eventEndDatetime" => $event_end_datetime,
-	      "eventGpsLatitude" => $event_gps_latitude,
-	      "eventGpsLongitude" => $event_gps_longitude,
-	      "eventLikeCount" => $event_like_count,
-	      "eventDislikeCount" => $event_dislike_count,
-	      "eventViewCount" => $event_view_count, 
-	      "distanceFromLocation" => $distance, 
-	      "eventHost" => $eventHost
+        "eid" => $eid,
+        "eventName" => $event_name,
+        "eventCategoryLabel" => $event_category_label,
+        "eventTypeLabel" => $event_type_label,
+        "eventInviteTypeLabel" => $event_invite_type_label,
+        "eventPrivacyLabel" => $event_privacy_label,
+        "eventImageUploadAllowedIndicator" => charToStrBool($event_image_upload_allowed_indicator),
+        "eventStartDatetime" => $event_start_datetime,
+        "eventEndDatetime" => $event_end_datetime,
+        "eventGpsLatitude" => $event_gps_latitude,
+        "eventGpsLongitude" => $event_gps_longitude,
+        "eventLikeCount" => $event_like_count,
+        "eventDislikeCount" => $event_dislike_count,
+        "eventViewCount" => $event_view_count, 
+        "distanceFromLocation" => $distance, 
+        "eventHost" => $eventHost, 
+        "eventProfileImages" => $event_profile_images
 	  );
 	  array_push($events, $event);
 	}
@@ -316,7 +326,7 @@ function dbGetEventDataEncoded($eid)
 {
 	// IMPORT REQUIRED METHODS
 	require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/Functions/Miscellaneous.php';
-
+	
 	// IMPORT THE DATABASE CONNECTION
 	require $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBConnect/dbConnect.php';
 
@@ -327,7 +337,6 @@ function dbGetEventDataEncoded($eid)
 			         event_start_datetime, event_end_datetime, event_gps_latitude, event_gps_longitude,
 			         event_like_count, event_dislike_count, event_view_count
 			  FROM   T_EVENT
-		       		 LEFT JOIN T_USER ON T_EVENT.event_host_uid = T_USER.uid
 			  WHERE  eid = ?
 			  ORDER BY event_name";
 	$statement = $conn->prepare($query);
@@ -348,23 +357,23 @@ function dbGetEventDataEncoded($eid)
 		$event_end_datetime, $event_gps_latitude, $event_gps_longitude,
 		$event_like_count, $event_dislike_count, $event_view_count);
 	$statement->fetch();
-
+	
 	$event = array
 	(
-		"eventHostUid" => $event_host_uid,
-		"eventName" => $event_name, 
-	    "eventCategoryCode" => $event_category_code, 
-	    "eventTypeCode" => $event_type_code, 
-		"eventInviteTypeCode" => $event_invite_type_code,
-		"eventPrivacyCode" => $event_privacy_code,
-		"eventImageUploadAllowedIndicator" => $event_image_upload_allowed_indicator,
-		"eventStartDatetime" => $event_start_datetime,
-		"eventEndDatetime" => $event_end_datetime,
-		"eventGpsLatitude" => $event_gps_latitude,
-		"eventGpsLongitude" => $event_gps_longitude,
-		"eventLikeCount" => $event_like_count,
-		"eventDislikeCount" => $event_dislike_count,
-		"eventViewCount" => $event_view_count
+      "eventHostUid" => $event_host_uid,
+      "eventName" => $event_name, 
+      "eventCategoryCode" => $event_category_code, 
+      "eventTypeCode" => $event_type_code, 
+      "eventInviteTypeCode" => $event_invite_type_code,
+      "eventPrivacyCode" => $event_privacy_code,
+      "eventImageUploadAllowedIndicator" => $event_image_upload_allowed_indicator,
+      "eventStartDatetime" => $event_start_datetime,
+      "eventEndDatetime" => $event_end_datetime,
+      "eventGpsLatitude" => $event_gps_latitude,
+      "eventGpsLongitude" => $event_gps_longitude,
+      "eventLikeCount" => $event_like_count,
+      "eventDislikeCount" => $event_dislike_count,
+      "eventViewCount" => $event_view_count 
 	);
 
 	$statement->close();
@@ -386,7 +395,8 @@ function dbGetEventDataByMember($uid)
     require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/Functions/Miscellaneous.php';
     require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBIO/User.php';
     require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBIO/Privacy.php';
-
+    require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBIO/UserImage.php';
+    
 	// IMPORT THE DATABASE CONNECTION
 	require $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBConnect/dbConnect.php';
 
@@ -443,6 +453,8 @@ function dbGetEventDataByMember($uid)
 	
 	while($statement->fetch())
 	{
+	  $event_profile_images = dbGetImagesFirstNEventProfileByEid($eid);
+	  
 	  $eventHost = array
 	  (
         "uid" => $event_host_uid,
@@ -466,7 +478,8 @@ function dbGetEventDataByMember($uid)
         "eventLikeCount" => $event_like_count,
         "eventDislikeCount" => $event_dislike_count,
         "eventViewCount" => $event_view_count,
-        "eventHost" => $eventHost
+        "eventHost" => $eventHost, 
+        "eventProfileImages" => $event_profile_images
 	  );
 	  array_push($events, $event);
 	}
@@ -497,6 +510,7 @@ function dbGetLiveEventDataByMember($uid)
     require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/Functions/Miscellaneous.php';
     require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBIO/User.php';
     require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBIO/Privacy.php';
+    require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBIO/UserImage.php';
     
     // IMPORT THE DATABASE CONNECTION
     require $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBConnect/dbConnect.php';
@@ -568,30 +582,33 @@ function dbGetLiveEventDataByMember($uid)
 	
 	while($statement->fetch())
 	{
+	  $event_profile_images = dbGetImagesFirstNEventProfileByEid($eid);
+	  
 	  $eventHost = array
 	  (
-	      "uid" => $event_host_uid,
-	      "username" => $event_host_username,
-	      "firstName" => $event_host_first_name,
-	      "lastName" => $event_host_last_name
+        "uid" => $event_host_uid,
+        "username" => $event_host_username,
+        "firstName" => $event_host_first_name,
+        "lastName" => $event_host_last_name
 	  );
 	  $event = array
 	  (
-	      "eid" => $eid,
-	      "eventName" => $event_name, 
-	      "eventCategoryLabel" => $event_category_label,
-	      "eventTypeLabel" => $event_type_label,
-	      "eventInviteTypeLabel" => $event_invite_type_label,
-	      "eventPrivacyLabel" => $event_privacy_label,
-	      "eventImageUploadAllowedIndicator" => charToStrBool($event_image_upload_allowed_indicator),
-	      "eventStartDatetime" => $event_start_datetime,
-	      "eventEndDatetime" => $event_end_datetime,
-	      "eventGpsLatitude" => $event_gps_latitude,
-	      "eventGpsLongitude" => $event_gps_longitude,
-	      "eventLikeCount" => $event_like_count,
-	      "eventDislikeCount" => $event_dislike_count,
-	      "eventViewCount" => $event_view_count,
-	      "eventHost" => $eventHost
+        "eid" => $eid,
+        "eventName" => $event_name, 
+        "eventCategoryLabel" => $event_category_label,
+        "eventTypeLabel" => $event_type_label,
+        "eventInviteTypeLabel" => $event_invite_type_label,
+        "eventPrivacyLabel" => $event_privacy_label,
+        "eventImageUploadAllowedIndicator" => charToStrBool($event_image_upload_allowed_indicator),
+        "eventStartDatetime" => $event_start_datetime,
+        "eventEndDatetime" => $event_end_datetime,
+        "eventGpsLatitude" => $event_gps_latitude,
+        "eventGpsLongitude" => $event_gps_longitude,
+        "eventLikeCount" => $event_like_count,
+        "eventDislikeCount" => $event_dislike_count,
+        "eventViewCount" => $event_view_count,
+        "eventHost" => $eventHost, 
+        "eventProfileImages" => $event_profile_images
 	  );
 	  array_push($events, $event);
 	}
@@ -618,7 +635,8 @@ function dbGetEventDataByName($event_name)
 {
 	// IMPORT REQUIRED METHODS
 	require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/Functions/Miscellaneous.php';
-
+	require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBIO/UserImage.php';
+	
 	// IMPORT THE DATABASE CONNECTION
 	require $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBConnect/dbConnect.php';
 	
@@ -668,30 +686,33 @@ function dbGetEventDataByName($event_name)
 
 	while($statement->fetch())
 	{
+        $event_profile_images = dbGetImagesFirstNEventProfileByEid($eid);
+	  
         $eventHost = array
         (
-            "uid" => $event_host_uid,
-            "username" => $event_host_username,
-            "firstName" => $event_host_first_name,
-            "lastName" => $event_host_last_name
+          "uid" => $event_host_uid,
+          "username" => $event_host_username,
+          "firstName" => $event_host_first_name,
+          "lastName" => $event_host_last_name
         );
 		$event = array
 		(
-			"eid" => $eid,
-			"eventName" => $event_name, 
-		    "eventCategoryLabel" => $event_category_label,
-		    "eventTypeLabel" => $event_type_label,
-			"eventInviteTypeLabel" => $event_invite_type_label,
-			"eventPrivacyLabel" => $event_privacy_label,
-			"eventImageUploadAllowedIndicator" => charToStrBool($event_image_upload_allowed_indicator),
-			"eventStartDatetime" => $event_start_datetime,
-			"eventEndDatetime" => $event_end_datetime,
-			"eventGpsLatitude" => $event_gps_latitude,
-			"eventGpsLongitude" => $event_gps_longitude,
-			"eventLikeCount" => $event_like_count,
-			"eventDislikeCount" => $event_dislike_count,
-			"eventViewCount" => $event_view_count, 
-		    "eventHost" => $eventHost
+          "eid" => $eid,
+          "eventName" => $event_name, 
+          "eventCategoryLabel" => $event_category_label,
+          "eventTypeLabel" => $event_type_label,
+          "eventInviteTypeLabel" => $event_invite_type_label,
+          "eventPrivacyLabel" => $event_privacy_label,
+          "eventImageUploadAllowedIndicator" => charToStrBool($event_image_upload_allowed_indicator),
+          "eventStartDatetime" => $event_start_datetime,
+          "eventEndDatetime" => $event_end_datetime,
+          "eventGpsLatitude" => $event_gps_latitude,
+          "eventGpsLongitude" => $event_gps_longitude,
+          "eventLikeCount" => $event_like_count,
+          "eventDislikeCount" => $event_dislike_count,
+          "eventViewCount" => $event_view_count, 
+          "eventHost" => $eventHost, 
+          "eventProfileImages" => $event_profile_images
 		);
 		array_push($events, $event);
 	}
@@ -719,7 +740,8 @@ function dbGetLiveEventDataByName($event_name)
 {
 	// IMPORT REQUIRED METHODS
 	require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/Functions/Miscellaneous.php';
-
+	require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBIO/UserImage.php';
+	
 	// IMPORT THE DATABASE CONNECTION
 	require $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBConnect/dbConnect.php';
 	
@@ -783,30 +805,33 @@ function dbGetLiveEventDataByName($event_name)
 	
 	while($statement->fetch())
 	{
+	  $event_profile_images = dbGetImagesFirstNEventProfileByEid($eid);
+	  
 	  $eventHost = array
 	  (
-	      "uid" => $event_host_uid,
-	      "username" => $event_host_username,
-	      "firstName" => $event_host_first_name,
-	      "lastName" => $event_host_last_name
+        "uid" => $event_host_uid,
+        "username" => $event_host_username,
+        "firstName" => $event_host_first_name,
+        "lastName" => $event_host_last_name
 	  );
 	  $event = array
 	  (
-	      "eid" => $eid,
-	      "eventName" => $event_name, 
-	      "eventCategoryLabel" => $event_category_label,
-	      "eventTypeLabel" => $event_type_label,
-	      "eventInviteTypeLabel" => $event_invite_type_label,
-	      "eventPrivacyLabel" => $event_privacy_label,
-	      "eventImageUploadAllowedIndicator" => charToStrBool($event_image_upload_allowed_indicator),
-	      "eventStartDatetime" => $event_start_datetime,
-	      "eventEndDatetime" => $event_end_datetime,
-	      "eventGpsLatitude" => $event_gps_latitude,
-	      "eventGpsLongitude" => $event_gps_longitude,
-	      "eventLikeCount" => $event_like_count,
-	      "eventDislikeCount" => $event_dislike_count,
-	      "eventViewCount" => $event_view_count,
-	      "eventHost" => $eventHost
+        "eid" => $eid,
+        "eventName" => $event_name, 
+        "eventCategoryLabel" => $event_category_label,
+        "eventTypeLabel" => $event_type_label,
+        "eventInviteTypeLabel" => $event_invite_type_label,
+        "eventPrivacyLabel" => $event_privacy_label,
+        "eventImageUploadAllowedIndicator" => charToStrBool($event_image_upload_allowed_indicator),
+        "eventStartDatetime" => $event_start_datetime,
+        "eventEndDatetime" => $event_end_datetime,
+        "eventGpsLatitude" => $event_gps_latitude,
+        "eventGpsLongitude" => $event_gps_longitude,
+        "eventLikeCount" => $event_like_count,
+        "eventDislikeCount" => $event_dislike_count,
+        "eventViewCount" => $event_view_count,
+        "eventHost" => $eventHost, 
+        "eventProfileImages" => $event_profile_images
 	  );
 	  array_push($events, $event);
 	}
@@ -832,7 +857,8 @@ function dbGetEventDataByTopNViews($top_n_views)
 {
 	// IMPORT REQUIRED METHODS
 	require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/Functions/Miscellaneous.php';
-
+	require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBIO/UserImage.php';
+	
 	// IMPORT THE DATABASE CONNECTION
 	require $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBConnect/dbConnect.php';
 
@@ -879,30 +905,33 @@ function dbGetEventDataByTopNViews($top_n_views)
 	
 	while($statement->fetch())
 	{
+	  $event_profile_images = dbGetImagesFirstNEventProfileByEid($eid);
+	  
 	  $eventHost = array
 	  (
-	      "uid" => $event_host_uid,
-	      "username" => $event_host_username,
-	      "firstName" => $event_host_first_name,
-	      "lastName" => $event_host_last_name
+        "uid" => $event_host_uid,
+        "username" => $event_host_username,
+        "firstName" => $event_host_first_name,
+        "lastName" => $event_host_last_name
 	  );
 	  $event = array
 	  (
-	      "eid" => $eid,
-	      "eventName" => $event_name, 
-	      "eventCategoryLabel" => $event_category_label,
-	      "eventTypeLabel" => $event_type_label,
-	      "eventInviteTypeLabel" => $event_invite_type_label,
-	      "eventPrivacyLabel" => $event_privacy_label,
-	      "eventImageUploadAllowedIndicator" => charToStrBool($event_image_upload_allowed_indicator),
-	      "eventStartDatetime" => $event_start_datetime,
-	      "eventEndDatetime" => $event_end_datetime,
-	      "eventGpsLatitude" => $event_gps_latitude,
-	      "eventGpsLongitude" => $event_gps_longitude,
-	      "eventLikeCount" => $event_like_count,
-	      "eventDislikeCount" => $event_dislike_count,
-	      "eventViewCount" => $event_view_count,
-	      "eventHost" => $eventHost
+        "eid" => $eid,
+        "eventName" => $event_name, 
+        "eventCategoryLabel" => $event_category_label,
+        "eventTypeLabel" => $event_type_label,
+        "eventInviteTypeLabel" => $event_invite_type_label,
+        "eventPrivacyLabel" => $event_privacy_label,
+        "eventImageUploadAllowedIndicator" => charToStrBool($event_image_upload_allowed_indicator),
+        "eventStartDatetime" => $event_start_datetime,
+        "eventEndDatetime" => $event_end_datetime,
+        "eventGpsLatitude" => $event_gps_latitude,
+        "eventGpsLongitude" => $event_gps_longitude,
+        "eventLikeCount" => $event_like_count,
+        "eventDislikeCount" => $event_dislike_count,
+        "eventViewCount" => $event_view_count,
+        "eventHost" => $eventHost, 
+        "eventProfileImages" => $event_profile_images
 	  );
 	  array_push($events, $event);
 	}
@@ -930,7 +959,8 @@ function dbGetLiveEventDataByTopNViews($top_n_views)
 {
 	// IMPORT REQUIRED METHODS
 	require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/Functions/Miscellaneous.php';
-
+	require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBIO/UserImage.php';
+	
 	// IMPORT THE DATABASE CONNECTION
 	require $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBConnect/dbConnect.php';
 	
@@ -992,30 +1022,33 @@ function dbGetLiveEventDataByTopNViews($top_n_views)
 	
 	while($statement->fetch())
 	{
+	  $event_profile_images = dbGetImagesFirstNEventProfileByEid($eid);
+	  
 	  $eventHost = array
 	  (
-	      "uid" => $event_host_uid,
-	      "username" => $event_host_username,
-	      "firstName" => $event_host_first_name,
-	      "lastName" => $event_host_last_name
+        "uid" => $event_host_uid,
+        "username" => $event_host_username,
+        "firstName" => $event_host_first_name,
+        "lastName" => $event_host_last_name
 	  );
 	  $event = array
 	  (
-	      "eid" => $eid,
-	      "eventName" => $event_name, 
-	      "eventCategoryLabel" => $event_category_label,
-	      "eventTypeLabel" => $event_type_label,
-	      "eventInviteTypeLabel" => $event_invite_type_label,
-	      "eventPrivacyLabel" => $event_privacy_label,
-	      "eventImageUploadAllowedIndicator" => charToStrBool($event_image_upload_allowed_indicator),
-	      "eventStartDatetime" => $event_start_datetime,
-	      "eventEndDatetime" => $event_end_datetime,
-	      "eventGpsLatitude" => $event_gps_latitude,
-	      "eventGpsLongitude" => $event_gps_longitude,
-	      "eventLikeCount" => $event_like_count,
-	      "eventDislikeCount" => $event_dislike_count,
-	      "eventViewCount" => $event_view_count,
-	      "eventHost" => $eventHost
+        "eid" => $eid,
+        "eventName" => $event_name, 
+        "eventCategoryLabel" => $event_category_label,
+        "eventTypeLabel" => $event_type_label,
+        "eventInviteTypeLabel" => $event_invite_type_label,
+        "eventPrivacyLabel" => $event_privacy_label,
+        "eventImageUploadAllowedIndicator" => charToStrBool($event_image_upload_allowed_indicator),
+        "eventStartDatetime" => $event_start_datetime,
+        "eventEndDatetime" => $event_end_datetime,
+        "eventGpsLatitude" => $event_gps_latitude,
+        "eventGpsLongitude" => $event_gps_longitude,
+        "eventLikeCount" => $event_like_count,
+        "eventDislikeCount" => $event_dislike_count,
+        "eventViewCount" => $event_view_count,
+        "eventHost" => $eventHost, 
+        "eventProfileImages" => $event_profile_images
 	  );
 	  array_push($events, $event);
 	}
@@ -1041,7 +1074,8 @@ function dbGetEventDataByTopNLikes($top_n)
 {
 	// IMPORT REQUIRED METHODS
 	require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/Functions/Miscellaneous.php';
-
+	require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBIO/UserImage.php';
+	
 	// IMPORT THE DATABASE CONNECTION
 	require $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBConnect/dbConnect.php';
 
@@ -1088,30 +1122,33 @@ function dbGetEventDataByTopNLikes($top_n)
 	
 	while($statement->fetch())
 	{
+	  $event_profile_images = dbGetImagesFirstNEventProfileByEid($eid);
+	  
 	  $eventHost = array
 	  (
-	      "uid" => $event_host_uid,
-	      "username" => $event_host_username,
-	      "firstName" => $event_host_first_name,
-	      "lastName" => $event_host_last_name
+        "uid" => $event_host_uid,
+        "username" => $event_host_username,
+        "firstName" => $event_host_first_name,
+        "lastName" => $event_host_last_name
 	  );
 	  $event = array
 	  (
-	      "eid" => $eid,
-	      "eventName" => $event_name, 
-	      "eventCategoryLabel" => $event_category_label,
-	      "eventTypeLabel" => $event_type_label,
-	      "eventInviteTypeLabel" => $event_invite_type_label,
-	      "eventPrivacyLabel" => $event_privacy_label,
-	      "eventImageUploadAllowedIndicator" => charToStrBool($event_image_upload_allowed_indicator),
-	      "eventStartDatetime" => $event_start_datetime,
-	      "eventEndDatetime" => $event_end_datetime,
-	      "eventGpsLatitude" => $event_gps_latitude,
-	      "eventGpsLongitude" => $event_gps_longitude,
-	      "eventLikeCount" => $event_like_count,
-	      "eventDislikeCount" => $event_dislike_count,
-	      "eventViewCount" => $event_view_count,
-	      "eventHost" => $eventHost
+        "eid" => $eid,
+        "eventName" => $event_name, 
+        "eventCategoryLabel" => $event_category_label,
+        "eventTypeLabel" => $event_type_label,
+        "eventInviteTypeLabel" => $event_invite_type_label,
+        "eventPrivacyLabel" => $event_privacy_label,
+        "eventImageUploadAllowedIndicator" => charToStrBool($event_image_upload_allowed_indicator),
+        "eventStartDatetime" => $event_start_datetime,
+        "eventEndDatetime" => $event_end_datetime,
+        "eventGpsLatitude" => $event_gps_latitude,
+        "eventGpsLongitude" => $event_gps_longitude,
+        "eventLikeCount" => $event_like_count,
+        "eventDislikeCount" => $event_dislike_count,
+        "eventViewCount" => $event_view_count,
+        "eventHost" => $eventHost, 
+        "eventProfileImages" => $event_profile_images
 	  );
 	  array_push($events, $event);
 	}
@@ -1139,7 +1176,8 @@ function dbGetLiveEventDataByTopNLikes($top_n)
 {
 	// IMPORT REQUIRED METHODS
 	require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/Functions/Miscellaneous.php';
-
+	require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBIO/UserImage.php';
+	
 	// IMPORT THE DATABASE CONNECTION
 	require $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBConnect/dbConnect.php';
 	
@@ -1201,30 +1239,33 @@ function dbGetLiveEventDataByTopNLikes($top_n)
 	
 	while($statement->fetch())
 	{
+	  $event_profile_images = dbGetImagesFirstNEventProfileByEid($eid);
+	  
 	  $eventHost = array
 	  (
-	      "uid" => $event_host_uid,
-	      "username" => $event_host_username,
-	      "firstName" => $event_host_first_name,
-	      "lastName" => $event_host_last_name
+        "uid" => $event_host_uid,
+        "username" => $event_host_username,
+        "firstName" => $event_host_first_name,
+        "lastName" => $event_host_last_name
 	  );
 	  $event = array
 	  (
-	      "eid" => $eid,
-	      "eventName" => $event_name, 
-	      "eventCategoryLabel" => $event_category_label,
-	      "eventTypeLabel" => $event_type_label,
-	      "eventInviteTypeLabel" => $event_invite_type_label,
-	      "eventPrivacyLabel" => $event_privacy_label,
-	      "eventImageUploadAllowedIndicator" => charToStrBool($event_image_upload_allowed_indicator),
-	      "eventStartDatetime" => $event_start_datetime,
-	      "eventEndDatetime" => $event_end_datetime,
-	      "eventGpsLatitude" => $event_gps_latitude,
-	      "eventGpsLongitude" => $event_gps_longitude,
-	      "eventLikeCount" => $event_like_count,
-	      "eventDislikeCount" => $event_dislike_count,
-	      "eventViewCount" => $event_view_count,
-	      "eventHost" => $eventHost
+        "eid" => $eid,
+        "eventName" => $event_name, 
+        "eventCategoryLabel" => $event_category_label,
+        "eventTypeLabel" => $event_type_label,
+        "eventInviteTypeLabel" => $event_invite_type_label,
+        "eventPrivacyLabel" => $event_privacy_label,
+        "eventImageUploadAllowedIndicator" => charToStrBool($event_image_upload_allowed_indicator),
+        "eventStartDatetime" => $event_start_datetime,
+        "eventEndDatetime" => $event_end_datetime,
+        "eventGpsLatitude" => $event_gps_latitude,
+        "eventGpsLongitude" => $event_gps_longitude,
+        "eventLikeCount" => $event_like_count,
+        "eventDislikeCount" => $event_dislike_count,
+        "eventViewCount" => $event_view_count,
+        "eventHost" => $eventHost, 
+        "eventProfileImages" => $event_profile_images
 	  );
 	  array_push($events, $event);
 	}
@@ -1250,7 +1291,8 @@ function dbGetEventDataByTopNDislikes($top_n)
 {
 	// IMPORT REQUIRED METHODS
 	require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/Functions/Miscellaneous.php';
-
+	require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBIO/UserImage.php';
+	
 	// IMPORT THE DATABASE CONNECTION
 	require $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBConnect/dbConnect.php';
 
@@ -1297,30 +1339,33 @@ function dbGetEventDataByTopNDislikes($top_n)
 	
 	while($statement->fetch())
 	{
+	  $event_profile_images = dbGetImagesFirstNEventProfileByEid($eid);
+	  
 	  $eventHost = array
 	  (
-	      "uid" => $event_host_uid,
-	      "username" => $event_host_username,
-	      "firstName" => $event_host_first_name,
-	      "lastName" => $event_host_last_name
+        "uid" => $event_host_uid,
+        "username" => $event_host_username,
+        "firstName" => $event_host_first_name,
+        "lastName" => $event_host_last_name
 	  );
 	  $event = array
 	  (
-	      "eid" => $eid,
-	      "eventName" => $event_name, 
-	      "eventCategoryLabel" => $event_category_label,
-	      "eventTypeLabel" => $event_type_label,
-	      "eventInviteTypeLabel" => $event_invite_type_label,
-	      "eventPrivacyLabel" => $event_privacy_label,
-	      "eventImageUploadAllowedIndicator" => charToStrBool($event_image_upload_allowed_indicator),
-	      "eventStartDatetime" => $event_start_datetime,
-	      "eventEndDatetime" => $event_end_datetime,
-	      "eventGpsLatitude" => $event_gps_latitude,
-	      "eventGpsLongitude" => $event_gps_longitude,
-	      "eventLikeCount" => $event_like_count,
-	      "eventDislikeCount" => $event_dislike_count,
-	      "eventViewCount" => $event_view_count,
-	      "eventHost" => $eventHost
+        "eid" => $eid,
+        "eventName" => $event_name, 
+        "eventCategoryLabel" => $event_category_label,
+        "eventTypeLabel" => $event_type_label,
+        "eventInviteTypeLabel" => $event_invite_type_label,
+        "eventPrivacyLabel" => $event_privacy_label,
+        "eventImageUploadAllowedIndicator" => charToStrBool($event_image_upload_allowed_indicator),
+        "eventStartDatetime" => $event_start_datetime,
+        "eventEndDatetime" => $event_end_datetime,
+        "eventGpsLatitude" => $event_gps_latitude,
+        "eventGpsLongitude" => $event_gps_longitude,
+        "eventLikeCount" => $event_like_count,
+        "eventDislikeCount" => $event_dislike_count,
+        "eventViewCount" => $event_view_count,
+        "eventHost" => $eventHost, 
+        "eventProfileImages" => $event_profile_images
 	  );
 	  array_push($events, $event);
 	}
@@ -1348,7 +1393,8 @@ function dbGetLiveEventDataByTopNDislikes($top_n)
 {
 	// IMPORT REQUIRED METHODS
 	require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/Functions/Miscellaneous.php';
-
+	require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBIO/UserImage.php';
+	
 	// IMPORT THE DATABASE CONNECTION
 	require $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBConnect/dbConnect.php';
 	
@@ -1410,30 +1456,33 @@ function dbGetLiveEventDataByTopNDislikes($top_n)
 	
 	while($statement->fetch())
 	{
+	  $event_profile_images = dbGetImagesFirstNEventProfileByEid($eid);
+	  
 	  $eventHost = array
 	  (
-	      "uid" => $event_host_uid,
-	      "username" => $event_host_username,
-	      "firstName" => $event_host_first_name,
-	      "lastName" => $event_host_last_name
+        "uid" => $event_host_uid,
+        "username" => $event_host_username,
+        "firstName" => $event_host_first_name,
+        "lastName" => $event_host_last_name
 	  );
 	  $event = array
 	  (
-	      "eid" => $eid,
-	      "eventName" => $event_name, 
-	      "eventCategoryLabel" => $event_category_label,
-	      "eventTypeLabel" => $event_type_label,
-	      "eventInviteTypeLabel" => $event_invite_type_label,
-	      "eventPrivacyLabel" => $event_privacy_label,
-	      "eventImageUploadAllowedIndicator" => charToStrBool($event_image_upload_allowed_indicator),
-	      "eventStartDatetime" => $event_start_datetime,
-	      "eventEndDatetime" => $event_end_datetime,
-	      "eventGpsLatitude" => $event_gps_latitude,
-	      "eventGpsLongitude" => $event_gps_longitude,
-	      "eventLikeCount" => $event_like_count,
-	      "eventDislikeCount" => $event_dislike_count,
-	      "eventViewCount" => $event_view_count,
-	      "eventHost" => $eventHost
+        "eid" => $eid,
+        "eventName" => $event_name, 
+        "eventCategoryLabel" => $event_category_label,
+        "eventTypeLabel" => $event_type_label,
+        "eventInviteTypeLabel" => $event_invite_type_label,
+        "eventPrivacyLabel" => $event_privacy_label,
+        "eventImageUploadAllowedIndicator" => charToStrBool($event_image_upload_allowed_indicator),
+        "eventStartDatetime" => $event_start_datetime,
+        "eventEndDatetime" => $event_end_datetime,
+        "eventGpsLatitude" => $event_gps_latitude,
+        "eventGpsLongitude" => $event_gps_longitude,
+        "eventLikeCount" => $event_like_count,
+        "eventDislikeCount" => $event_dislike_count,
+        "eventViewCount" => $event_view_count,
+        "eventHost" => $eventHost, 
+        "eventProfileImages" => $event_profile_images
 	  );
 	  array_push($events, $event);
 	}
@@ -1459,7 +1508,8 @@ function dbGetEventDataByTopNRatings($top_n)
 {
 	// IMPORT REQUIRED METHODS
 	require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/Functions/Miscellaneous.php';
-
+	require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBIO/UserImage.php';
+	
 	// IMPORT THE DATABASE CONNECTION
 	require $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBConnect/dbConnect.php';
 
@@ -1507,31 +1557,34 @@ function dbGetEventDataByTopNRatings($top_n)
 	
 	while($statement->fetch())
 	{
+	  $event_profile_images = dbGetImagesFirstNEventProfileByEid($eid);
+	  
       $eventHost = array
       (
-          "uid" => $event_host_uid,
-          "username" => $event_host_username,
-          "firstName" => $event_host_first_name,
-          "lastName" => $event_host_last_name
+        "uid" => $event_host_uid,
+        "username" => $event_host_username,
+        "firstName" => $event_host_first_name,
+        "lastName" => $event_host_last_name
       );
       $event = array
       (
-          "eid" => $eid,
-          "eventName" => $event_name, 
-          "eventCategoryLabel" => $event_category_label,
-          "eventTypeLabel" => $event_type_label,
-          "eventInviteTypeLabel" => $event_invite_type_label,
-          "eventPrivacyLabel" => $event_privacy_label,
-          "eventImageUploadAllowedIndicator" => charToStrBool($event_image_upload_allowed_indicator),
-          "eventStartDatetime" => $event_start_datetime,
-          "eventEndDatetime" => $event_end_datetime,
-          "eventGpsLatitude" => $event_gps_latitude,
-          "eventGpsLongitude" => $event_gps_longitude,
-          "eventLikeCount" => $event_like_count,
-          "eventDislikeCount" => $event_dislike_count,
-          "eventViewCount" => $event_view_count,
-          "eventRatingRatio" => $event_rating_ratio, 
-          "eventHost" => $eventHost
+        "eid" => $eid,
+        "eventName" => $event_name, 
+        "eventCategoryLabel" => $event_category_label,
+        "eventTypeLabel" => $event_type_label,
+        "eventInviteTypeLabel" => $event_invite_type_label,
+        "eventPrivacyLabel" => $event_privacy_label,
+        "eventImageUploadAllowedIndicator" => charToStrBool($event_image_upload_allowed_indicator),
+        "eventStartDatetime" => $event_start_datetime,
+        "eventEndDatetime" => $event_end_datetime,
+        "eventGpsLatitude" => $event_gps_latitude,
+        "eventGpsLongitude" => $event_gps_longitude,
+        "eventLikeCount" => $event_like_count,
+        "eventDislikeCount" => $event_dislike_count,
+        "eventViewCount" => $event_view_count,
+        "eventRatingRatio" => $event_rating_ratio, 
+        "eventHost" => $eventHost, 
+        "eventProfileImages" => $event_profile_images
       );
       array_push($events, $event);
     }
@@ -1560,7 +1613,8 @@ function dbGetLiveEventDataByTopNRatings($top_n)
 {
 	// IMPORT REQUIRED METHODS
 	require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/Functions/Miscellaneous.php';
-
+	require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBIO/UserImage.php';
+	
 	// IMPORT THE DATABASE CONNECTION
 	require $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBConnect/dbConnect.php';
 	
@@ -1623,31 +1677,34 @@ function dbGetLiveEventDataByTopNRatings($top_n)
 	
 	while($statement->fetch())
 	{
+	  $event_profile_images = dbGetImagesFirstNEventProfileByEid($eid);
+	  
 	  $eventHost = array
 	  (
-	      "uid" => $event_host_uid,
-	      "username" => $event_host_username,
-	      "firstName" => $event_host_first_name,
-	      "lastName" => $event_host_last_name
+        "uid" => $event_host_uid,
+        "username" => $event_host_username,
+        "firstName" => $event_host_first_name,
+        "lastName" => $event_host_last_name
 	  );
 	  $event = array
 	  (
-	      "eid" => $eid,
-	      "eventName" => $event_name, 
-	      "eventCategoryLabel" => $event_category_label,
-	      "eventTypeLabel" => $event_type_label,
-	      "eventInviteTypeLabel" => $event_invite_type_label,
-	      "eventPrivacyLabel" => $event_privacy_label,
-	      "eventImageUploadAllowedIndicator" => charToStrBool($event_image_upload_allowed_indicator),
-	      "eventStartDatetime" => $event_start_datetime,
-	      "eventEndDatetime" => $event_end_datetime,
-	      "eventGpsLatitude" => $event_gps_latitude,
-	      "eventGpsLongitude" => $event_gps_longitude,
-	      "eventLikeCount" => $event_like_count,
-	      "eventDislikeCount" => $event_dislike_count,
-	      "eventViewCount" => $event_view_count,
-	      "eventRatingRatio" => $event_rating_ratio,
-	      "eventHost" => $eventHost
+        "eid" => $eid,
+        "eventName" => $event_name, 
+        "eventCategoryLabel" => $event_category_label,
+        "eventTypeLabel" => $event_type_label,
+        "eventInviteTypeLabel" => $event_invite_type_label,
+        "eventPrivacyLabel" => $event_privacy_label,
+        "eventImageUploadAllowedIndicator" => charToStrBool($event_image_upload_allowed_indicator),
+        "eventStartDatetime" => $event_start_datetime,
+        "eventEndDatetime" => $event_end_datetime,
+        "eventGpsLatitude" => $event_gps_latitude,
+        "eventGpsLongitude" => $event_gps_longitude,
+        "eventLikeCount" => $event_like_count,
+        "eventDislikeCount" => $event_dislike_count,
+        "eventViewCount" => $event_view_count,
+        "eventRatingRatio" => $event_rating_ratio,
+        "eventHost" => $eventHost, 
+        "eventProfileImages" => $event_profile_images
 	  );
 	  array_push($events, $event);
 	}

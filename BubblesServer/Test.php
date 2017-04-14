@@ -147,8 +147,12 @@ $result2 = dbGetEventTypeCode("Sport", "Soccer");
 echo "Event Category Code: " . $result1 . "<br>";
 echo "Event Type Label:" . $result2 . "<br>";
 */
+/*
 require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBIO/UserImage.php';
 echo json_encode(dbGetImagesFirstNProfileByUid(1));
+*/
+require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBIO/UserImage.php';
+echo json_encode(dbGetImagesFirstNEventProfileByEid(59));
 
 echo "<br><br>!END OF SCRIPT!";
 // TEST FINAL!
