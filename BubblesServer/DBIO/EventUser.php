@@ -122,7 +122,7 @@ function dbGetEventUserData($eid, $uid)
   require $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBConnect/dbConnect.php';
 
   // EXECUTE THE QUERY
-  $query = "SELECT  uid, eid, event_user_type_label, event_user_invite_status_type_label,
+  $query = "SELECT  eid, uid, event_user_type_label, event_user_invite_status_type_label,
 					event_user_invite_status_action_timestamp
 			  FROM  T_EVENT_USER
   					LEFT JOIN T_EVENT_USER_TYPE ON T_EVENT_USER.event_user_type_code =

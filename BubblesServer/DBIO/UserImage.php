@@ -90,8 +90,8 @@ function fetchImageEncoded($uiid)
 
 
 
-/* FUNCTION: fetchImagesByEid
- * DESCRIPTION: Gets the images and their data by specified Eid.
+/* FUNCTION: fetchImages
+ * DESCRIPTION: Gets the images and their data by specified uiid.
  * --------------------------------------------------------------------------------
  * ================================================================================
  * -------------------------------------------------------------------------------- */
@@ -148,12 +148,13 @@ function fetchImages($uiid)
 
 
 
-/* FUNCTION: fetchImagesByEid
- * DESCRIPTION: Gets the images and their data by specified Eid.
+/* FUNCTION:    dbGetImagesByEid
+ * DESCRIPTION: Gets the images and their data by specified Eid, and optionally
+ *              filters them to eventProfile or non-eventProfile images.
  * --------------------------------------------------------------------------------
  * ================================================================================
  * -------------------------------------------------------------------------------- */
-function fetchImagesByEid($eid, $euiProfileIndicator)
+function dbGetImagesByEid($eid, $eventProfileIndicator)
 {
 	// IMPORT REQUIRED METHODS
 	require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/Functions/Miscellaneous.php';
@@ -161,22 +162,23 @@ function fetchImagesByEid($eid, $euiProfileIndicator)
 	// IMPORT THE DATABASE CONNECTION
 	require $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBConnect/dbConnect.php'; 
 	
-	if ($euiProfileIndicator === true)
-	  $euiProfileSequenceSubquery = " AND eui_event_profile_sequence IS NOT NULL";
-	else if ($euiProfileIndicator === false)
-	  $euiProfileSequenceSubquery = " AND eui_event_profile_sequence IS NULL"; 
-	else 
-	  $euiProfileSequenceSubquery = "";
+	$subquery = "";
+	if ($eventProfileIndicator === true)
+	  $subquery = " AND eui_event_profile_sequence IS NOT NULL";
+	else if ($eventProfileIndicator === false)
+	  $subquery = " AND eui_event_profile_sequence IS NULL"; 
+	else if (!$eventProfileIndicator) {} // Do Nothing
+	
 	// EXECUTE THE QUERY
-	$query = "SELECT T_USER_IMAGE.uiid, T_USER_IMAGE.uid, user_image_sequence, user_image_profile_sequence, 
-	                 user_image_name, privacy_label, image_purpose_label, 
-	                 user_image_gps_latitude, user_image_gps_longitude, user_image_upload_timestamp
+	$query = "SELECT T_USER_IMAGE.uiid, uid, user_image_sequence, user_image_profile_sequence, 
+					 user_image_name, user_image_gps_latitude, user_image_gps_longitude, 
+	                 user_image_view_count, user_image_like_count, user_image_dislike_count, 
+	                 user_image_comment_count, user_image_insert_timestamp, user_image_update_timestamp, 
+	                 eui_event_profile_sequence, eui_insert_timestamp, eui_update_timestamp
 			  FROM   T_USER_IMAGE
-				  	 LEFT JOIN T_PRIVACY ON T_USER_IMAGE.user_image_privacy_code = T_PRIVACY.privacy_code
-				  	 LEFT JOIN T_IMAGE_PURPOSE ON T_USER_IMAGE.user_image_purpose_code = T_IMAGE_PURPOSE.image_purpose_code
 					 LEFT JOIN R_EVENT_USER_IMAGE ON T_USER_IMAGE.uiid = R_EVENT_USER_IMAGE.uiid
 			  WHERE
-				  	 eid = ?" . $euiProfileSequenceSubquery;
+				  	 eid = ?" . $subquery;
 	$statement = $conn->prepare($query);
 	$statement->bind_param("i", $eid);
 	$statement->execute();
@@ -184,16 +186,91 @@ function fetchImagesByEid($eid, $euiProfileIndicator)
 	// CHECK FOR AN ERROR, RETURN IT IF ONE EXISTS
 	if ($error != "") { echo "DB ERROR: " . $error; return; }
 
-	// DEFAULT AND ASSIGN THE EVENT VARIABLES
-	$uiid = -1;
-	$uid = -1;
-	$user_image_sequence = -1;
-	$user_image_profile_sequence = -1;
-	$user_image_gps_latitude  = -1.0;
-	$user_image_gps_longitude = -1.0;
+	// BIND THE RESULTING VARIABLES
 	$statement->bind_result($uiid, $uid, $user_image_sequence, $user_image_profile_sequence, 
-	    $user_image_name, $user_image_privacy_label, $user_image_purpose_label,
-		$user_image_gps_latitude, $user_image_gps_longitude, $user_image_upload_timestamp);
+	    $user_image_name, $user_image_gps_latitude, $user_image_gps_longitude, 
+	    $user_image_view_count, $user_image_like_count, $user_image_dislike_count, 
+	    $user_image_comment_count, $user_image_insert_timestamp, $user_image_update_timestamp, 
+	    $eui_event_profile_sequence, $eui_insert_timestamp, $eui_update_timestamp);
+
+	$imageList = array();
+	
+	while($statement->fetch())
+	{
+	  $image = array
+	  (
+	      "uiid" => $uiid,
+	      "uid" => $uid,
+	      "userImageSequence" => $user_image_sequence,
+	      "userImageProfileSequence" => $user_image_profile_sequence,
+	      "userImagePath" => $uid . "/" . $user_image_sequence . "/" . $user_image_name,
+	      "userImageName" => $user_image_name,
+	      "userImageGpsLatitude" => $user_image_gps_latitude,
+	      "userImageGpsLongitude" => $user_image_gps_longitude,
+	      "userImageViewCount" => $user_image_view_count,
+	      "userImageLikeCount" => $user_image_like_count,
+	      "userImageDislikeCount" => $user_image_dislike_count,
+	      "userImageCommentCount" => $user_image_comment_count,
+	      "userImageInsertTimestamp" => $user_image_insert_timestamp,
+	      "userImageUpdateTimestamp" => $user_image_update_timestamp,
+	      "euiEventProfileSequence" => $eui_event_profile_sequence, 
+	      "euiInsertTimestamp" => $eui_insert_timestamp, 
+	      "euiUpdateTimestamp" => $eui_update_timestamp
+	  );
+	  array_push($imageList, $image);
+	}
+	$images = array(
+	    "images" => $imageList
+	);
+	
+	$statement->close();
+	
+	return $images;
+}
+
+
+
+/* FUNCTION:    dbGetImagesByUid
+ * DESCRIPTION: Gets the images and their data by specified Uid, and optionally
+ *              filters them to userProfile or non-userProfile images.
+ * --------------------------------------------------------------------------------
+ * ================================================================================
+ * -------------------------------------------------------------------------------- */
+function dbGetImagesByUid($uid, $user_profile_indicator)
+{
+	// IMPORT REQUIRED METHODS
+	require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/Functions/Miscellaneous.php';
+
+	// IMPORT THE DATABASE CONNECTION
+	require $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBConnect/dbConnect.php';
+
+	$subquery = "";
+	if ($user_profile_indicator === true)
+	  $subquery = " AND user_image_profile_sequence IS NOT NULL";
+    else if ($user_profile_indicator === false)
+      $subquery = " AND user_image_profile_sequence IS NULL";
+    else if (!$user_profile_indicator) {} // Do Nothing 
+
+	// EXECUTE THE QUERY
+	$query = "SELECT uiid, uid, user_image_sequence, user_image_profile_sequence, 
+					 user_image_name, user_image_gps_latitude, user_image_gps_longitude, 
+	                 user_image_view_count, user_image_like_count, user_image_dislike_count, 
+	                 user_image_comment_count, user_image_insert_timestamp, user_image_update_timestamp 
+			  FROM   T_USER_IMAGE
+			  WHERE  uid = ?" . $subquery;
+	
+	$statement = $conn->prepare($query);
+	$statement->bind_param("i", $uid);
+	$statement->execute();
+	$error = $statement->error;
+	// CHECK FOR AN ERROR, RETURN IT IF ONE EXISTS
+	if ($error != "") { echo "DB ERROR: " . $error; return; }
+
+	// BIND THE RESULTING VARIABLES
+	$statement->bind_result($uiid, $uid, $user_image_sequence, $user_image_profile_sequence, 
+	    $user_image_name, $user_image_gps_latitude, $user_image_gps_longitude, 
+	    $user_image_view_count, $user_image_like_count, $user_image_dislike_count, 
+	    $user_image_comment_count, $user_image_insert_timestamp, $user_image_update_timestamp);
 
 	$imageList = array();
 
@@ -201,204 +278,30 @@ function fetchImagesByEid($eid, $euiProfileIndicator)
 	{
 		$image = array
 		(
-			"uiid" => $uiid,
-			"uid" => $uid,
-			"userImageSequence" => $user_image_sequence,
+			"uiid" => $uiid, 
+			"uid" => $uid, 
+			"userImageSequence" => $user_image_sequence, 
 		    "userImageProfileSequence" => $user_image_profile_sequence, 
-			"userImagePath" => $uid . "/" . $user_image_sequence . "/" . $user_image_name,
-			"userImageName" => $user_image_name,
-			"userImagePrivacyLabel" => $user_image_privacy_label,
-			"userImagePurposeLabel" => $user_image_purpose_label,
+			"userImagePath" => $uid . "/" . $user_image_sequence . "/" . $user_image_name, 
+			"userImageName" => $user_image_name, 
 			"userImageGpsLatitude" => $user_image_gps_latitude,
 			"userImageGpsLongitude" => $user_image_gps_longitude, 
-			"userImageUploadTimestamp" => $user_image_upload_timestamp
-		);
-		$imageData = array
-		(
-			"image" => $image,
-		);
-		array_push($imageList, $imageData);
-	}
-
-	$statement->close();
-
-	return $imageList;
-}
-
-
-
-/* FUNCTION: fetchImagesByUidAndPurpose
- * DESCRIPTION: Fetches the data of all of the images that are of a specified
- *              uid and a specified purpose.
- * --------------------------------------------------------------------------------
- * ================================================================================
- * -------------------------------------------------------------------------------- */
-function fetchImagesByUidAndPurpose($uid, $image_purpose_label, $event_indicator)
-{
-	// IMPORT REQUIRED METHODS
-	require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/Functions/Miscellaneous.php';
-
-	// IMPORT THE DATABASE CONNECTION
-	require $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBConnect/dbConnect.php';
-
-	// EXECUTE THE QUERY
-	if ($event_indicator === true)
-		$query = "SELECT DISTINCT T_USER_IMAGE.uiid, T_USER_IMAGE.uid, user_image_sequence, user_image_profile_sequence, 
-						 user_image_name, privacy_label, image_purpose_label,
-				     	 user_image_gps_latitude, user_image_gps_longitude
-				  FROM   T_USER_IMAGE
-					  	 LEFT JOIN T_PRIVACY ON T_USER_IMAGE.user_image_privacy_code = T_PRIVACY.privacy_code
-					  	 LEFT JOIN T_IMAGE_PURPOSE ON T_USER_IMAGE.user_image_purpose_code = T_IMAGE_PURPOSE.image_purpose_code
-				  		 INNER JOIN R_EVENT_USER_IMAGE ON T_USER_IMAGE.uiid = R_EVENT_USER_IMAGE.uiid
-				  WHERE  T_USER_IMAGE.uid = ? AND T_IMAGE_PURPOSE.image_purpose_label = ?";
-	else if ($event_indicator === false)
-		$query = "SELECT DISTINCT T_USER_IMAGE.uiid, T_USER_IMAGE.uid, user_image_sequence, user_image_profile_sequence, 
-						 user_image_name, privacy_label, image_purpose_label,
-				     	 user_image_gps_latitude, user_image_gps_longitude
-				  FROM   T_USER_IMAGE
-					  	 LEFT JOIN T_PRIVACY ON T_USER_IMAGE.user_image_privacy_code = T_PRIVACY.privacy_code
-					  	 LEFT JOIN T_IMAGE_PURPOSE ON T_USER_IMAGE.user_image_purpose_code = T_IMAGE_PURPOSE.image_purpose_code
-				  		 LEFT JOIN R_EVENT_USER_IMAGE ON T_USER_IMAGE.uiid = R_EVENT_USER_IMAGE.uiid
-				  WHERE  R_EVENT_USER_IMAGE.uiid IS NULL AND
-				         T_USER_IMAGE.uid = ? AND T_IMAGE_PURPOSE.image_purpose_label = ?";
-	else if (!$event_indicator)
-		$query = "SELECT DISTINCT uiid, uid, user_image_sequence, user_image_profile_sequence, user_image_name, privacy_label, 
-						 image_purpose_label, user_image_gps_latitude, user_image_gps_longitude
-				  FROM   T_USER_IMAGE
-					  	 LEFT JOIN T_PRIVACY ON T_USER_IMAGE.user_image_privacy_code = T_PRIVACY.privacy_code
-					  	 LEFT JOIN T_IMAGE_PURPOSE ON T_USER_IMAGE.user_image_purpose_code = T_IMAGE_PURPOSE.image_purpose_code
-				  WHERE  uid = ? AND T_IMAGE_PURPOSE.image_purpose_label = ?";
-	
-	$statement = $conn->prepare($query);
-	$statement->bind_param("is", $uid, $image_purpose_label);
-	$statement->execute();
-	$error = $statement->error;
-	// CHECK FOR AN ERROR, RETURN IT IF ONE EXISTS
-	if ($error != "") { echo "DB ERROR: " . $error; return; }
-
-	// DEFAULT AND ASSIGN THE EVENT VARIABLES
-	$uiid = -1;
-	$uid = -1;
-	$user_image_sequence = -1;
-	$user_image_profile_sequence = -1;
-	$user_image_gps_latitude  = -1.0;
-	$user_image_gps_longitude = -1.0;
-	$statement->bind_result($uiid, $uid, $user_image_sequence, $user_image_profile_sequence, 
-	    $user_image_name, $user_image_privacy_label, $user_image_purpose_label,
-		$user_image_gps_latitude, $user_image_gps_longitude);
-
-	$imageList = array();
-
-	while($statement->fetch())
-	{
-		$image = array
-		(
-			"uiid" => $uiid, 
-			"uid" => $uid, 
-			"userImageSequence" => $user_image_sequence, 
-		    "userImageProfileSequence" => $user_image_profile_sequence, 
-			"userImagePath" => $uid . "/" . $user_image_sequence . "/" . $user_image_name, 
-			"userImageName" => $user_image_name, 
-			"userImagePrivacyLabel" => $user_image_privacy_label,
-			"userImagePurposeLabel" => $user_image_purpose_label,
-			"userImageGpsLatitude" => $user_image_gps_latitude,
-			"userImageGpsLongitude" => $user_image_gps_longitude
+		    "userImageViewCount" => $user_image_view_count, 
+		    "userImageLikeCount" => $user_image_like_count, 
+		    "userImageDislikeCount" => $user_image_dislike_count, 
+		    "userImageCommentCount" => $user_image_comment_count, 
+		    "userImageInsertTimestamp" => $user_image_insert_timestamp, 
+		    "userImageUpdateTimestamp" => $user_image_update_timestamp 
 		);
 		array_push($imageList, $image);
 	}
+	$images = array(
+	    "images" => $imageList
+	);
 
 	$statement->close();
 
-	return $imageList;
-}
-
-
-
-/* FUNCTION: fetchImagesByPrivacyAndPurpose 
- * DESCRIPTION: Fetches the data of all of the images that are of a specified 
- *              privacy and a specified purpose.
- * --------------------------------------------------------------------------------
- * ================================================================================
- * -------------------------------------------------------------------------------- */
-function fetchImagesByPrivacyAndPurpose($imagePrivacyLabel, $imagePurposeLabel, $event_indicator)
-{
-	// IMPORT REQUIRED METHODS
-	require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/Functions/Miscellaneous.php';
-
-	// IMPORT THE DATABASE CONNECTION
-	require $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBConnect/dbConnect.php';
-
-	// EXECUTE THE QUERY
-	if ($event_indicator === true)
-		$query = "SELECT T_USER_IMAGE.uiid, uid, user_image_sequence, user_image_profile_sequence, 
-		                 user_image_name, privacy_label, image_purpose_label,
-				     	 user_image_gps_latitude, user_image_gps_longitude
-				  FROM   T_USER_IMAGE
-					  	 LEFT JOIN T_PRIVACY ON T_USER_IMAGE.user_image_privacy_code = T_PRIVACY.privacy_code
-					  	 LEFT JOIN T_IMAGE_PURPOSE ON T_USER_IMAGE.user_image_purpose_code = T_IMAGE_PURPOSE.image_purpose_code
-				  		 INNER JOIN R_EVENT_USER_IMAGE ON T_USER_IMAGE.uiid = R_EVENT_USER_IMAGE.uiid
-				  WHERE
-					  	 T_PRIVACY.privacy_label = ? AND T_IMAGE_PURPOSE.image_purpose_label = ?";
-	else if ($event_indicator === false)
-		$query = "SELECT T_USER_IMAGE.uiid, uid, user_image_sequence, user_image_profile_sequence, 
-		                 user_image_name, privacy_label, image_purpose_label,
-				     	 user_image_gps_latitude, user_image_gps_longitude
-				  FROM   T_USER_IMAGE
-					  	 LEFT JOIN T_PRIVACY ON T_USER_IMAGE.user_image_privacy_code = T_PRIVACY.privacy_code
-					  	 LEFT JOIN T_IMAGE_PURPOSE ON T_USER_IMAGE.user_image_purpose_code = T_IMAGE_PURPOSE.image_purpose_code
-				  		 LEFT JOIN R_EVENT_USER_IMAGE ON T_USER_IMAGE.uiid = R_EVENT_USER_IMAGE.uiid
-				  WHERE  R_EVENT_USER_IMAGE.uiid IS NULL AND
-					  	 T_PRIVACY.privacy_label = ? AND T_IMAGE_PURPOSE.image_purpose_label = ?";
-	else if (!$event_indicator)
-		$query = "SELECT uiid, uid, user_image_sequence, user_image_profile_sequence, 
-		                 user_image_name, privacy_label, image_purpose_label, 
-					     user_image_gps_latitude, user_image_gps_longitude
-				  FROM   T_USER_IMAGE
-					  	 LEFT JOIN T_PRIVACY ON T_USER_IMAGE.user_image_privacy_code = T_PRIVACY.privacy_code 
-					  	 LEFT JOIN T_IMAGE_PURPOSE ON T_USER_IMAGE.user_image_purpose_code = T_IMAGE_PURPOSE.image_purpose_code
-				  WHERE 
-					  	 T_PRIVACY.privacy_label = ? AND T_IMAGE_PURPOSE.image_purpose_label = ?";
-	$statement = $conn->prepare($query);
-	$statement->bind_param("ss", $imagePrivacyLabel, $imagePurposeLabel);
-	$statement->execute();
-	$error = $statement->error;
-	// CHECK FOR AN ERROR, RETURN IT IF ONE EXISTS
-	if ($error != "") { echo "DB ERROR: " . $error; return; }
-
-	// DEFAULT AND ASSIGN THE EVENT VARIABLES
-	$uiid = -1;
-	$uid = -1;
-	$user_image_sequence = -1;
-	$user_image_profile_sequence = -1;
-	$user_image_gps_latitude  = -1.0;
-	$user_image_gps_longitude = -1.0;
-	$statement->bind_result($uiid, $uid, $user_image_sequence, $user_image_profile_sequence, 
-	    $user_image_name, $user_image_privacy_label, $user_image_purpose_label,  
-		$user_image_gps_latitude, $user_image_gps_longitude);
-	
-	$imageList = array();
-
-	while($statement->fetch())
-	{
-		$image = array
-		(
-			"uiid" => $uiid, 
-			"uid" => $uid, 
-			"userImageSequence" => $user_image_sequence, 
-		    "userImageProfileSequence" => $user_image_profile_sequence, 
-			"userImagePath" => $uid . "/" . $user_image_sequence . "/" . $user_image_name, 
-			"userImageName" => $user_image_name, 
-			"userImagePrivacyLabel" => $user_image_privacy_label,
-			"userImagePurposeLabel" => $user_image_purpose_label,
-			"userImageGpsLatitude" => $user_image_gps_latitude,
-			"userImageGpsLongitude" => $user_image_gps_longitude
-		);
-		array_push($imageList, $image);
-	}
-
-	$statement->close();
-
-	return $imageList;
+	return $images;
 }
 
 
@@ -555,6 +458,13 @@ function dbSetImage($image, $set_or_not)
 	                user_image_gps_latitude = ?, 
 	                user_image_gps_longitude = ?
 		      WHERE uiid = ?";
+	
+	/*
+	echo "<br>QUERY: <br>";
+	echo ($query);
+	echo "<br>VALUES: <br>";
+	var_dump($imageCurrent);
+	*/
 		
 	$statement = $conn->prepare($query);
 		

@@ -4,10 +4,8 @@ $function = $_GET['function'];
 
 if ($function == 'getImagesByEid')
   getImagesByEid();
-if ($function == 'getImagesByUidAndPurpose')
-  getImagesByUidAndPurpose();
-if ($function == 'getImagesByPrivacyAndPurpose')
-  getImagesByPrivacyAndPurpose();
+if ($function == 'getImagesByUid')
+  getImagesByUid();
 if ($function == 'getImageProfileMaxAmount')
   getImageProfileMaxAmount();
 if ($function == 'setImage')
@@ -19,8 +17,9 @@ if ($function == 'uploadImage')
   
 
 
-/* FUNCTION: getImagesByEid
- * DESCRIPTION: Gets the images and their data by specified Eid.
+/* FUNCTION:    getImagesByEid
+ * DESCRIPTION: Gets the images and their data by specified Eid, and optionally
+ *              filters them to eventProfile or non-eventProfile images.
  * --------------------------------------------------------------------------------
  * ================================================================================
  * -------------------------------------------------------------------------------- */
@@ -36,10 +35,10 @@ function getImagesByEid()
   $json_decoded = json_decode(file_get_contents("php://input"), true);
   // ASSIGN THE JSON VALUES TO VARIABLES
   $eid = $json_decoded["eid"];
-  $euiProfileIndicator = $json_decoded["euiProfileIndicator"];
+  $eventProfileIndicator = $json_decoded["eventProfileIndicator"];
 
   require $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBIO/UserImage.php';
-  $images = fetchImagesByEid($eid, $euiProfileIndicator); 
+  $images = dbGetImagesByEid($eid, $eventProfileIndicator); 
 
   // RETURN THE EVENT ID
   echo json_encode($images);
@@ -50,12 +49,13 @@ function getImagesByEid()
 
   
 
-/* FUNCTION: getImagesByUidAndPurpose
- * DESCRIPTION: Gets the images and their data by specified Uid and Purpose.
+/* FUNCTION:    getImagesByUid
+ * DESCRIPTION: Gets the images and their data by specified Uid, and optionally
+ *              filters them to userProfile or non-userProfile images.
  * --------------------------------------------------------------------------------
  * ================================================================================
  * -------------------------------------------------------------------------------- */
-function getImagesByUidAndPurpose()
+function getImagesByUid()
 {
   /* THE FOLLOWING 3 LINES OF CODE ENABLE ERROR REPORTING. */
   error_reporting(E_ALL);
@@ -66,45 +66,11 @@ function getImagesByUidAndPurpose()
   // DECODE JSON STRING
   $json_decoded = json_decode(file_get_contents("php://input"), true);
   // ASSIGN THE JSON VALUES TO VARIABLES
-  $uid                 = $json_decoded["uid"];
-  $image_purpose_label = $json_decoded["imagePurposeLabel"];
-  $event_indicator     = $json_decoded["eventIndicator"];
+  $uid                    = $json_decoded["uid"];
+  $user_profile_indicator = $json_decoded["userProfileIndicator"];
   
   require $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBIO/UserImage.php';
-  $images = fetchImagesByUidAndPurpose($uid, $image_purpose_label, $event_indicator);
-
-  // RETURN THE EVENT ID
-  echo json_encode($images);
-}
-/* --------------------------------------------------------------------------------
- * ================================================================================
- * -------------------------------------------------------------------------------- */
-
-
-
-/* FUNCTION: getImagesByPrivacyAndPurpose
- * DESCRIPTION: Gets the images and their data by specified privacy and purpose.
- * --------------------------------------------------------------------------------
- * ================================================================================
- * -------------------------------------------------------------------------------- */
-function getImagesByPrivacyAndPurpose()
-{
-  // THE FOLLOWING 3 LINES OF CODE ENABLE ERROR REPORTING. //
-  error_reporting(E_ALL);
-  ini_set('display_errors', TRUE);
-  ini_set('display_startup_errors', TRUE);
-  // END. //
-
-  // DECODE JSON STRING
-  $json_decoded = json_decode(file_get_contents("php://input"), true);
-  // ASSIGN THE JSON VALUES TO VARIABLES
-  $image_privacy_label = $json_decoded["imagePrivacyLabel"];
-  $image_purpose_label = $json_decoded["imagePurposeLabel"];
-  $event_indicator     = $json_decoded["eventIndicator"];
-  
-  require $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBIO/UserImage.php';
-  $images = fetchImagesByPrivacyAndPurpose($image_privacy_label, $image_purpose_label, 
-    $event_indicator);
+  $images = dbGetImagesByUid($uid, $user_profile_indicator);
 
   // RETURN THE EVENT ID
   echo json_encode($images);

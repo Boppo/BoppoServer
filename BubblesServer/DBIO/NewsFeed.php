@@ -92,7 +92,7 @@ function dbGetNewsFriendJoinedMutualEvent($uid, $max)
 
   while($statement->fetch())
   {
-    $user_profile_images = dbGetImagesFirstNProfileByUid($event_host_uid);
+    $user_profile_images = dbGetImagesFirstNProfileByUid($uid);
     $event_profile_images = dbGetImagesFirstNEventProfileByEid($eid);
     
     $user = array

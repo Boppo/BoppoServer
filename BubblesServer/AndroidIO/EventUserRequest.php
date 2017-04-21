@@ -68,8 +68,8 @@ function addUserToEvent()
 		
 	if (strcmp($event_user_reinvite_wait_duration_unit, "Day") !== 0)
 	{
-		echo $event_user_reinvite_wait_duration_unit . "<br>";
-		var_dump($event_user_reinvite_wait_duration_unit);
+		//echo $event_user_reinvite_wait_duration_unit . "<br>";
+		//var_dump($event_user_reinvite_wait_duration_unit);
 		echo "The event user reinvite wait duration unit is set incorrectly. ";
 		echo "Please contact the server administrator regarding this issue. ";
 		return;
