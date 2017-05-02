@@ -26,7 +26,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBIO/EventUser.php';
 
 $eid = 18;
 $uid = 3;
-echo var_dump(fetchEventUserData($eid, $uid)) . "<br>";
+echo var_dump(dbGetEventUserData($eid, $uid)) . "<br>";
 */
 
 /*
@@ -151,9 +151,14 @@ echo "Event Type Label:" . $result2 . "<br>";
 require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBIO/UserImage.php';
 echo json_encode(dbGetImagesFirstNProfileByUid(1));
 */
+/*
 require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBIO/UserImage.php';
 echo json_encode(dbGetImagesFirstNEventProfileByEid(59));
-
+*/
+/*
+require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/Older/Functions/Image.php';
+deleteImage();
 echo "<br><br>!END OF SCRIPT!";
+*/
 // TEST FINAL!
 ?>

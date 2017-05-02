@@ -22,14 +22,18 @@ function fetchUserImageSequence($uid)
 	$error = $statement->error;
 	if ($error != "") { echo "DB ERROR: " . $error; return; }
 
-	// DEFAULT AND ASSIGN THE USER IMAGE SEQUENCE
-	$user_image_sequence = 1;
+	//echo "DEFAULT USER_IMAGE_SEQUENCE: " . $user_image_sequence . "<br>";
 	$statement->bind_result($user_image_sequence);
 	$statement->fetch();
 	$statement->close();
+	// DEFAULT AND ASSIGN THE USER IMAGE SEQUENCE
+	if (!$user_image_sequence || $user_image_sequence == null)
+	  $user_image_sequence = 1;
+	//echo "FINAL USER_IMAGE_SEQUENCE: " . $user_image_sequence . "<br>";
 
 	// RETURN THE USER IMAGE SEQUENCE
 	return $user_image_sequence;
+	//return "Success.";
 }
 
 
@@ -51,7 +55,8 @@ function fetchImageEncoded($uiid)
   // EXECUTE THE QUERY
   $query = "SELECT  uiid, uid, user_image_sequence, user_image_profile_sequence,
                     user_image_name, user_image_privacy_code, user_image_purpose_code,
-                    user_image_gps_latitude, user_image_gps_longitude, user_image_upload_timestamp
+                    user_image_gps_latitude, user_image_gps_longitude, 
+                    user_image_insert_timestamp, user_image_update_timestamp
             FROM    T_USER_IMAGE
             WHERE
                     uiid = ?";
@@ -65,7 +70,8 @@ function fetchImageEncoded($uiid)
   // DEFAULT AND ASSIGN THE IMAGE VARIABLES
   $statement->bind_result($uiid, $uid, $user_image_sequence, $user_image_profile_sequence,
       $user_image_name, $user_image_privacy_code, $user_image_purpose_code,
-      $user_image_gps_latitude, $user_image_gps_longitude, $user_image_upload_timestamp);
+      $user_image_gps_latitude, $user_image_gps_longitude, 
+      $user_image_insert_timestamp, $user_image_update_timestamp);
   $statement->fetch();
 
   $image = array
@@ -80,7 +86,8 @@ function fetchImageEncoded($uiid)
       "userImagePurposeCode" => $user_image_purpose_code,
       "userImageGpsLatitude" => $user_image_gps_latitude,
       "userImageGpsLongitude" => $user_image_gps_longitude,
-      "userImageUploadTimestamp" => $user_image_upload_timestamp
+      "userImageInsertTimestamp" => $user_image_insert_timestamp, 
+      "userImageUpdateTimestamp" => $user_image_update_timestamp
   );
 
   $statement->close();

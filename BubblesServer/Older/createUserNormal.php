@@ -1,5 +1,11 @@
 <?php
 
+    /* THE FOLLOWING 3 LINES OF CODE ENABLE ERROR REPORTING. */
+    error_reporting(E_ALL);
+    ini_set('display_errors', TRUE);
+    ini_set('display_startup_errors', TRUE);
+    /* END. */
+
     // 1 - ESTABLISH DATABASE CONNECTION
 	require $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBConnect/dbConnect.php';
 
@@ -21,14 +27,16 @@
 	$statement = mysqli_prepare($conn, $query);
 	mysqli_stmt_bind_param($statement, "ssssss", $username, $password, $first_name, $last_name, $email, $phone);
 
-	// 5 - EXECUTE THE QUERY
+	// 5 - EXECUTE THE QUERY AND GET BACK THE INSERT ID AND/OR ERROR
 	mysqli_stmt_execute($statement);
-
-	// 6 - STORE THE QUERY ERROR, IF ANY, IN A VARIABLE
-	$error = mysqli_stmt_error($statement);
-
-	// 7 - RETURN RESULTING ERROR, IF ANY, AND CLOSE STATEMENT
-	echo $error;
+    $insert_id = mysqli_insert_id($conn); 
+    $error = mysqli_stmt_error($statement);
+    
+	// 6 - IF AN ERROR EXISTS, PRINT IT AND RETURN
+	if ($error != "") { echo "DB ERROR: " . $error; return; }
+	
+	// 7 - RETURN THE AUTO INCREMENT VALUE INSERTED BY THE QUERY
+	echo "Success: " . $insert_id;
 
 	mysqli_stmt_close($statement);
 

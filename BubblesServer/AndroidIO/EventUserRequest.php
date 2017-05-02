@@ -83,8 +83,10 @@ function addUserToEvent()
 			return; 
 		}
 		else 
+		{
 			echo "The inviter is not a member of the event.";
 			return;
+		}
 	}
 	else if (strcmp($inviter_user["eventUserInviteStatusTypeLabel"], "Joined") !== 0)
 	{

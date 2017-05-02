@@ -105,7 +105,7 @@ function getNewsEvents()
     $newsEvent = $newsFriendCreatedEventsList[$i];
     $newsEvent["newsEventType"] = "FriendCreatedEvent";
     $newsEventList[$newsFriendCreatedEventsList[$i]
-        ["friendCreatedEvent"]["eventCreationTimestamp"]] = $newsEvent;
+        ["friendCreatedEvent"]["eventInsertTimestamp"]] = $newsEvent;
   }
   foreach ($newsFriendsJoinedMutualEventList as $k => $v)
   {

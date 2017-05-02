@@ -8,7 +8,7 @@ elseif ($function == 'uploadImage')
     uploadImage();
 elseif ($function == 'setUserImagePurpose')
     setUserImagePurpose();
-    
+
 
 
 /* FUNCTION: deleteImage
@@ -26,6 +26,8 @@ function deleteImage()
     //     FROM THE JSON DECODED STRING ARRAY
     $uid                 = $json_decoded["uid"];
     $user_image_sequence = $json_decoded["userImageSequence"];
+    ////$uid = 1;
+    ////$user_image_sequence = 106;
     
     // 3 - GET THE NAME OF THE IMAGE
     // 3.1 - PREPARE THE QUERY

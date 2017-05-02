@@ -223,6 +223,7 @@ function uploadImage()
   $user_image_sequence = fetchUserImageSequence($uid);
   
   // UPLOAD THE IMAGE TO THE DATABASE // 
+  //echo "USER_IMAGE_SEQUENCE: " . $user_image_sequence; 
   $query = "INSERT INTO T_USER_IMAGE (uid, user_image_profile_sequence, user_image_sequence, user_image_name, 
             user_image_purpose_code, user_image_privacy_code,
                   user_image_gps_latitude, user_image_gps_longitude)
@@ -247,7 +248,7 @@ function uploadImage()
   file_put_contents("/var/www/Bubbles/Uploads/" . $uid . "/" .
     $user_image_sequence . "/" . $user_image_name . ".jpg", $decodedUserImage);
   
-  echo $conn->insert_id; 
+  echo "Success: " . $conn->insert_id; 
   
   return;
 } 
