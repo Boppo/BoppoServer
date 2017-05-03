@@ -131,7 +131,7 @@ function addUserToEvent()
 		}
 		else if (strcmp($invitee_user["eventUserInviteStatusTypeLabel"], "Left") === 0)
 		{
-			$date_recorded = new DateTime($invitee_user["eventUserInviteStatusActionTimestamp"]);
+			$date_recorded = new DateTime($invitee_user["eventUserInviteStatusUpsertTimestamp"]);
 			$date_current  = new DateTime(date('Y-m-d H:i:s'));
 			$date_diff     = date_diff($date_recorded, $date_current)->format('%a');
 			if (intval($date_diff) >= $event_user_reinvite_wait_duration_value)

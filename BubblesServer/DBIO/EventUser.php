@@ -16,7 +16,7 @@ function dbGetEventUserEncoded($eid, $uid)
 
   // EXECUTE THE QUERY
   $query = "SELECT eid, uid, event_user_type_code, event_user_invite_status_type_code,
-			  	   event_user_invite_status_action_timestamp
+			  	   event_user_invite_status_upsert_timestamp
 			FROM   T_EVENT_USER
 			WHERE  eid = ? AND uid = ?";
   $statement = $conn->prepare($query);
@@ -33,7 +33,7 @@ function dbGetEventUserEncoded($eid, $uid)
 
   // ASSIGN THE EVENT VARIABLES
   $statement->bind_result($eid, $uid, $event_user_type_code,
-      $event_user_invite_status_type_code, $event_user_invite_status_action_timestamp);
+      $event_user_invite_status_type_code, $event_user_invite_status_upsert_timestamp);
   $statement->fetch();
 
   $eventUser = array
@@ -42,7 +42,7 @@ function dbGetEventUserEncoded($eid, $uid)
       "uid" => $uid,
       "eventUserTypeCode" => $event_user_type_code,
       "eventUserInviteStatusTypeCode" => $event_user_invite_status_type_code,
-      "eventUserInviteStatusActionTimestamp" => $event_user_invite_status_action_timestamp
+      "eventUserInviteStatusUpsertTimestamp" => $event_user_invite_status_upsert_timestamp
   );
 
   $statement->close();
@@ -69,7 +69,7 @@ function dbGetEventUserData($eid, $uid)
 
 	// EXECUTE THE QUERY
 	$query = "SELECT eid, uid, event_user_type_label, event_user_invite_status_type_label, 
-			  		 event_user_invite_status_action_timestamp 
+			  		 event_user_invite_status_upsert_timestamp 
 			  FROM   T_EVENT_USER
   			  		 LEFT JOIN T_EVENT_USER_TYPE ON T_EVENT_USER.event_user_type_code = 
 					   T_EVENT_USER_TYPE.event_user_type_code
@@ -90,7 +90,7 @@ function dbGetEventUserData($eid, $uid)
 
 	// ASSIGN THE EVENT VARIABLES
 	$statement->bind_result($eid, $uid, $event_user_type_label, 
-		$event_user_invite_status_type_label, $event_user_invite_status_action_timestamp);
+		$event_user_invite_status_type_label, $event_user_invite_status_upsert_timestamp);
 	$statement->fetch();
 
 	$eventUser = array
@@ -99,7 +99,7 @@ function dbGetEventUserData($eid, $uid)
 		"uid" => $uid,
 		"eventUserTypeLabel" => $event_user_type_label,
 		"eventUserInviteStatusTypeLabel" => $event_user_invite_status_type_label,
-		"eventUserInviteStatusActionTimestamp" => $event_user_invite_status_action_timestamp
+		"eventUserInviteStatusUpsertTimestamp" => $event_user_invite_status_upsert_timestamp
 	);
 
 	$statement->close();
@@ -129,7 +129,7 @@ function dbGetEventUsersData($eid, $event_user_invite_status_type_label)
 				  T_USER.uid, facebook_uid, googlep_uid, username, NULL, first_name, last_name, 
 				  email, privacy_label, user_insert_timestamp, user_comment_count, 
 				  event_user_type_label, event_user_invite_status_type_label, 
-				  event_user_invite_status_action_timestamp
+				  event_user_invite_status_upsert_timestamp
 			  FROM 
 				  T_USER
 				  LEFT JOIN T_PRIVACY ON T_USER.user_privacy_code = T_PRIVACY.privacy_code 
@@ -152,7 +152,7 @@ function dbGetEventUsersData($eid, $event_user_invite_status_type_label)
 	$statement->bind_result($uid, $facebook_uid, $googlep_uid, $username, $password, 
 		$first_name, $last_name, $email, $user_privacy_label, $user_insert_timestamp, 
 		$user_comment_count, $event_user_type_label, $event_user_invite_status_type_label, 
-		$event_user_invite_status_action_timestamp);
+		$event_user_invite_status_upsert_timestamp);
 
 	$userList = array();
 
@@ -163,7 +163,7 @@ function dbGetEventUsersData($eid, $event_user_invite_status_type_label)
       $eventUser = array(
         "eventUserTypeLabel" => $event_user_type_label, 
         "eventUserInviteStatusTypeLabel" => $event_user_invite_status_type_label,
-        "eventUserInviteStatusActionTimestamp" => $event_user_invite_status_action_timestamp
+        "eventUserInviteStatusUpsertTimestamp" => $event_user_invite_status_upsert_timestamp
       );
       $user = array
       (

@@ -86,7 +86,7 @@ function dbGetNewsFriendJoinedMutualEvent($uid, $max)
   if ($error != "") { echo "DB ERROR: " . $error; return; }
 
   $statement->bind_result($uid, $username, $eid, $event_host_uid, $event_name, 
-      $event_user_invite_status_action_timestamp);
+      $event_user_invite_status_upsert_timestamp);
 
   $friendJoinedMutualEventList = array();
 
@@ -106,7 +106,7 @@ function dbGetNewsFriendJoinedMutualEvent($uid, $max)
       "eid" => $eid,
       "eventHostUid" => $event_host_uid,
       "eventName" => $event_name,
-      "eventUserInviteStatusActionTimestamp" => $event_user_invite_status_action_timestamp, 
+      "eventUserInviteStatusUpsertTimestamp" => $event_user_invite_status_upsert_timestamp, 
       "eventUser" => $user, 
       "eventProfileImages" => $event_profile_images
     );

@@ -47,10 +47,10 @@ function getNewsEvents()
    unset($tempList[$eid]["userList"]);
    array_push($userList, $newsFriendsJoinedMutualEventList[$i]["userList"][0]);
    $tempList[$eid]["userList"] = $userList;
-   if ($newsFriendsJoinedMutualEventList[$i]["event"]["eventUserInviteStatusActionTimestamp"] >
-   $tempList[$eid]["eventUserInviteStatusActionTimestamp"])
-     $tempList[$eid]["eventUserInviteStatusActionTimestamp"] =
-     $newsFriendsJoinedMutualEventList[$i]["event"]["eventUserInviteStatusActionTimestamp"];
+   if ($newsFriendsJoinedMutualEventList[$i]["event"]["eventUserInviteStatusUpsertTimestamp"] >
+   $tempList[$eid]["eventUserInviteStatusUpsertTimestamp"])
+     $tempList[$eid]["eventUserInviteStatusUpsertTimestamp"] =
+     $newsFriendsJoinedMutualEventList[$i]["event"]["eventUserInviteStatusUpsertTimestamp"];
      }
      else
      {
@@ -76,10 +76,10 @@ function getNewsEvents()
       unset($tempList[$eid]["userList"]);
       array_push($userList, $newsFriendsJoinedMutualEventList[$i]["userList"][0]);
       $tempList[$eid]["userList"] = $userList;
-      if ($newsFriendsJoinedMutualEventList[$i]["friendJoinedMutualEvent"]["eventUserInviteStatusActionTimestamp"] >
-          $tempList[$eid]["eventUserInviteStatusActionTimestamp"])
-      $tempList[$eid]["eventUserInviteStatusActionTimestamp"] =
-      $newsFriendsJoinedMutualEventList[$i]["friendJoinedMutualEvent"]["eventUserInviteStatusActionTimestamp"];
+      if ($newsFriendsJoinedMutualEventList[$i]["friendJoinedMutualEvent"]["eventUserInviteStatusUpsertTimestamp"] >
+          $tempList[$eid]["eventUserInviteStatusUpsertTimestamp"])
+      $tempList[$eid]["eventUserInviteStatusUpsertTimestamp"] =
+      $newsFriendsJoinedMutualEventList[$i]["friendJoinedMutualEvent"]["eventUserInviteStatusUpsertTimestamp"];
     }
     else
     {
@@ -112,7 +112,7 @@ function getNewsEvents()
     $newsEvent = $newsFriendsJoinedMutualEventList[$k];
     $newsEvent["newsEventType"] = "FriendsJoinedMutualEvent";
     $newsEventList[$newsFriendsJoinedMutualEventList[$k]
-        ["friendsJoinedMutualEvent"]["eventUserInviteStatusActionTimestamp"]] = $newsEvent;
+        ["friendsJoinedMutualEvent"]["eventUserInviteStatusUpsertTimestamp"]] = $newsEvent;
   }
   for ($i = 0; $i < sizeof($newsFriendsThatBecameFriendsList); $i++)
   {
