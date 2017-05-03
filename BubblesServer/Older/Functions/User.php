@@ -4,8 +4,8 @@ $function = $_GET['function'];
 
 if ($function == "syncUserFacebook")
     syncUserFacebook();
-if ($function == "setUserAccountPrivacyLabel")
-    setUserAccountPrivacyLabel();
+if ($function == "setUserPrivacyLabel")
+    setUserPrivacyLabel();
 if ($function == "changeEmail")
     changeEmail();
 if ($function == "changePassword")
@@ -156,12 +156,12 @@ function syncUserFacebook()
  
 
 
-/* FUNCTION: setUserAccountPrivacyLabel
+/* FUNCTION: setUserPrivacyLabel
  * DESCRIPTION: Sets the user's account privacy label to the specified value.
  * --------------------------------------------------------------------------------
  * ================================================================================
  * -------------------------------------------------------------------------------- */
-function setUserAccountPrivacyLabel()
+function setUserPrivacyLabel()
 {
     require $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBConnect/dbConnect.php';
     // 1 - DECODE JSON STRING
@@ -169,16 +169,16 @@ function setUserAccountPrivacyLabel()
 
     // 2 - DETERMINE BUBBLES USER ID AND USER ACCOUNT PRIVACY LABEL FROM JSON DECODED STRING ARRAY
     $uid                        = $json_decoded["uid"];
-    $user_account_privacy_label = $json_decoded["userAccountPrivacyLabel"];
+    $user_privacy_label = $json_decoded["userPrivacyLabel"];
     
     // 3 - GET THE CODE FOR THE PRIVACY LABEL
-    $user_account_privacy_code = -1;
+    $user_privacy_code = -1;
     // 3.1 - PREPARE THE QUERY
     $query = "SELECT privacy_code
               FROM T_PRIVACY
               WHERE privacy_label = ?";
     $statement = $conn->prepare($query);
-    $statement->bind_param("s", $user_account_privacy_label);
+    $statement->bind_param("s", $user_privacy_label);
     // 3.2 - EXECUTE THE QUERY
     $statement->execute();
     // 3.3 - CHECK FOR ERROR AND STOP IF EXISTS
@@ -187,18 +187,18 @@ function setUserAccountPrivacyLabel()
         echo $error;
         return; }
     // 3.4 - STORE THE QUERY RESUlT IN A VARIABLE
-    $statement->bind_result($user_account_privacy_code);
+    $statement->bind_result($user_privacy_code);
     $statement->fetch();
     $statement->close();  // Need to close statements if variable is to be recycled
     // 3.5 - CHECK IF VALUE EXISTS AND STOP IF IT DOESN'T
-    if ($user_account_privacy_code == -1) {
+    if ($user_privacy_code == -1) {
         echo "PRIVACY LABEL IS NOT VALID.";
         return; }
 
     // 4 - PREPARE THE QUERY
-    $query = "UPDATE T_USER SET user_account_privacy_code = ? WHERE uid = ?";
+    $query = "UPDATE T_USER SET user_privacy_code = ? WHERE uid = ?";
     $statement = $conn->prepare($query);
-    $statement->bind_param("ii", $user_account_privacy_code, $uid);
+    $statement->bind_param("ii", $user_privacy_code, $uid);
 
     // 5 - EXECUTE THE QUERY
     $statement->execute();
@@ -237,9 +237,9 @@ function getUserData()
     // 3.1 - PREPARE THE QUERY
     $query = "SELECT uid, facebook_uid, googlep_uid, username, password, 
                 first_name, last_name, email, phone, 
-                user_account_creation_timestamp, privacy_label
+                user_insert_timestamp, privacy_label
               FROM T_USER, T_PRIVACY
-              WHERE uid = ? AND user_account_privacy_code = privacy_code";
+              WHERE uid = ? AND user_privacy_code = privacy_code";
     $statement = $conn->prepare($query);
     $statement->bind_param("i", $uid);
     // 3.2 - EXECUTE THE QUERY
@@ -256,7 +256,7 @@ function getUserData()
         // 3.4 - STORE THE QUERY RESULT IN VARIABLES
         $statement->bind_result($uid, $facebook_uid, $googlep_uid, $username, $password, 
             $first_name, $last_name, $email, $phone, 
-            $user_account_creation_timestamp, $user_account_privacy_label);
+            $user_insert_timestamp, $user_privacy_label);
         $statement->fetch();
 
         // 3.5 - STORE THE QUERY RESULT IN AN ARRAY
@@ -270,8 +270,8 @@ function getUserData()
             "lastName" => $last_name,
             "email" => $email,
             "phone" => $phone, 
-            "userAccountCreationTimestamp" => $user_account_creation_timestamp, 
-            "userAccountPrivacy" => $user_account_privacy_label
+            "userInsertTimestamp" => $user_insert_timestamp, 
+            "userPrivacy" => $user_privacy_label
         );
         
         // 3.6 - RETURN THE JSON-ENCODED ARRAY QUERY RESULT

@@ -402,9 +402,9 @@ function dbGetEventDataByMember($uid)
 
 	// GET THE EVENT USER DATA
 	$eventUser = fetchUserEncoded($uid); 
-	$userAccountPrivacyLabel = fetchPrivacyCode($eventUser["userAccountPrivacyCode"]); 
-	unset($eventUser["userAccountPrivacyCode"]);
-	$eventUser["userAccountPrivacyLabel"] = $userAccountPrivacyLabel; 
+	$userPrivacyLabel = fetchPrivacyCode($eventUser["userAccountPrivacyCode"]); 
+	unset($eventUser["userPrivacyCode"]);
+	$eventUser["userPrivacyLabel"] = $userAccountPrivacyLabel; 
 	
 	// EXECUTE THE QUERY
 	$query = "SELECT T_EVENT.eid, event_name,
@@ -517,9 +517,9 @@ function dbGetLiveEventDataByMember($uid)
     
     // GET THE EVENT USER DATA
     $eventUser = fetchUserEncoded($uid);
-    $userAccountPrivacyLabel = fetchPrivacyCode($eventUser["userAccountPrivacyCode"]);
-    unset($eventUser["userAccountPrivacyCode"]);
-    $eventUser["userAccountPrivacyLabel"] = $userAccountPrivacyLabel;
+    $userPrivacyLabel = fetchPrivacyCode($eventUser["userAccountPrivacyCode"]);
+    unset($eventUser["userPrivacyCode"]);
+    $eventUser["userPrivacyLabel"] = $userAccountPrivacyLabel;
 	
 	// FETCH THE DATA REPRESENTING THE TIME UNIT AND VALUE OF THE OFFSET OF A LIVE EVENT DURATION
 	$path_gv = $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/Resources/GlobalVariables.json';

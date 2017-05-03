@@ -14,7 +14,7 @@ function fetchUserEncoded($uid)
   require $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBConnect/dbConnect.php';
 
   // EXECUTE THE QUERY
-  $query = "SELECT  uid, first_name, last_name, email, phone, user_account_privacy_code
+  $query = "SELECT  uid, first_name, last_name, email, phone, user_privacy_code
             FROM    T_USER
             WHERE   uid = ?";
   $statement = $conn->prepare($query);
@@ -25,7 +25,7 @@ function fetchUserEncoded($uid)
   if ($error != "") { echo "DB ERROR: " . $error; return; }
 
   // DEFAULT AND ASSIGN THE IMAGE VARIABLES
-  $statement->bind_result($uid, $first_name, $last_name, $email, $phone, $user_account_privacy_code);
+  $statement->bind_result($uid, $first_name, $last_name, $email, $phone, $user_privacy_code);
   $statement->fetch();
 
   $user = array
@@ -35,7 +35,7 @@ function fetchUserEncoded($uid)
       "lastName" => $last_name, 
       "email" => $email, 
       "phone" => $phone, 
-      "userAccountPrivacyCode" => $user_account_privacy_code
+      "userPrivacyCode" => $user_privacy_code
   );
 
   $statement->close();
@@ -137,8 +137,8 @@ function dbSetUser($user)
 	  $userCurrent["email"] = $user["email"];
 	if ($user["phone"] != null)
 	  $userCurrent["phone"] = $user["phone"];
-	if ($user["userAccountPrivacyCode"] != null)
-	  $userCurrent["userAccountPrivacyCode"] = $user["userAccountPrivacyCode"];
+	if ($user["userPrivacyCode"] != null)
+	  $userCurrent["userPrivacyCode"] = $user["userAccountPrivacyCode"];
 	
 	// EXECUTE THE QUERY
 	$query = "UPDATE T_USER
@@ -146,13 +146,13 @@ function dbSetUser($user)
 	                 last_name = ?, 
 	                 email = ?, 
 	                 phone = ?, 
-	                 user_account_privacy_code = ?
+	                 user_privacy_code = ?
 	          WHERE  uid = ?";
 		
 	$statement = $conn->prepare($query);
 		
 	$statement->bind_param("ssssii", $userCurrent["firstName"], $userCurrent["lastName"], 
-	    $userCurrent["email"], $userCurrent["phone"], $userCurrent["userAccountPrivacyCode"], 
+	    $userCurrent["email"], $userCurrent["phone"], $userCurrent["userPrivacyCode"], 
 	    $userCurrent["uid"]);
 	$statement->execute();
 	$error = $statement->error;
@@ -209,9 +209,9 @@ function dbGetUsersSearchedByName($searched_by_uid, $searched_name)
   // EXECUTE THE QUERY
   //                    user_image_sequence, user_image_name 
   $query = "SELECT T_USER.uid, facebook_uid, googlep_uid, username, first_name, last_name, email, phone, 
-                   privacy_label, user_comment_count, user_account_creation_timestamp
+                   privacy_label, user_comment_count, user_insert_timestamp
             FROM   T_USER 
-                   INNER JOIN T_PRIVACY ON user_account_privacy_code = privacy_code 
+                   INNER JOIN T_PRIVACY ON user_privacy_code = privacy_code 
             WHERE  (" . $subquery . ")
                    AND 
                    ( (
@@ -256,7 +256,7 @@ function dbGetUsersSearchedByName($searched_by_uid, $searched_name)
 
   // DEFAULT AND ASSIGN THE EVENT VARIABLES
   $statement->bind_result($uid, $facebook_uid, $googlep_uid, $username, $first_name, $last_name, 
-      $email, $phone, $privacy_label, $user_comment_count, $user_account_creation_timestamp);
+      $email, $phone, $privacy_label, $user_comment_count, $user_insert_timestamp);
 //      $user_image_sequence, $user_image_name); 
 
   $users = array();
@@ -276,7 +276,7 @@ function dbGetUsersSearchedByName($searched_by_uid, $searched_name)
         "phone" => $phone, 
         "privacyLabel" => $privacy_label, 
         "userCommentCount" => $user_comment_count, 
-        "userAccountCreationTimestamp" => $user_account_creation_timestamp, 
+        "userInsertTimestamp" => $user_insert_timestamp, 
         "userProfileImages" => $user_profile_images
     );
     array_push($users, $user);
@@ -309,9 +309,9 @@ function dbGetFriends($uid)
 
   // EXECUTE THE QUERY
   $query = "SELECT T_USER.uid, facebook_uid, googlep_uid, username, first_name, last_name, email, phone,
-                   privacy_label, user_comment_count, user_account_creation_timestamp
+                   privacy_label, user_comment_count, user_insert_timestamp
             FROM   T_USER
-                   INNER JOIN T_PRIVACY ON user_account_privacy_code = privacy_code
+                   INNER JOIN T_PRIVACY ON user_privacy_code = privacy_code
             WHERE  T_USER.uid IN
                    (
                      SELECT F.uid_1 AS uid
@@ -339,7 +339,7 @@ function dbGetFriends($uid)
 
   // DEFAULT AND ASSIGN THE EVENT VARIABLES
   $statement->bind_result($uid, $facebook_uid, $googlep_uid, $username, $first_name, $last_name,
-      $email, $phone, $privacy_label, $user_comment_count, $user_account_creation_timestamp);
+      $email, $phone, $privacy_label, $user_comment_count, $user_insert_timestamp);
 
   $friends = array();
 
@@ -358,7 +358,7 @@ function dbGetFriends($uid)
         "phone" => $phone,
         "privacyLabel" => $privacy_label,
         "userCommentCount" => $user_comment_count,
-        "userAccountCreationTimestamp" => $user_account_creation_timestamp,
+        "userInsertTimestamp" => $user_insert_timestamp,
         "userProfileImages" => $user_profile_images
     );
     array_push($friends, $user);

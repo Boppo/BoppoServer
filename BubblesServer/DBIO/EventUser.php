@@ -127,12 +127,12 @@ function dbGetEventUsersData($eid, $event_user_invite_status_type_label)
 	// EXECUTE THE QUERY
 	$query = "SELECT 
 				  T_USER.uid, facebook_uid, googlep_uid, username, NULL, first_name, last_name, 
-				  email, privacy_label, user_account_creation_timestamp, user_comment_count, 
+				  email, privacy_label, user_insert_timestamp, user_comment_count, 
 				  event_user_type_label, event_user_invite_status_type_label, 
 				  event_user_invite_status_action_timestamp
 			  FROM 
 				  T_USER
-				  LEFT JOIN T_PRIVACY ON T_USER.user_account_privacy_code = T_PRIVACY.privacy_code 
+				  LEFT JOIN T_PRIVACY ON T_USER.user_privacy_code = T_PRIVACY.privacy_code 
 				  LEFT JOIN T_EVENT_USER ON T_USER.uid = T_EVENT_USER.uid 
 				  LEFT JOIN T_EVENT_USER_TYPE ON 
 				    T_EVENT_USER.event_user_type_code = T_EVENT_USER_TYPE.event_user_type_code 
@@ -150,7 +150,7 @@ function dbGetEventUsersData($eid, $event_user_invite_status_type_label)
 
 	// ASSIGN THE EVENT VARIABLES
 	$statement->bind_result($uid, $facebook_uid, $googlep_uid, $username, $password, 
-		$first_name, $last_name, $email, $user_account_privacy_label, $user_account_creation_timestamp, 
+		$first_name, $last_name, $email, $user_privacy_label, $user_insert_timestamp, 
 		$user_comment_count, $event_user_type_label, $event_user_invite_status_type_label, 
 		$event_user_invite_status_action_timestamp);
 
@@ -175,8 +175,8 @@ function dbGetEventUsersData($eid, $event_user_invite_status_type_label)
         "firstName" => $first_name, 
         "lastName" => $last_name, 
         "email" => $email, 
-        "userAccountPrivacyLabel" => $user_account_privacy_label, 
-        "userAccountCreationTimestamp" => $user_account_creation_timestamp, 
+        "userPrivacyLabel" => $user_privacy_label, 
+        "userInsertTimestamp" => $user_insert_timestamp, 
         "userCommentCount" => $user_comment_count, 
         "userProfileImages" => $user_profile_images, 
         "eventUserData" => $eventUser        

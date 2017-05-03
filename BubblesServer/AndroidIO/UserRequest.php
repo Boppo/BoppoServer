@@ -36,7 +36,7 @@ function setUser()
   $last_name = $json_decoded["lastName"];
   $email = $json_decoded["email"];
   $phone = $json_decoded["phone"];
-  $user_account_privacy_label = $json_decoded["userAccountPrivacyLabel"];
+  $user_privacy_label = $json_decoded["userPrivacyLabel"];
 
   // MAKE SURE THAT A VALID USER IDENTIFIER WAS PROVIDED
   if ($uid <= 0) {
@@ -45,8 +45,8 @@ function setUser()
 
   // ENCODE THE PRIVACY LABEL
   require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBIO/Privacy.php';
-  $user_account_privacy_code = fetchPrivacyCode($user_account_privacy_label);
-  if (!($json_decoded["userAccountPrivacyLabel"] == null || $user_account_privacy_code != null)) {
+  $user_privacy_code = fetchPrivacyCode($user_account_privacy_label);
+  if (!($json_decoded["userPrivacyLabel"] == null || $user_privacy_code != null)) {
     echo "ERROR: Incorrect user account privacy specified.";
     return; }
 
@@ -58,7 +58,7 @@ function setUser()
     "lastName" => $last_name, 
     "email" => $email, 
     "phone" => $phone, 
-    "userAccountPrivacyCode" => $user_account_privacy_code
+    "userPrivacyCode" => $user_privacy_code
   );
   require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBIO/User.php';
   $response = dbSetUser($user);
