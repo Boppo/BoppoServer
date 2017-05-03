@@ -123,7 +123,7 @@ function createEvent()
 		     event_gps_latitude, event_gps_longitude)
 		 VALUES 
 		 	(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-		"INSERT INTO T_EVENT_USER
+		"INSERT INTO R_EVENT_USER
 			(eid, uid, event_user_type_code, 
 	         event_user_invite_status_type_code) 
 		 VALUES 

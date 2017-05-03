@@ -82,7 +82,7 @@ function dbGetEventUserInviteStatusTypeCode($event_user_invite_status_type_label
 
   // ACQUIRE THE EVENT USER INVITE STATUS TYPE CODE
   $query = "SELECT event_user_invite_status_type_code
-			FROM T_EVENT_USER_INVITE_STATUS_TYPE
+			FROM R_EVENT_USER_INVITE_STATUS_TYPE
 			WHERE event_user_invite_status_type_label = ?";
   $statement = $conn->prepare($query);
   $statement->bind_param("s", $event_user_invite_status_type_label);

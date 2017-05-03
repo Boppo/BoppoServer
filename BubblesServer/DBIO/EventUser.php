@@ -17,7 +17,7 @@ function dbGetEventUserEncoded($eid, $uid)
   // EXECUTE THE QUERY
   $query = "SELECT eid, uid, event_user_type_code, event_user_invite_status_type_code,
 			  	   event_user_invite_status_upsert_timestamp
-			FROM   T_EVENT_USER
+			FROM   R_EVENT_USER
 			WHERE  eid = ? AND uid = ?";
   $statement = $conn->prepare($query);
   $statement->bind_param("ii", $eid, $uid);
@@ -70,11 +70,11 @@ function dbGetEventUserData($eid, $uid)
 	// EXECUTE THE QUERY
 	$query = "SELECT eid, uid, event_user_type_label, event_user_invite_status_type_label, 
 			  		 event_user_invite_status_upsert_timestamp 
-			  FROM   T_EVENT_USER
-  			  		 LEFT JOIN T_EVENT_USER_TYPE ON T_EVENT_USER.event_user_type_code = 
-					   T_EVENT_USER_TYPE.event_user_type_code
-  					 LEFT JOIN T_EVENT_USER_INVITE_STATUS_TYPE ON T_EVENT_USER.event_user_invite_status_type_code = 
-					   T_EVENT_USER_INVITE_STATUS_TYPE.event_user_invite_status_type_code
+			  FROM   R_EVENT_USER
+  			  		 LEFT JOIN R_EVENT_USER_TYPE ON R_EVENT_USER.event_user_type_code = 
+					   R_EVENT_USER_TYPE.event_user_type_code
+  					 LEFT JOIN R_EVENT_USER_INVITE_STATUS_TYPE ON R_EVENT_USER.event_user_invite_status_type_code = 
+					   R_EVENT_USER_INVITE_STATUS_TYPE.event_user_invite_status_type_code
 			  WHERE  eid = ? AND uid = ?";
 	$statement = $conn->prepare($query);
 	$statement->bind_param("ii", $eid, $uid);
@@ -133,12 +133,12 @@ function dbGetEventUsersData($eid, $event_user_invite_status_type_label)
 			  FROM 
 				  T_USER
 				  LEFT JOIN T_PRIVACY ON T_USER.user_privacy_code = T_PRIVACY.privacy_code 
-				  LEFT JOIN T_EVENT_USER ON T_USER.uid = T_EVENT_USER.uid 
-				  LEFT JOIN T_EVENT_USER_TYPE ON 
-				    T_EVENT_USER.event_user_type_code = T_EVENT_USER_TYPE.event_user_type_code 
-				  LEFT JOIN T_EVENT_USER_INVITE_STATUS_TYPE ON 
-				    T_EVENT_USER.event_user_invite_status_type_code = 
-				    T_EVENT_USER_INVITE_STATUS_TYPE.event_user_invite_status_type_code
+				  LEFT JOIN R_EVENT_USER ON T_USER.uid = R_EVENT_USER.uid 
+				  LEFT JOIN R_EVENT_USER_TYPE ON 
+				    R_EVENT_USER.event_user_type_code = R_EVENT_USER_TYPE.event_user_type_code 
+				  LEFT JOIN R_EVENT_USER_INVITE_STATUS_TYPE ON 
+				    R_EVENT_USER.event_user_invite_status_type_code = 
+				    R_EVENT_USER_INVITE_STATUS_TYPE.event_user_invite_status_type_code
 			  WHERE 
 				  event_user_invite_status_type_label = ? AND eid = ?";
 	$statement = $conn->prepare($query);
@@ -220,7 +220,7 @@ function dbSetEventUser($eventUser, $set_or_not)
     $eventUserCurrent["eventUserInviteStatusTypeCode"] = $eventUser["eventUserInviteStatusTypeCode"];
 
   // EXECUTE THE QUERY
-  $query = "UPDATE T_EVENT_USER
+  $query = "UPDATE R_EVENT_USER
             SET    event_user_type_code = ?,
                    event_user_invite_status_type_code = ?
             WHERE  eid = ? AND uid = ?";

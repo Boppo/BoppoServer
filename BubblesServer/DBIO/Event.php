@@ -417,13 +417,13 @@ function dbGetEventDataByMember($uid)
               FROM   T_EVENT
               	     LEFT JOIN T_INVITE_TYPE ON T_EVENT.event_invite_type_code = T_INVITE_TYPE.invite_type_code
                      LEFT JOIN T_PRIVACY ON T_EVENT.event_privacy_code = T_PRIVACY.privacy_code
-                     LEFT JOIN T_EVENT_USER ON T_EVENT.eid = T_EVENT_USER.eid
+                     LEFT JOIN R_EVENT_USER ON T_EVENT.eid = R_EVENT_USER.eid
                      LEFT JOIN T_USER eh ON T_EVENT.event_host_uid = eh.uid
-                     LEFT JOIN T_USER eu ON T_EVENT_USER.uid = eu.uid 
+                     LEFT JOIN T_USER eu ON R_EVENT_USER.uid = eu.uid 
                      LEFT JOIN T_EVENT_TYPE ON T_EVENT.event_type_code = T_EVENT_TYPE.event_type_code 
                        AND T_EVENT.event_category_code = T_EVENT_TYPE.event_category_code 
                      LEFT JOIN T_EVENT_CATEGORY ON T_EVENT_TYPE.event_category_code = T_EVENT_CATEGORY.event_category_code
-              WHERE  T_EVENT_USER.uid = ? 
+              WHERE  R_EVENT_USER.uid = ? 
               ORDER  BY event_name";
 	$statement = $conn->prepare($query);
 	$statement->bind_param("i", $uid);
@@ -541,13 +541,13 @@ function dbGetLiveEventDataByMember($uid)
               FROM   T_EVENT
               	     LEFT JOIN T_INVITE_TYPE ON T_EVENT.event_invite_type_code = T_INVITE_TYPE.invite_type_code
                      LEFT JOIN T_PRIVACY ON T_EVENT.event_privacy_code = T_PRIVACY.privacy_code
-                     LEFT JOIN T_EVENT_USER ON T_EVENT.eid = T_EVENT_USER.eid
+                     LEFT JOIN R_EVENT_USER ON T_EVENT.eid = R_EVENT_USER.eid
                      LEFT JOIN T_USER eh ON T_EVENT.event_host_uid = eh.uid
-                     LEFT JOIN T_USER eu ON T_EVENT_USER.uid = eu.uid 
+                     LEFT JOIN T_USER eu ON R_EVENT_USER.uid = eu.uid 
                      LEFT JOIN T_EVENT_TYPE ON T_EVENT.event_type_code = T_EVENT_TYPE.event_type_code 
                        AND T_EVENT.event_category_code = T_EVENT_TYPE.event_category_code 
                      LEFT JOIN T_EVENT_CATEGORY ON T_EVENT_TYPE.event_category_code = T_EVENT_CATEGORY.event_category_code
-              WHERE  T_EVENT_USER.uid = ? 
+              WHERE  R_EVENT_USER.uid = ? 
   			  HAVING TIMESTAMPDIFF($event_live_datetime_duration_offset_unit, 
 			      	   CURRENT_TIMESTAMP, event_start_datetime) < ? AND 
 			    	 TIMESTAMPDIFF($event_live_datetime_duration_offset_unit, 
