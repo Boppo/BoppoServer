@@ -119,7 +119,7 @@ function getNewsEvents()
     $newsEvent = $newsFriendsThatBecameFriendsList[$i];
     $newsEvent["newsEventType"] = "FriendsThatBecameFriends";
     $newsEventList[$newsFriendsThatBecameFriendsList[$i]
-        ["friendsThatBecameFriends"]["userRelationshipStartTimestamp"]] = $newsEvent;
+        ["friendsThatBecameFriends"]["userRelationshipUpsertTimestamp"]] = $newsEvent;
   }
   for ($i = 0; $i < sizeof($newsFriendUploadedImageList); $i++)
   {

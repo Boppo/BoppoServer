@@ -148,7 +148,7 @@ function dbGetNewsFriendsThatBecameFriends($uid, $max)
   // CHECK FOR AN ERROR, RETURN IT IF ONE EXISTS
   if ($error != "") { echo "DB ERROR: " . $error; return; }
 
-  $statement->bind_result($uid1, $u1_username, $uid2, $u2_username, $user_relationship_start_timestamp);
+  $statement->bind_result($uid1, $u1_username, $uid2, $u2_username, $user_relationship_upsert_timestamp);
 
   $friendsThatBecameFriendsList = array();
 
@@ -173,7 +173,7 @@ function dbGetNewsFriendsThatBecameFriends($uid, $max)
     (
         "user1" => $user1, 
         "user2" => $user2, 
-        "userRelationshipStartTimestamp" => $user_relationship_start_timestamp
+        "userRelationshipUpsertTimestamp" => $user_relationship_upsert_timestamp
     );
     $friendsThatBecameFriends = array
     (

@@ -402,9 +402,9 @@ function dbGetEventDataByMember($uid)
 
 	// GET THE EVENT USER DATA
 	$eventUser = fetchUserEncoded($uid); 
-	$userPrivacyLabel = fetchPrivacyCode($eventUser["userAccountPrivacyCode"]); 
+	$userPrivacyLabel = fetchPrivacyCode($eventUser["userPrivacyCode"]); 
 	unset($eventUser["userPrivacyCode"]);
-	$eventUser["userPrivacyLabel"] = $userAccountPrivacyLabel; 
+	$eventUser["userPrivacyLabel"] = $userPrivacyLabel; 
 	
 	// EXECUTE THE QUERY
 	$query = "SELECT T_EVENT.eid, event_name,
