@@ -37,7 +37,7 @@ function setObjectComment()
 	$uid = $json_decoded["uid"];
 	$object_type_label = $json_decoded["objectTypeLabel"];
 	$oid = $json_decoded["oid"];
-	$user_comment_set_timestamp = $json_decoded["userCommentSetTimestamp"];
+	$user_comment_upsert_timestamp = $json_decoded["userCommentUpsertTimestamp"];
 	$user_comment = $json_decoded["userComment"];
 	$parent_ucid = $json_decoded["parentUcid"];
 
@@ -47,7 +47,7 @@ function setObjectComment()
 
 	// PASS THE PARAMETERS TO THE DBIO METHOD TO SET THE OBJECT COMMENT FOR THE USER
 	require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBIO/UserComment.php';
-	$response = dbSetObjectComment($uid, $object_type_code, $oid, $user_comment_set_timestamp, 
+	$response = dbSetObjectComment($uid, $object_type_code, $oid, $user_comment_upsert_timestamp, 
 		$user_comment, $parent_ucid);
 
 	// RETURN THE RESPONSE

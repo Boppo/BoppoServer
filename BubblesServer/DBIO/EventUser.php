@@ -134,8 +134,8 @@ function dbGetEventUsersData($eid, $event_user_invite_status_type_label)
 				  T_USER
 				  LEFT JOIN T_PRIVACY ON T_USER.user_privacy_code = T_PRIVACY.privacy_code 
 				  LEFT JOIN R_EVENT_USER ON T_USER.uid = R_EVENT_USER.uid 
-				  LEFT JOIN R_EVENT_USER_TYPE ON 
-				    R_EVENT_USER.event_user_type_code = R_EVENT_USER_TYPE.event_user_type_code 
+				  LEFT JOIN T_EVENT_USER_TYPE ON 
+				    R_EVENT_USER.event_user_type_code = T_EVENT_USER_TYPE.event_user_type_code 
 				  LEFT JOIN T_EVENT_USER_INVITE_STATUS_TYPE ON 
 				    R_EVENT_USER.event_user_invite_status_type_code = 
 				    T_EVENT_USER_INVITE_STATUS_TYPE.event_user_invite_status_type_code

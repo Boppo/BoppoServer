@@ -10,7 +10,7 @@
  * --------------------------------------------------------------------------------
  * ================================================================================
  * -------------------------------------------------------------------------------- */
-function dbSetObjectComment($uid, $object_type_code, $oid, $user_comment_set_timestamp, 
+function dbSetObjectComment($uid, $object_type_code, $oid, $user_comment_upsert_timestamp, 
   $user_comment, $parent_ucid)
 {
   // IMPORT THE DATABASE CONNECTION
@@ -19,7 +19,7 @@ function dbSetObjectComment($uid, $object_type_code, $oid, $user_comment_set_tim
   // EXECUTE THE QUERY
   $query = "CALL sp_setObjectComment(?, ?, ?, ?, ?, ?)"; 
   $statement = $conn->prepare($query);
-  $statement->bind_param("iiissi", $uid, $object_type_code, $oid, $user_comment_set_timestamp, 
+  $statement->bind_param("iiissi", $uid, $object_type_code, $oid, $user_comment_upsert_timestamp, 
     $user_comment, $parent_ucid);
   $statement->execute();
     
@@ -48,7 +48,7 @@ function dbGetObjectComments($object_type_code, $oid)
   // EXECUTE THE QUERY
   $query = "SELECT ucid, T_USER_COMMENT.uid, username, first_name, last_name, 
                    user_image_sequence, user_image_name, 
-                   user_comment_set_timestamp, user_comment, parent_ucid 
+                   user_comment_upsert_timestamp, user_comment, parent_ucid 
             FROM        T_USER_COMMENT 
               JOIN      T_USER ON T_USER_COMMENT.uid = T_USER.uid 
               LEFT JOIN T_USER_IMAGE ON T_USER.uid = T_USER_IMAGE.uid
@@ -69,7 +69,7 @@ function dbGetObjectComments($object_type_code, $oid)
   // ASSIGN THE OBJECT COMMENT VARIABLES
   $statement->bind_result($ucid, $uid, $username, $first_name, $last_name, 
       $user_image_sequence, $user_image_name, 
-      $user_comment_set_timestamp, $user_comment, $parent_ucid);
+      $user_comment_upsert_timestamp, $user_comment, $parent_ucid);
   
   $commentArray = array();
 
@@ -88,7 +88,7 @@ function dbGetObjectComments($object_type_code, $oid)
       "uid" => $uid, 
       "objectTypeCode" => $object_type_code, 
       "oid" => $oid, 
-      "userCommentSetTimestamp" => $user_comment_set_timestamp, 
+      "userCommentUpsertTimestamp" => $user_comment_upsert_timestamp, 
       "userComment" => $user_comment, 
       "parentUcid" => $parent_ucid, 
       "user" => $user, 
