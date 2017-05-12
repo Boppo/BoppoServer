@@ -70,10 +70,6 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBIO/Event.php';
 print_r(fetchEventDataByMember(2));
 */
 /*
-require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBIO/UserImage.php';
-print_r(fetchImagesByPrivacyAndPurpose("Public", "Regular"));
-*/
-/*
 require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBIO/FriendshipStatus.php';
 print_r(fetchFriendshipStatusRequestSentUsers(1, "Request Sent"));
 */

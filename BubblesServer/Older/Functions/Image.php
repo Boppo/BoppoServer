@@ -6,8 +6,6 @@ if ($function == 'deleteImage')
     deleteImage();
 elseif ($function == 'uploadImage')
     uploadImage();
-elseif ($function == 'setUserImagePurpose')
-    setUserImagePurpose();
 
 
 
@@ -22,8 +20,7 @@ function deleteImage()
     // 1 - DECODE JSON STRING
     $json_decoded = json_decode(file_get_contents("php://input"), true);
 
-    // 2 - DETERMINE BUBBLES USER ID, AND USER IMAGE PURPOSE LABEL
-    //     FROM THE JSON DECODED STRING ARRAY
+    // 2 - DETERMINE BUBBLES USER ID FROM THE JSON DECODED STRING ARRAY
     $uid                 = $json_decoded["uid"];
     $user_image_sequence = $json_decoded["userImageSequence"];
     ////$uid = 1;
@@ -68,10 +65,10 @@ function deleteImage()
         $user_image_name = $user_image_name . ".jpg";
             
     // 7 - DELETE THE FILE AND ITS WRAPPER FOLDER FROM THE DISK
-    if (file_exists("/var/www/Bubbles/Uploads/$uid/$user_image_sequence/$user_image_name"))
-        unlink("/var/www/Bubbles/Uploads/$uid/$user_image_sequence/$user_image_name");
-    if (is_dir("/var/www/Bubbles/Uploads/$uid/$user_image_sequence"))
-        rmdir("/var/www/Bubbles/Uploads/$uid/$user_image_sequence");
+    if (file_exists("/var/www/html/Bubbles/Uploads/$uid/$user_image_sequence/$user_image_name"))
+        unlink("/var/www/html/Bubbles/Uploads/$uid/$user_image_sequence/$user_image_name");
+    if (is_dir("/var/www/html/Bubbles/Uploads/$uid/$user_image_sequence"))
+        rmdir("/var/www/html/Bubbles/Uploads/$uid/$user_image_sequence");
         
     $statement->close();  // Need to close statements if variable is to be recycled
 }
@@ -230,69 +227,4 @@ function uploadImage()
  * ================================================================================
  * -------------------------------------------------------------------------------- */
 
-
-
-/* FUNCTION: setUserImagePurpse
- * DESCRIPTION: Sets the purpose of the user's image to the specified purpose
- * --------------------------------------------------------------------------------
- * ================================================================================
- * -------------------------------------------------------------------------------- */
-function setUserImagePurpose()
-{
-    require $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBConnect/dbConnect.php';
-    // 1 - DECODE JSON STRING
-    $json_decoded = json_decode(file_get_contents("php://input"), true);
-
-    // 2 - DETERMINE BUBBLES USER ID, USER IMAGE ID, AND USER IMAGE PURPOSE LABEL 
-    //     FROM THE JSON DECODED STRING ARRAY
-    $uid                      = $json_decoded["uid"];
-    $user_image_sequence      = $json_decoded["userImageSequence"];
-    $user_image_purpose_label = $json_decoded["userImagePurposeLabel"];
-
-    // 3 - GET THE CODE FOR THE PRIVACY LABEL
-    $user_image_purpose_code = -1;
-    // 3.1 - PREPARE THE QUERY
-    $query = "SELECT image_purpose_code
-              FROM T_IMAGE_PURPOSE
-              WHERE image_purpose_label = ?";
-    $statement = $conn->prepare($query);
-    $statement->bind_param("s", $user_image_purpose_label);
-    // 3.2 - EXECUTE THE QUERY
-    $statement->execute();
-    // 3.3 - CHECK FOR ERROR AND STOP IF EXISTS
-    $error = $statement->error;
-    if ($error != "") {
-        echo $error;
-        return; }
-        // 3.4 - STORE THE QUERY RESUlT IN A VARIABLE
-        $statement->bind_result($user_image_purpose_code);
-        $statement->fetch();
-        $statement->close();  // Need to close statements if variable is to be recycled
-        // 3.5 - CHECK IF VALUE EXISTS AND STOP IF IT DOESN'T
-        if ($user_image_purpose_code == -1) {
-            echo "Purpose label is not valid.";
-            return; 
-        }
-
-        // 4 - PREPARE THE QUERY
-        $query = "UPDATE T_USER_IMAGE SET user_image_purpose_code = ? 
-                  WHERE uid = ? AND user_image_sequence = ?";
-        $statement = $conn->prepare($query);
-        $statement->bind_param("iii", $user_image_purpose_code, $uid, $user_image_sequence);
-
-        // 5 - EXECUTE THE QUERY
-        $statement->execute();
-
-        // 6 - RETURN RESULTING ERROR IF THERE IS ONE, OTHERWISE A SUCCESS MESSAGE, THEN CLOSE STATEMENT
-        $error = $statement->error;
-        if ($error != "")
-            echo $error;
-        else
-            echo "User image updated successfully.";
-
-        $statement->close();  // Need to close statements if variable is to be recycled
-}
-/* --------------------------------------------------------------------------------
- * ================================================================================
- * -------------------------------------------------------------------------------- */
 ?>

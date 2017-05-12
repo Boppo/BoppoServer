@@ -54,7 +54,7 @@ function fetchImageEncoded($uiid)
 
   // EXECUTE THE QUERY
   $query = "SELECT  uiid, uid, user_image_sequence, user_image_profile_sequence,
-                    user_image_name, user_image_privacy_code, user_image_purpose_code,
+                    user_image_name, user_image_privacy_code, 
                     user_image_gps_latitude, user_image_gps_longitude, 
                     user_image_insert_timestamp, user_image_update_timestamp
             FROM    T_USER_IMAGE
@@ -69,7 +69,7 @@ function fetchImageEncoded($uiid)
 
   // DEFAULT AND ASSIGN THE IMAGE VARIABLES
   $statement->bind_result($uiid, $uid, $user_image_sequence, $user_image_profile_sequence,
-      $user_image_name, $user_image_privacy_code, $user_image_purpose_code,
+      $user_image_name, $user_image_privacy_code, 
       $user_image_gps_latitude, $user_image_gps_longitude, 
       $user_image_insert_timestamp, $user_image_update_timestamp);
   $statement->fetch();
@@ -83,7 +83,6 @@ function fetchImageEncoded($uiid)
       "userImagePath" => $uid . "/" . $user_image_sequence . "/" . $user_image_name,
       "userImageName" => $user_image_name,
       "userImagePrivacyCode" => $user_image_privacy_code,
-      "userImagePurposeCode" => $user_image_purpose_code,
       "userImageGpsLatitude" => $user_image_gps_latitude,
       "userImageGpsLongitude" => $user_image_gps_longitude,
       "userImageInsertTimestamp" => $user_image_insert_timestamp, 
@@ -112,11 +111,10 @@ function fetchImages($uiid)
 
   // EXECUTE THE QUERY
   $query = "SELECT  T_USER_IMAGE.uiid, T_USER_IMAGE.uid, user_image_sequence, user_image_profile_sequence, 
-                    user_image_name, privacy_label, image_purpose_label, 
+                    user_image_name, privacy_label,  
                     user_image_gps_latitude, user_image_gps_longitude, user_image_upload_timestamp
             FROM    T_USER_IMAGE
                     LEFT JOIN T_PRIVACY ON T_USER_IMAGE.user_image_privacy_code = T_PRIVACY.privacy_code
-                    LEFT JOIN T_IMAGE_PURPOSE ON T_USER_IMAGE.user_image_purpose_code = T_IMAGE_PURPOSE.image_purpose_code
                     LEFT JOIN R_EVENT_USER_IMAGE ON T_USER_IMAGE.uiid = R_EVENT_USER_IMAGE.uiid
             WHERE
                     uiid = ?";
@@ -129,7 +127,7 @@ function fetchImages($uiid)
 
   // DEFAULT AND ASSIGN THE IMAGE VARIABLES
   $statement->bind_result($uiid, $uid, $user_image_sequence, $user_image_profile_sequence, 
-      $user_image_name, $user_image_privacy_label, $user_image_purpose_label,
+      $user_image_name, $user_image_privacy_label,
       $user_image_gps_latitude, $user_image_gps_longitude, $user_image_upload_timestamp);
   $statement->fetch();
   
@@ -142,7 +140,6 @@ function fetchImages($uiid)
     "userImagePath" => $uid . "/" . $user_image_sequence . "/" . $user_image_name,
     "userImageName" => $user_image_name,
     "userImagePrivacyLabel" => $user_image_privacy_label,
-    "userImagePurposeLabel" => $user_image_purpose_label,
     "userImageGpsLatitude" => $user_image_gps_latitude,
     "userImageGpsLongitude" => $user_image_gps_longitude,
     "userImageUploadTimestamp" => $user_image_upload_timestamp
@@ -447,8 +444,6 @@ function dbSetImage($image, $set_or_not)
 	  $imageCurrent["userImageProfileSequence"] = $image["userImageProfileSequence"];
 	if ($set_or_not["userImageName"] === true)
 	  $imageCurrent["userImageName"] = $image["userImageName"];
-	if ($set_or_not["userImagePurposeCode"] === true)
-	  $imageCurrent["userImagePurposeCode"] = $image["userImagePurposeCode"];
 	if ($set_or_not["userImagePrivacyCode"] === true)
 	  $imageCurrent["userImagePrivacyCode"] = $image["userImagePrivacyCode"];
 	if ($set_or_not["userImageGpsLatitude"] === true)
@@ -460,7 +455,6 @@ function dbSetImage($image, $set_or_not)
 	$query = "UPDATE T_USER_IMAGE
 			  SET   user_image_profile_sequence = ?, 
 	                user_image_name = ?, 
-	                user_image_purpose_code = ?, 
 	                user_image_privacy_code = ?, 
 	                user_image_gps_latitude = ?, 
 	                user_image_gps_longitude = ?
@@ -475,8 +469,8 @@ function dbSetImage($image, $set_or_not)
 		
 	$statement = $conn->prepare($query);
 		
-	$statement->bind_param("isiiddi", $imageCurrent["userImageProfileSequence"], $imageCurrent["userImageName"], 
-	    $imageCurrent["userImagePurposeCode"], $imageCurrent["userImagePrivacyCode"], 
+	$statement->bind_param("isiddi", $imageCurrent["userImageProfileSequence"], $imageCurrent["userImageName"], 
+	    $imageCurrent["userImagePrivacyCode"], 
 	    $imageCurrent["userImageGpsLatitude"], $imageCurrent["userImageGpsLongitude"], $imageCurrent["uiid"]);
 	$statement->execute();
 	$error = $statement->error;

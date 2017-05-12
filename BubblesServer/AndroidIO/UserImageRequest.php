@@ -134,7 +134,6 @@ function setImage()
   $uiid = $json_decoded["uiid"];
   $user_image_profile_sequence = $json_decoded["userImageProfileSequence"];
   $user_image_name = $json_decoded["userImageName"];
-  $user_image_purpose_label = $json_decoded["userImagePurposeLabel"];
   $user_image_privacy_label = $json_decoded["userImagePrivacyLabel"];
   $user_image_gps_latitude = $json_decoded["userImageGpsLatitude"];
   $user_image_gps_longitude = $json_decoded["userImageGpsLongitude"];
@@ -143,15 +142,6 @@ function setImage()
   // MAKE SURE THAT A VALID USER IMAGE IDENTIFIER WAS PROVIDED
   if ($uiid <= 0) {
     echo "ERROR: Incorrect user image identifier specified.";
-    return; }
-    
-  // ENCODE THE USER IMAGE PURPOSE LABEL
-  require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBIO/ImagePurpose.php';
-  $user_image_purpose_code = fetchImagePurposeCode($user_image_purpose_label);
-  $set_or_not["userImagePurposeCode"] = $set_or_not["userImagePurposeLabel"];
-  unset($set_or_not["userImagePurposeLabel"]);
-  if (!($json_decoded["userImagePurposeLabel"] == null || $user_image_purpose_code != null)) {
-    echo "ERROR: Incorrect user image purpose label specified.";
     return; }
     
   // ENCODE THE PRIVACY LABEL
@@ -169,7 +159,6 @@ function setImage()
     "uiid" => $uiid,
     "userImageProfileSequence" => $user_image_profile_sequence,
     "userImageName" => $user_image_name,
-    "userImagePurposeCode" => $user_image_purpose_code,
     "userImagePrivacyCode" => $user_image_privacy_code,
     "userImageGpsLatitude" => $user_image_gps_latitude,
     "userImageGpsLongitude" => $user_image_gps_longitude
@@ -208,7 +197,6 @@ function uploadImage()
   $uid = $json_decoded["uid"];
   $user_image_profile_sequence = $json_decoded["userImageProfileSequence"];
   $user_image_name = $json_decoded["userImageName"];
-  $user_image_purpose_label = $json_decoded["userImagePurposeLabel"];
   $user_image_privacy_label = $json_decoded["userImagePrivacyLabel"];
   $user_image_gps_latitude = $json_decoded["userImageGpsLatitude"];
   $user_image_gps_longitude = $json_decoded["userImageGpsLongitude"];
@@ -216,21 +204,18 @@ function uploadImage()
   
   // ENCODE THE LABELS INTO CODES AND GET THE NEXT USER IMAGE SEQUENCE NUMBER //
   require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBIO/Privacy.php';
-  require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBIO/ImagePurpose.php';
   require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBIO/UserImage.php';
-  $user_image_purpose_code = fetchImagePurposeCode($user_image_purpose_label); 
   $user_image_privacy_code = fetchPrivacyCode($user_image_privacy_label);
   $user_image_sequence = fetchUserImageSequence($uid);
   
   // UPLOAD THE IMAGE TO THE DATABASE // 
   //echo "USER_IMAGE_SEQUENCE: " . $user_image_sequence; 
   $query = "INSERT INTO T_USER_IMAGE (uid, user_image_profile_sequence, user_image_sequence, user_image_name, 
-            user_image_purpose_code, user_image_privacy_code,
-                  user_image_gps_latitude, user_image_gps_longitude)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+              user_image_privacy_code, user_image_gps_latitude, user_image_gps_longitude)
+            VALUES (?, ?, ?, ?, ?, ?, ?)";
   $statement = $conn->prepare($query);
-  $statement->bind_param("iiisssdd", $uid, $user_image_profile_sequence, $user_image_sequence, 
-    $user_image_name, $user_image_purpose_code,  $user_image_privacy_code, 
+  $statement->bind_param("iiissdd", $uid, $user_image_profile_sequence, $user_image_sequence, 
+    $user_image_name, $user_image_privacy_code, 
     $user_image_gps_latitude, $user_image_gps_longitude);
   $statement->execute();
   $statement->error;
@@ -241,12 +226,12 @@ function uploadImage()
   
   // DECODE THE BINARY-ENCODED IMAGE AND CREATE FOLDER & FILE STRUCTURES FOR IT //
   $decodedUserImage = base64_decode("$user_image");
-  if (!file_exists("/var/www/Bubbles/Uploads/" . $uid))
-    mkdir("/var/www/Bubbles/Uploads/" . $uid, 0777, true);
-  if (!file_exists("/var/www/Bubbles/Uploads/" . $uid . "/" . $user_image_sequence))
-    mkdir("/var/www/Bubbles/Uploads/" . $uid . "/" . $user_image_sequence, 0777, true);
-  file_put_contents("/var/www/Bubbles/Uploads/" . $uid . "/" .
-    $user_image_sequence . "/" . $user_image_name . ".jpg", $decodedUserImage);
+  if (!file_exists("/var/www/html/Bubbles/Uploads/" . $uid))
+    mkdir("/var/www/html/Bubbles/Uploads/" . $uid, 0777, true);
+  if (!file_exists("/var/www/html/Bubbles/Uploads/" . $uid . "/" . $user_image_sequence))
+    mkdir("/var/www/html/Bubbles/Uploads/" . $uid . "/" . $user_image_sequence, 0777, true);
+  file_put_contents("/var/www/html/Bubbles/Uploads/" . $uid . "/" .
+    $user_image_sequence . "/" . $user_image_name, $decodedUserImage);
   
   echo "Success: " . $conn->insert_id; 
   

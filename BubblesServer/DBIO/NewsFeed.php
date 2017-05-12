@@ -215,7 +215,7 @@ function dbGetNewsFriendUploadedImage($uid, $max)
   $statement->bind_result(
       $uid, $username, $first_name, $last_name, 
       $uploadedUI_uiid, $uploadedUI_user_image_sequence, $uploadedUI_user_image_profile_sequence, 
-      $uploadedUI_user_image_name, $uploadedUI_image_purpose_label, $uploadedUI_privacy_label, 
+      $uploadedUI_user_image_name, $uploadedUI_privacy_label, 
       $uploadedUI_user_image_gps_latitude, $uploadedUI_user_image_gps_longitude, 
       $uploadedUI_user_image_upload_timestamp, $uploadedUI_user_image_view_count, 
       $uploadedUI_user_image_like_count, $uploadedUI_user_image_dislike_count, 
@@ -243,7 +243,6 @@ function dbGetNewsFriendUploadedImage($uid, $max)
       "userImageProfileSequence" => $uploadedUI_user_image_profile_sequence, 
       "userImageName" => $uploadedUI_user_image_name, 
       "userImagePath" => $uid . "/" . $uploadedUI_user_image_sequence . "/" . $uploadedUI_user_image_name,
-      "userImagePurposeLabel" => $uploadedUI_image_purpose_label, 
       "userImagePrivacyLabel" => $uploadedUI_privacy_label, 
       "userImageGpsLatitude" => $uploadedUI_user_image_gps_latitude, 
       "userImageGpsLongitude" => $uploadedUI_user_image_gps_longitude, 
