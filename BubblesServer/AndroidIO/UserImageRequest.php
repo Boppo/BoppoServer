@@ -131,12 +131,13 @@ function setImage()
   // DECODE INCOMING JSON CONTENTS //
   $json_decoded = json_decode(file_get_contents("php://input"), true);
 
-  $uiid = $json_decoded["uiid"];
+  $uiid                        = $json_decoded["uiid"];
   $user_image_profile_sequence = $json_decoded["userImageProfileSequence"];
-  $user_image_name = $json_decoded["userImageName"];
-  $user_image_privacy_label = $json_decoded["userImagePrivacyLabel"];
-  $user_image_gps_latitude = $json_decoded["userImageGpsLatitude"];
-  $user_image_gps_longitude = $json_decoded["userImageGpsLongitude"];
+  $user_image_name             = $json_decoded["userImageName"];
+  $user_image_privacy_label    = $json_decoded["userImagePrivacyLabel"];
+  $user_image_gps_latitude     = $json_decoded["userImageGpsLatitude"];
+  $user_image_gps_longitude    = $json_decoded["userImageGpsLongitude"];
+  
   $set_or_not = $json_decoded["setOrNot"];
     
   // MAKE SURE THAT A VALID USER IMAGE IDENTIFIER WAS PROVIDED

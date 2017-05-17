@@ -11,6 +11,7 @@ function dbGetEventData($eid)
 	// IMPORT REQUIRED METHODS
 	require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/Functions/Miscellaneous.php';
 	require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBIO/UserImage.php';
+	require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBIO/Address.php';
 	
 	// IMPORT THE DATABASE CONNECTION
 	require $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBConnect/dbConnect.php';
@@ -20,7 +21,8 @@ function dbGetEventData($eid)
 	                 user_image_sequence, user_image_name, 
 		       		 event_name, event_category_label, event_type_label, 
 	                 invite_type_label, privacy_label, event_image_upload_allowed_indicator,
-		       		 event_start_datetime, event_end_datetime, event_gps_latitude, event_gps_longitude,
+	                 event_description_text, event_start_datetime, event_end_datetime, 
+	                 event_gps_latitude, event_gps_longitude,
 		       		 event_like_count, event_dislike_count, event_view_count
 			  FROM   T_EVENT
 		       		 LEFT JOIN T_INVITE_TYPE ON T_EVENT.event_invite_type_code = T_INVITE_TYPE.invite_type_code
@@ -49,13 +51,14 @@ function dbGetEventData($eid)
 	    $user_image_sequence, $user_image_name,
 	    $event_name, $event_category_label, $event_type_label, 
 		$event_invite_type_label, $event_privacy_label,
-		$event_image_upload_allowed_indicator, $event_start_datetime,
-		$event_end_datetime, $event_gps_latitude, $event_gps_longitude,
+		$event_image_upload_allowed_indicator, $event_description_text, 
+	    $event_start_datetime, $event_end_datetime, $event_gps_latitude, $event_gps_longitude,
 		$event_like_count, $event_dislike_count, $event_view_count);
 	$statement->fetch();
 	
 	$user_profile_images = dbGetImagesFirstNProfileByUid($event_host_uid);
 	$event_profile_images = dbGetImagesFirstNEventProfileByEid($eid);
+	$event_address = dbGetAddressByEid($eid);
 	
 	$eventHost = array
 	(
@@ -74,6 +77,7 @@ function dbGetEventData($eid)
       "eventInviteTypeLabel" => $event_invite_type_label,
       "eventPrivacyLabel" => $event_privacy_label,
       "eventImageUploadAllowedIndicator" => charToStrBool($event_image_upload_allowed_indicator),
+      "eventDescriptionText" => $event_description_text, 
       "eventStartDatetime" => $event_start_datetime,
       "eventEndDatetime" => $event_end_datetime,
       "eventGpsLatitude" => $event_gps_latitude,
@@ -82,7 +86,8 @@ function dbGetEventData($eid)
       "eventDislikeCount" => $event_dislike_count,
       "eventViewCount" => $event_view_count, 
       "eventHost" => $eventHost, 
-      "eventProfileImages" => $event_profile_images
+      "eventProfileImages" => $event_profile_images, 
+      "eventAddress" => $event_address
 	);
 	
 	$statement->close();
@@ -331,9 +336,9 @@ function dbGetEventDataEncoded($eid)
 	require $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBConnect/dbConnect.php';
 
 	// EXECUTE THE QUERY
-	$query = "SELECT DISTINCT T_EVENT.eid, uid, username, first_name, last_name, event_name,
-	                 event_category_code, event_type_code, 
-			         event_invite_type_code, event_privacy_code, event_image_upload_allowed_indicator,
+	$query = "SELECT DISTINCT T_EVENT.eid, event_host_uid, event_name,
+	                 event_category_code, event_type_code, event_invite_type_code, event_privacy_code, 
+	                 event_image_upload_allowed_indicator, event_description_text, 
 			         event_start_datetime, event_end_datetime, event_gps_latitude, event_gps_longitude,
 			         event_like_count, event_dislike_count, event_view_count
 			  FROM   T_EVENT
@@ -349,12 +354,10 @@ function dbGetEventDataEncoded($eid)
 	if ($statement->num_rows === 0) return "No such event exists.";
 
 	// DEFAULT AND ASSIGN THE EVENT VARIABLES
-	$statement->bind_result($eid, $event_host_uid, $event_host_username, 
-		$event_host_first_name, $event_host_last_name, $event_name,
-	    $event_category_code, $event_type_code, 
-		$event_invite_type_code, $event_privacy_code,
-		$event_image_upload_allowed_indicator, $event_start_datetime,
-		$event_end_datetime, $event_gps_latitude, $event_gps_longitude,
+	$statement->bind_result($eid, $event_host_uid, $event_name,
+	    $event_category_code, $event_type_code, $event_invite_type_code, $event_privacy_code,
+		$event_image_upload_allowed_indicator, $event_description_text, 
+	    $event_start_datetime, $event_end_datetime, $event_gps_latitude, $event_gps_longitude,
 		$event_like_count, $event_dislike_count, $event_view_count);
 	$statement->fetch();
 	
@@ -367,6 +370,7 @@ function dbGetEventDataEncoded($eid)
       "eventInviteTypeCode" => $event_invite_type_code,
       "eventPrivacyCode" => $event_privacy_code,
       "eventImageUploadAllowedIndicator" => $event_image_upload_allowed_indicator,
+      "eventDescriptionText" => $event_description_text, 
       "eventStartDatetime" => $event_start_datetime,
       "eventEndDatetime" => $event_end_datetime,
       "eventGpsLatitude" => $event_gps_latitude,
@@ -1726,7 +1730,7 @@ function dbGetLiveEventDataByTopNRatings($top_n)
  * --------------------------------------------------------------------------------
  * ================================================================================
  * -------------------------------------------------------------------------------- */
-function dbUpdateEvent($event)
+function dbUpdateEvent($event, $set_or_not)
 {
 	// IMPORT THE DATABASE CONNECTION
 	require $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBConnect/dbConnect.php';
@@ -1735,28 +1739,30 @@ function dbUpdateEvent($event)
 	$eventCurrent = dbGetEventDataEncoded($event["eid"]);
 	
 	// UPDATE THE CURRENT VALUES WITH VALID NEW VALUES
-	if ($event["eventHostUid"] != null)
-		$eventCurrent["eventHostUid"] = $event["eventHostUid"];
-	if ($event["eventName"] != null)
-		$eventCurrent["eventName"] = $event["eventName"];
-	if ($event["eventCategoryCode"] != null)
-        $eventCurrent["eventCategoryCode"] = $event["eventCategoryCode"];
-    if ($event["eventTypeCode"] != null)
-        $eventCurrent["eventTypeCode"] = $event["eventTypeCode"];
-	if ($event["eventInviteTypeCode"] != null)
-		$eventCurrent["eventInviteTypeCode"] = $event["eventInviteTypeCode"];
-	if ($event["eventPrivacyCode"] != null)
-		$eventCurrent["eventPrivacyCode"] = $event["eventPrivacyCode"];
-	if ($event["eventImageUploadAllowedIndicator"] != null)
-		$eventCurrent["eventImageUploadAllowedIndicator"] = $event["eventImageUploadAllowedIndicator"];
-	if ($event["eventStartDatetime"] != null)
-		$eventCurrent["eventStartDatetime"] = $event["eventStartDatetime"];
-	if ($event["eventEndDatetime"] != null)
-		$eventCurrent["eventEndDatetime"] = $event["eventEndDatetime"];
-	if ($event["eventGpsLatitude"] != null)
-		$eventCurrent["eventGpsLatitude"] = $event["eventGpsLatitude"];
-	if ($event["eventGpsLongitude"] != null)
-		$eventCurrent["eventGpsLongitude"] = $event["eventGpsLongitude"];
+	if ($set_or_not["eventHostUid"] === true)
+	  $eventCurrent["eventHostUid"] = $event["eventHostUid"];
+    if ($set_or_not["eventName"] === true)
+      $eventCurrent["eventName"] = $event["eventName"];
+    if ($set_or_not["eventCategoryCode"] === true)
+      $eventCurrent["eventCategoryCode"] = $event["eventCategoryCode"];
+    if ($set_or_not["eventTypeCode"] === true)
+      $eventCurrent["eventTypeCode"] = $event["eventTypeCode"];
+    if ($set_or_not["eventInviteTypeCode"] === true)
+      $eventCurrent["eventInviteTypeCode"] = $event["eventInviteTypeCode"];
+    if ($set_or_not["eventPrivacyCode"] === true)
+      $eventCurrent["eventPrivacyCode"] = $event["eventPrivacyCode"];
+    if ($set_or_not["eventImageUploadAllowedIndicator"] === true)
+      $eventCurrent["eventImageUploadAllowedIndicator"] = $event["eventImageUploadAllowedIndicator"];
+    if ($set_or_not["eventDescriptionText"] === true)
+      $eventCurrent["eventDescriptionText"] = $event["eventDescriptionText"];
+    if ($set_or_not["eventStartDatetime"] === true)
+      $eventCurrent["eventStartDatetime"] = $event["eventStartDatetime"];
+    if ($set_or_not["eventEndDatetime"] === true)
+      $eventCurrent["eventEndDatetime"] = $event["eventEndDatetime"];
+    if ($set_or_not["eventGpsLatitude"] === true)
+      $eventCurrent["eventGpsLatitude"] = $event["eventGpsLatitude"];
+    if ($set_or_not["eventGpsLongitude"] === true)
+      $eventCurrent["eventGpsLongitude"] = $event["eventGpsLongitude"];
 	
 	// EXECUTE THE QUERY
 	$query = "UPDATE T_EVENT 
@@ -1767,6 +1773,7 @@ function dbUpdateEvent($event)
 			      event_invite_type_code = ?,
 			      event_privacy_code = ?, 
 			      event_image_upload_allowed_indicator = ?,
+	              event_description_text = ?, 
 			      event_start_datetime = ?, 
 			      event_end_datetime = ?, 
 			      event_gps_latitude = ?, 
@@ -1775,22 +1782,24 @@ function dbUpdateEvent($event)
 		
 	$statement = $conn->prepare($query);
 		
-	$statement->bind_param("isiiiiissddi", $eventCurrent["eventHostUid"], $eventCurrent["eventName"], 
+	$statement->bind_param("isiiiiisssddi", $eventCurrent["eventHostUid"], $eventCurrent["eventName"], 
 	    $eventCurrent["eventCategoryCode"], $eventCurrent["eventTypeCode"], 
 		$eventCurrent["eventInviteTypeCode"], $eventCurrent["eventPrivacyCode"], 
-		$eventCurrent["eventImageUploadAllowedIndicator"], $eventCurrent["eventStartDatetime"], 
-		$eventCurrent["eventEndDatetime"], $eventCurrent["eventGpsLatitude"], 
-		$eventCurrent["eventGpsLongitude"], $event["eid"]);
+		$eventCurrent["eventImageUploadAllowedIndicator"], $eventCurrent["eventDescriptionText"], 
+	    $eventCurrent["eventStartDatetime"], $eventCurrent["eventEndDatetime"], 
+	    $eventCurrent["eventGpsLatitude"], $eventCurrent["eventGpsLongitude"], $event["eid"]);
 	$statement->execute();
 	$error = $statement->error;
 	// CHECK FOR AN ERROR, RETURN IT IF ONE EXISTS
 	if ($error != "") { return "DB ERROR: " . $error; }
 		
 	// RETURN A SUCCESS CONFIRMATION MESSAGE
-	if ($statement->affected_rows === 1)
-		return "Event has been successfully updated.";
+	if ($statement->affected_rows === 0)
+	  return "Event has failed to update: no event has been updated, possibly because the input data is not new.";
+	else if ($statement->affected_rows === 1)
+      return "Event has been successfully updated.";
 	else 
-		return "Event has failed to update: no event or multiple events have been updated.";
+      return "Event has failed to update: no event or multiple events have been updated.";
 	
 	$statement->close();
 }

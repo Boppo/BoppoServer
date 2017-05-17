@@ -154,7 +154,15 @@ echo json_encode(dbGetImagesFirstNEventProfileByEid(59));
 /*
 require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/Older/Functions/Image.php';
 deleteImage();
-echo "<br><br>!END OF SCRIPT!";
 */
-// TEST FINAL!
+/*
+require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBIO/Miscellaneous.php';
+echo json_encode(dbGetCountryByNumericCode(392));
+*/
+require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBIO/Address.php';
+echo json_encode(dbGetAddressByEid(1));
+
+
+echo "<br><br>!END OF SCRIPT!";
+
 ?>

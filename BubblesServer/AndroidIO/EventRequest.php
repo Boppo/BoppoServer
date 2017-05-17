@@ -70,6 +70,7 @@ function createEvent()
 	$event_invite_type_label              = $json_decoded["eventInviteTypeLabel"];
 	$event_privacy_label                  = $json_decoded["eventPrivacyLabel"];
 	$event_image_upload_allowed_indicator = $json_decoded["eventImageUploadAllowedIndicator"];
+	$event_description_text               = $json_decoded["eventDescriptionText"];
 	$event_start_datetime                 = $json_decoded["eventStartDatetime"];
 	$event_end_datetime                   = $json_decoded["eventEndDatetime"];
 	$event_gps_latitude                   = $json_decoded["eventGpsLatitude"];
@@ -119,10 +120,11 @@ function createEvent()
 		"INSERT INTO T_EVENT 
 		    (event_name, event_host_uid, event_category_code, event_type_code, 
 	         event_privacy_code, event_invite_type_code, 
-			 event_image_upload_allowed_indicator, event_start_datetime, event_end_datetime, 
+			 event_image_upload_allowed_indicator, event_description_text, 
+	         event_start_datetime, event_end_datetime, 
 		     event_gps_latitude, event_gps_longitude)
 		 VALUES 
-		 	(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+		 	(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
 		"INSERT INTO R_EVENT_USER
 			(eid, uid, event_user_type_code, 
 	         event_user_invite_status_type_code) 
@@ -141,9 +143,9 @@ function createEvent()
 		
 		$index = array_search($query, $queries);
 		if ($index === 0) {
-			$statement->bind_param("siiiiiissdd", $event_name, $event_host_uid, 
-			    $event_category_code, $event_type_code, 
-			    $event_privacy_code, $event_invite_type_code, $event_image_upload_allowed_indicator,
+			$statement->bind_param("siiiiiisssdd", $event_name, $event_host_uid, 
+			    $event_category_code, $event_type_code, $event_privacy_code, $event_invite_type_code, 
+			    $event_image_upload_allowed_indicator, $event_description_text, 
 				$event_start_datetime, $event_end_datetime, $event_gps_latitude, $event_gps_longitude);
 		}
 		elseif ($index === 1) {
@@ -808,10 +810,13 @@ function updateEvent()
 	$event_privacy_label                  = $json_decoded["eventPrivacyLabel"];
 	$event_image_upload_allowed_indicator = filter_var($json_decoded["eventImageUploadAllowedIndicator"], 
 												FILTER_VALIDATE_BOOLEAN);
+	$event_description_text               = $json_decoded["eventDescriptionText"];
 	$event_start_datetime                 = $json_decoded["eventStartDatetime"];
 	$event_end_datetime                   = $json_decoded["eventEndDatetime"];
 	$event_gps_latitude                   = $json_decoded["eventGpsLatitude"];
 	$event_gps_longitude                  = $json_decoded["eventGpsLongitude"];
+	
+	$set_or_not = $json_decoded["setOrNot"];
 	
 	// MAKE SURE THAT A VALID EVENT IDENTIFIER WAS PROVIDED
 	if ($eid <= 0) {
@@ -820,14 +825,18 @@ function updateEvent()
 		
 	// ENCODE THE EVENT TYPE LABEL
 	require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBIO/ReferenceData.php';
-	$event_type_code = dbGetEventTypeCode($event_type_label);
+	$set_or_not["eventTypeCode"] = $set_or_not["eventTypeLabel"];
+	unset($set_or_not["eventTypeLabel"]);
+	$event_type_code = dbGetEventTypeCode($event_category_label, $event_type_label);
 	if (!($json_decoded["eventTypeLabel"] == null || $event_type_code != null)) {
 	  echo "ERROR: Incorrect event type specified.";
 	  return; }
 	  
     // ENCODE THE EVENT CATEGORY LABEL
     require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBIO/ReferenceData.php';
-    $event_category_code = dbGetEventCategoryCode($event_category_label, $event_type_label);
+    $set_or_not["eventCategoryCode"] = $set_or_not["eventCategoryLabel"];
+    unset($set_or_not["eventCategoryLabel"]);
+    $event_category_code = dbGetEventCategoryCode($event_category_label);
     if (!($json_decoded["eventCategoryLabel"] == null || $event_category_code != null ||
             $json_decoded["eventTypeLabel"] == null || $event_type_code != null)) {
       echo "ERROR: Incorrect event category or event type specified.";
@@ -835,6 +844,8 @@ function updateEvent()
 	
 	// ENCODE THE INVITE TYPE LABEL
 	require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBIO/InviteType.php';
+	$set_or_not["eventInviteTypeCode"] = $set_or_not["eventInviteTypeLabel"];
+	unset($set_or_not["eventInviteTypeLabel"]);
 	$event_invite_type_code = fetchInviteTypeCode($event_invite_type_label);
 	if (!($json_decoded["eventInviteTypeLabel"] == null || $event_invite_type_code != null)) {
 		echo "ERROR: Incorrect event invite type specified.";
@@ -842,6 +853,8 @@ function updateEvent()
 	
 	// ENCODE THE PRIVACY LABEL
 	require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBIO/Privacy.php';
+	$set_or_not["eventPrivacyCode"] = $set_or_not["eventPrivacyLabel"];
+	unset($set_or_not["eventPrivacyLabel"]);
 	$event_privacy_code = fetchPrivacyCode($event_privacy_label);
 	if (!($json_decoded["eventPrivacyLabel"] == null || $event_privacy_code != null)) {
 		echo "ERROR: Incorrect event privacy specified.";
@@ -866,13 +879,14 @@ function updateEvent()
 		"eventInviteTypeCode" => $event_invite_type_code,
 		"eventPrivacyCode" => $event_privacy_code,
 		"eventImageUploadAllowedIndicator" => $event_image_upload_allowed_indicator,
+	    "eventDescriptionText" => $event_description_text,
 		"eventStartDatetime" => $event_start_datetime,
 		"eventEndDatetime" => $event_end_datetime,
 		"eventGpsLatitude" => $event_gps_latitude,
 		"eventGpsLongitude" => $event_gps_longitude
 	);
 	require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBIO/Event.php';
-	$response = dbUpdateEvent($event);
+	$response = dbUpdateEvent($event, $set_or_not);
 	
 	echo $response;
 }
