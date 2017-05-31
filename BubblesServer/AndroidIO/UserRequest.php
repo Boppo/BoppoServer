@@ -31,12 +31,14 @@ function setUser()
   // DECODE INCOMING JSON CONTENTS //
   $json_decoded = json_decode(file_get_contents("php://input"), true);
   
-  $uid = $json_decoded["uid"];
-  $first_name = $json_decoded["firstName"];
-  $last_name = $json_decoded["lastName"];
-  $email = $json_decoded["email"];
-  $phone = $json_decoded["phone"];
+  $uid                = $json_decoded["uid"];
+  $first_name         = $json_decoded["firstName"];
+  $last_name          = $json_decoded["lastName"];
+  $email              = $json_decoded["email"];
+  $phone              = $json_decoded["phone"];
   $user_privacy_label = $json_decoded["userPrivacyLabel"];
+  
+  $set_or_not = $json_decoded["setOrNot"];
 
   // MAKE SURE THAT A VALID USER IDENTIFIER WAS PROVIDED
   if ($uid <= 0) {
@@ -45,7 +47,9 @@ function setUser()
 
   // ENCODE THE PRIVACY LABEL
   require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBIO/Privacy.php';
-  $user_privacy_code = fetchPrivacyCode($user_account_privacy_label);
+  $set_or_not["userPrivacyCode"] = $set_or_not["userPrivacyLabel"];
+  unset($set_or_not["userPrivacyLabel"]);
+  $user_privacy_code = fetchPrivacyCode($user_privacy_label);
   if (!($json_decoded["userPrivacyLabel"] == null || $user_privacy_code != null)) {
     echo "ERROR: Incorrect user account privacy specified.";
     return; }
@@ -61,7 +65,7 @@ function setUser()
     "userPrivacyCode" => $user_privacy_code
   );
   require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBIO/User.php';
-  $response = dbSetUser($user);
+  $response = dbSetUser($user, $set_or_not);
 
   echo $response;
 }

@@ -115,7 +115,7 @@ function getUserFriendRequestUsers()
  * --------------------------------------------------------------------------------
  * ================================================================================
  * -------------------------------------------------------------------------------- */
-function dbSetUser($user)
+function dbSetUser($user, $set_or_not)
 {
     /* THE FOLLOWING 3 LINES OF CODE ENABLE ERROR REPORTING. */
     error_reporting(E_ALL);
@@ -129,16 +129,17 @@ function dbSetUser($user)
 	// FETCH THE CURRENT VALUES FOR THIS EVENT
 	$userCurrent = fetchUserEncoded($user["uid"]);
 	
-	if ($user["firstName"] != null)
-	  $userCurrent["firstName"] = $user["firstName"];
-	if ($user["lastName"] != null)
-	  $userCurrent["lastName"] = $user["lastName"];
-	if ($user["email"] != null)
-	  $userCurrent["email"] = $user["email"];
-	if ($user["phone"] != null)
-	  $userCurrent["phone"] = $user["phone"];
-	if ($user["userPrivacyCode"] != null)
-	  $userCurrent["userPrivacyCode"] = $user["userAccountPrivacyCode"];
+    // UPDATE THE CURRENT VALUES WITH VALID NEW VALUES
+    if ($set_or_not["firstName"] === true)
+      $userCurrent["firstName"] = $user["firstName"];
+    if ($set_or_not["lastName"] === true)
+      $userCurrent["lastName"] = $user["lastName"];
+    if ($set_or_not["email"] === true)
+      $userCurrent["email"] = $user["email"];
+    if ($set_or_not["phone"] === true)
+      $userCurrent["phone"] = $user["phone"];
+    if ($set_or_not["userPrivacyCode"] === true)
+      $userCurrent["userPrivacyCode"] = $user["userPrivacyCode"];
 	
 	// EXECUTE THE QUERY
 	$query = "UPDATE T_USER
@@ -158,12 +159,14 @@ function dbSetUser($user)
 	$error = $statement->error;
 	// CHECK FOR AN ERROR, RETURN IT IF ONE EXISTS
 	if ($error != "") { return "DB ERROR: " . $error; }
-		
+	
 	// RETURN A SUCCESS CONFIRMATION MESSAGE
-	if ($statement->affected_rows === 1)
-		return "User has been successfully updated.";
-	else 
-		return "User has failed to update: no user or multiple users have been updated.";
+	if ($statement->affected_rows === 0)
+	  return "User has failed to update: no user has been updated, possibly because the input data is not new.";
+    else if ($statement->affected_rows === 1)
+      return "User has been successfully updated.";
+    else
+      return "User has failed to update: no user or multiple users have been updated.";
 	
 	$statement->close();
 }

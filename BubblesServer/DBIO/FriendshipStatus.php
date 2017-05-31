@@ -71,6 +71,7 @@ function fetchFriendshipStatusRequestSentUsers($uid_1, $user_relationship_type_l
 {
 	// IMPORT REQUIRED METHODS
 	require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/Functions/Miscellaneous.php';
+	require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBIO/UserImage.php';
 
 	// IMPORT THE DATABASE CONNECTION
 	require $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBConnect/dbConnect.php';
@@ -95,14 +96,17 @@ function fetchFriendshipStatusRequestSentUsers($uid_1, $user_relationship_type_l
 	
 	while($statement->fetch())
 	{
-		$user = array
-		(
-			"uid" => $uid, 
-			"username" => $username, 
-			"firstName" => $first_name, 
-			"lastName" => $last_name
-		);
-		array_push($users, $user);
+	  $user_profile_images = dbGetImagesFirstNProfileByUid($uid);
+	   
+      $user = array
+      (
+        "uid" => $uid, 
+        "username" => $username, 
+        "firstName" => $first_name, 
+        "lastName" => $last_name, 
+        "userProfileImages" => $user_profile_images
+      );
+      array_push($users, $user);
 	}
 	
 	$statement->close();
@@ -125,6 +129,7 @@ function fetchFriendshipStatusRequestReceivedUsers($uid_2, $user_relationship_ty
 {
 	// IMPORT REQUIRED METHODS
 	require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/Functions/Miscellaneous.php';
+	require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBIO/UserImage.php';
 
 	// IMPORT THE DATABASE CONNECTION
 	require $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBConnect/dbConnect.php';
@@ -149,14 +154,17 @@ function fetchFriendshipStatusRequestReceivedUsers($uid_2, $user_relationship_ty
 
 	while($statement->fetch())
 	{
-		$user = array
-		(
-			"uid" => $uid,
-			"username" => $username,
-			"firstName" => $first_name,
-			"lastName" => $last_name
-		);
-		array_push($users, $user);
+	  $user_profile_images = dbGetImagesFirstNProfileByUid($uid);
+	  
+      $user = array
+      (
+        "uid" => $uid,
+        "username" => $username,
+        "firstName" => $first_name,
+        "lastName" => $last_name, 
+        "userProfileImages" => $user_profile_images
+      );
+      array_push($users, $user);
 	}
 
 	$statement->close();
