@@ -67,5 +67,24 @@ function compareDateDifferences($diff1, $diff2)
 		return "The time difference is within bounds.";
 }
 
+function formatJsonResponseError($error)
+{
+  $response = array
+  (
+    "responseType" => "ERROR", 
+    "response" => $error
+  );
+  return json_encode($response);
+}
+
+function formatJsonResponseSuccess($response)
+{
+  $response = array
+  (
+    "responseType" => "Success", 
+    "response" => $response
+  );
+  return json_encode($response);
+}
 
 ?>

@@ -338,7 +338,7 @@ function dbGetEventDataEncoded($eid)
 	// EXECUTE THE QUERY
 	$query = "SELECT DISTINCT T_EVENT.eid, event_host_uid, event_name,
 	                 event_category_code, event_type_code, event_invite_type_code, event_privacy_code, 
-	                 event_image_upload_allowed_indicator, event_description_text, 
+	                 event_image_upload_allowed_indicator, event_description_text, event_aid, 
 			         event_start_datetime, event_end_datetime, event_gps_latitude, event_gps_longitude,
 			         event_like_count, event_dislike_count, event_view_count
 			  FROM   T_EVENT
@@ -356,13 +356,14 @@ function dbGetEventDataEncoded($eid)
 	// DEFAULT AND ASSIGN THE EVENT VARIABLES
 	$statement->bind_result($eid, $event_host_uid, $event_name,
 	    $event_category_code, $event_type_code, $event_invite_type_code, $event_privacy_code,
-		$event_image_upload_allowed_indicator, $event_description_text, 
+		$event_image_upload_allowed_indicator, $event_description_text, $event_aid, 
 	    $event_start_datetime, $event_end_datetime, $event_gps_latitude, $event_gps_longitude,
 		$event_like_count, $event_dislike_count, $event_view_count);
 	$statement->fetch();
 	
 	$event = array
 	(
+      "eid" => $eid, 
       "eventHostUid" => $event_host_uid,
       "eventName" => $event_name, 
       "eventCategoryCode" => $event_category_code, 
@@ -371,6 +372,7 @@ function dbGetEventDataEncoded($eid)
       "eventPrivacyCode" => $event_privacy_code,
       "eventImageUploadAllowedIndicator" => $event_image_upload_allowed_indicator,
       "eventDescriptionText" => $event_description_text, 
+      "eventAid" => $event_aid, 
       "eventStartDatetime" => $event_start_datetime,
       "eventEndDatetime" => $event_end_datetime,
       "eventGpsLatitude" => $event_gps_latitude,
@@ -1802,6 +1804,57 @@ function dbUpdateEvent($event, $set_or_not)
       return "Event has failed to update: no event or multiple events have been updated.";
 	
 	$statement->close();
+}
+
+
+
+/* FUNCTION:    dbUpdateEventUnparsedAddress
+ * DESCRIPTION: Updates an event with the specified eid to have the address with 
+ *              the specified aid. 
+ * --------------------------------------------------------------------------------
+ * ================================================================================
+ * -------------------------------------------------------------------------------- */
+function dbUpdateEventUnparsedAddress($event)
+{
+  // IMPORT THE DATABASE CONNECTION
+  require $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBConnect/dbConnect.php';
+  require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/Functions/Miscellaneous.php';
+  require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBIO/Address.php';
+  
+  // FETCH THE CURRENT VALUES FOR THIS EVENT
+  $eventCurrent = dbGetEventDataEncoded($event["eid"]);
+  
+  // DELETE THE ADDRESS IF IT IS NOT BEING USED BY ANY OTHER EVENT
+  dbDeleteAddressIfUnused($eventCurrent["eid"], $eventCurrent["eventAid"]);
+
+  // EXECUTE THE QUERY
+  $query = "UPDATE T_EVENT
+            SET    event_aid = ?
+            WHERE  eid = ?";
+
+  $statement = $conn->prepare($query);
+
+  $statement->bind_param("ii", $event["eventAid"], $event["eid"]);
+  $statement->execute();
+  $error = $statement->error;
+  // CHECK FOR AN ERROR, RETURN IT IF ONE EXISTS
+  if ($error != "") { return formatJsonResponseError($error); }
+
+  // RETURN A SUCCESS CONFIRMATION MESSAGE
+  if ($statement->affected_rows === 0)
+    return formatJsonResponseError(
+      "Event has failed to update: no event has been updated, possibly because the input data is not new."
+    );
+  else if ($statement->affected_rows === 1)
+    return formatJsonResponseSuccess(
+      "Event has been successfully updated."
+    );
+  else
+    return formatJsonResponseError(
+      "Event has failed to update: no event or multiple events have been updated."
+    );
+
+  $statement->close();
 }
 
 ?>

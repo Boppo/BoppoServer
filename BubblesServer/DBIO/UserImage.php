@@ -158,7 +158,7 @@ function fetchImages($uiid)
  * --------------------------------------------------------------------------------
  * ================================================================================
  * -------------------------------------------------------------------------------- */
-function dbGetImagesByEid($eid, $eventProfileIndicator)
+function dbGetImagesByEid($eid, $event_profile_indicator)
 {
 	// IMPORT REQUIRED METHODS
 	require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/Functions/Miscellaneous.php';
@@ -167,11 +167,11 @@ function dbGetImagesByEid($eid, $eventProfileIndicator)
 	require $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBConnect/dbConnect.php'; 
 	
 	$subquery = "";
-	if ($eventProfileIndicator === true)
+	if ($event_profile_indicator === true)
 	  $subquery = " AND eui_event_profile_sequence IS NOT NULL";
-	else if ($eventProfileIndicator === false)
+	else if ($event_profile_indicator === false)
 	  $subquery = " AND eui_event_profile_sequence IS NULL"; 
-	else if (!$eventProfileIndicator) {} // Do Nothing
+	else if (!$event_profile_indicator) {} // Do Nothing
 	
 	// EXECUTE THE QUERY
 	$query = "SELECT T_USER_IMAGE.uiid, uid, user_image_sequence, user_image_profile_sequence, 

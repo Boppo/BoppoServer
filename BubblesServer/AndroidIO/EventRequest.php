@@ -40,6 +40,8 @@ if ($function == "deleteEvent")
 	deleteEvent();
 if ($function == "updateEvent")
 	updateEvent();
+if ($function == "updateEventUnparsedAddress")
+    updateEventUnparsedAddress();
 
 	
 
@@ -889,6 +891,57 @@ function updateEvent()
 	$response = dbUpdateEvent($event, $set_or_not);
 	
 	echo $response;
+}
+
+/* --------------------------------------------------------------------------------
+ * ================================================================================
+ * -------------------------------------------------------------------------------- */
+
+
+
+/* FUNCTION:    updateEventUnparsedAddress
+ * DESCRIPTION: Updates an event with the specified eid to have the address with 
+ *              the specified aid. 
+ * --------------------------------------------------------------------------------
+ * ================================================================================
+ * -------------------------------------------------------------------------------- */
+function updateEventUnparsedAddress()
+{
+  /* THE FOLLOWING 3 LINES OF CODE ENABLE ERROR REPORTING. */
+  error_reporting(E_ALL);
+  ini_set('display_errors', TRUE);
+  ini_set('display_startup_errors', TRUE);
+  /* END. */
+
+  // IMPORT THE DATABASE CONNECTION
+  require $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBConnect/dbConnect.php';
+  // DECODE JSON STRING
+  $json_decoded = json_decode(file_get_contents("php://input"), true);
+
+  // ASSIGN THE JSON VALUES TO VARIABLES
+  $eid = $json_decoded["eid"]; 
+  $event_aid = $json_decoded["eventAid"]; 
+
+  // MAKE SURE THAT A VALID EVENT IDENTIFIER WAS PROVIDED
+  if ($eid <= 0) {
+    echo "ERROR: Incorrect event identifier specified.";
+    return; }
+    
+  // MAKE SURE THAT A VALID ADDRESS IDENTIFIER WAS PROVIDED
+  if ($event_aid <= 0) {
+    echo "ERROR: Incorrect address identifier specified.";
+    return; }
+
+  // SEND THE NEW VALUES IN AN EVENT OBJECT TO THE CORRESPONDING DBIO METHOD
+  $event = array
+  (
+      "eid" => $eid, 
+      "eventAid" => $event_aid
+  );
+  require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBIO/Event.php';
+  $response = dbUpdateEventUnparsedAddress($event);
+
+  echo $response;
 }
 
 /* --------------------------------------------------------------------------------
