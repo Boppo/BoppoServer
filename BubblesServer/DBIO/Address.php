@@ -93,7 +93,14 @@ function dbGetAddressByEid($eid)
       $address_street_number);
   $statement->fetch();
 
-  $country = dbGetCountryByNumericCode($address_country_numeric_code);
+  if(!$address_country_numeric_code)
+  {
+    $country = null;
+  }
+  else 
+  {
+    $country = dbGetCountryByNumericCode($address_country_numeric_code);
+  }
 
   $address = array
   (

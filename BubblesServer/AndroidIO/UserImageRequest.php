@@ -195,13 +195,14 @@ function uploadImage()
   // DECODE INCOMING JSON CONTENTS //
   $json_decoded = json_decode(file_get_contents("php://input"), true);
 
-  $uid = $json_decoded["uid"];
+  $uid                         = $json_decoded["uid"];
   $user_image_profile_sequence = $json_decoded["userImageProfileSequence"];
-  $user_image_name = $json_decoded["userImageName"];
-  $user_image_privacy_label = $json_decoded["userImagePrivacyLabel"];
-  $user_image_gps_latitude = $json_decoded["userImageGpsLatitude"];
-  $user_image_gps_longitude = $json_decoded["userImageGpsLongitude"];
-  $user_image = $json_decoded["userImage"];
+  $user_image_name             = $json_decoded["userImageName"];
+  $user_image_privacy_label    = $json_decoded["userImagePrivacyLabel"];
+  $user_image_gps_latitude     = $json_decoded["userImageGpsLatitude"];
+  $user_image_gps_longitude    = $json_decoded["userImageGpsLongitude"];
+  $user_image                  = $json_decoded["userImage"];
+  $user_image_thumbnail        = $json_decoded["userImageThumbnail"];
   
   // ENCODE THE LABELS INTO CODES AND GET THE NEXT USER IMAGE SEQUENCE NUMBER //
   require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBIO/Privacy.php';
@@ -226,13 +227,16 @@ function uploadImage()
   if ($error != "") { echo "DB ERROR: " . $error; return; }
   
   // DECODE THE BINARY-ENCODED IMAGE AND CREATE FOLDER & FILE STRUCTURES FOR IT //
-  $decodedUserImage = base64_decode("$user_image");
+  $decodedUserImage          = base64_decode("$user_image");
+  $decodedUserImageThumbnail = base64_decode("$user_image_thumbnail");
   if (!file_exists("/var/www/html/Bubbles/Uploads/" . $uid))
     mkdir("/var/www/html/Bubbles/Uploads/" . $uid, 0777, true);
   if (!file_exists("/var/www/html/Bubbles/Uploads/" . $uid . "/" . $user_image_sequence))
     mkdir("/var/www/html/Bubbles/Uploads/" . $uid . "/" . $user_image_sequence, 0777, true);
   file_put_contents("/var/www/html/Bubbles/Uploads/" . $uid . "/" .
     $user_image_sequence . "/" . $user_image_name, $decodedUserImage);
+  file_put_contents("/var/www/html/Bubbles/Uploads/" . $uid . "/" .
+    $user_image_sequence . "/TMB " . $user_image_name, $decodedUserImageThumbnail);
   
   echo "Success: " . $conn->insert_id; 
   

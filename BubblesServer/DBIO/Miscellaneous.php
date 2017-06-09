@@ -73,7 +73,7 @@ function dbGetCountryByNumericCode($country_numeric_code)
 
   $statement->bind_result(
       $country_numeric_code, $country_2c_mnemonic_code, $country_3c_mnemonic_code, $country_english_name
-      );
+  );
   $statement->fetch();
 
   // DEFAULT AND ASSIGN THE RETURN VARIABLE

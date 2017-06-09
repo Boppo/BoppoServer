@@ -80,7 +80,8 @@ function fetchImageEncoded($uiid)
       "uid" => $uid,
       "userImageSequence" => $user_image_sequence,
       "userImageProfileSequence" => $user_image_profile_sequence,
-      "userImagePath" => $uid . "/" . $user_image_sequence . "/" . $user_image_name,
+      "userImagePath" => $uid . "/" . $user_image_sequence . "/" . $user_image_name, 
+      "userImageThumbnailPath" => $uid . "/" . $user_image_sequence . "/TMB " . $user_image_name, 
       "userImageName" => $user_image_name,
       "userImagePrivacyCode" => $user_image_privacy_code,
       "userImageGpsLatitude" => $user_image_gps_latitude,
@@ -138,6 +139,7 @@ function fetchImages($uiid)
     "userImageSequence" => $user_image_sequence,
     "userImageProfileSequence" => $user_image_profile_sequence, 
     "userImagePath" => $uid . "/" . $user_image_sequence . "/" . $user_image_name,
+    "userImageThumbnailPath" => $uid . "/" . $user_image_sequence . "/TMB " . $user_image_name,
     "userImageName" => $user_image_name,
     "userImagePrivacyLabel" => $user_image_privacy_label,
     "userImageGpsLatitude" => $user_image_gps_latitude,
@@ -208,6 +210,7 @@ function dbGetImagesByEid($eid, $event_profile_indicator)
 	      "userImageSequence" => $user_image_sequence,
 	      "userImageProfileSequence" => $user_image_profile_sequence,
 	      "userImagePath" => $uid . "/" . $user_image_sequence . "/" . $user_image_name,
+	      "userImageThumbnailPath" => $uid . "/" . $user_image_sequence . "/TMB " . $user_image_name,
 	      "userImageName" => $user_image_name,
 	      "userImageGpsLatitude" => $user_image_gps_latitude,
 	      "userImageGpsLongitude" => $user_image_gps_longitude,
@@ -287,6 +290,7 @@ function dbGetImagesByUid($uid, $user_profile_indicator)
 			"userImageSequence" => $user_image_sequence, 
 		    "userImageProfileSequence" => $user_image_profile_sequence, 
 			"userImagePath" => $uid . "/" . $user_image_sequence . "/" . $user_image_name, 
+		    "userImageThumbnailPath" => $uid . "/" . $user_image_sequence . "/TMB " . $user_image_name,
 			"userImageName" => $user_image_name, 
 			"userImageGpsLatitude" => $user_image_gps_latitude,
 			"userImageGpsLongitude" => $user_image_gps_longitude, 
@@ -353,7 +357,8 @@ function dbGetImagesFirstNProfileByUid($uid)
     $image = array
     (
       "userImageProfileSequence" => $user_image_profile_sequence,
-      "userImagePath" => $uid . "/" . $user_image_sequence . "/" . $user_image_name
+      "userImagePath" => $uid . "/" . $user_image_sequence . "/" . $user_image_name, 
+      "userImageThumbnailPath" => $uid . "/" . $user_image_sequence . "/TMB " . $user_image_name,
     );
     array_push($imageList, $image);
   }
@@ -409,7 +414,8 @@ function dbGetImagesFirstNEventProfileByEid($eid)
     $image = array
     (
         "euiEventProfileSequence" => $eui_event_profile_sequence,
-        "euiPath" => $uid . "/" . $user_image_sequence . "/" . $user_image_name
+        "euiPath" => $uid . "/" . $user_image_sequence . "/" . $user_image_name, 
+        "euiThumbnailPath" => $uid . "/" . $user_image_sequence . "/TMB " . $user_image_name,
     );
     array_push($imageList, $image);
   }
