@@ -12,7 +12,7 @@ function fetchEventUserTypeCode($event_user_type_label)
 	
 	// ACQUIRE THE INVITE TYPE CODE
 	$query = "SELECT event_user_type_code 
-			  FROM R_EVENT_USER_TYPE
+			  FROM T_EVENT_USER_TYPE
 			  WHERE event_user_type_label = ?";
 	$statement = $conn->prepare($query);
 	$statement->bind_param("s", $event_user_type_label);

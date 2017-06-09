@@ -131,7 +131,7 @@ function createEvent()
 			(eid, uid, event_user_type_code, 
 	         event_user_invite_status_type_code) 
 		 VALUES 
-			(?, ?, 3, 1)" 	// As of this moment, the 3 was = 'Administrator' & 1 was = 'Joined'
+			(?, ?, 1, 1)" 	// As of this moment, the 1 was = 'Administrator' & 1 was = 'Joined'
 	);
 		
 	$conn->autocommit(FALSE);

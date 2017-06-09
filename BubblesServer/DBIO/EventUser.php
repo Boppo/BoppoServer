@@ -71,8 +71,8 @@ function dbGetEventUserData($eid, $uid)
 	$query = "SELECT eid, uid, event_user_type_label, event_user_invite_status_type_label, 
 			  		 event_user_invite_status_upsert_timestamp 
 			  FROM   R_EVENT_USER
-  			  		 LEFT JOIN R_EVENT_USER_TYPE ON R_EVENT_USER.event_user_type_code = 
-					   R_EVENT_USER_TYPE.event_user_type_code
+  			  		 LEFT JOIN T_EVENT_USER_TYPE ON R_EVENT_USER.event_user_type_code = 
+					   T_EVENT_USER_TYPE.event_user_type_code
   					 LEFT JOIN T_EVENT_USER_INVITE_STATUS_TYPE ON R_EVENT_USER.event_user_invite_status_type_code = 
 					   T_EVENT_USER_INVITE_STATUS_TYPE.event_user_invite_status_type_code
 			  WHERE  eid = ? AND uid = ?";
