@@ -1726,6 +1726,101 @@ function dbGetLiveEventDataByTopNRatings($top_n)
 
 
 
+/* FUNCTION:    dbGetEventDataByTopNRandom
+ * DESCRIPTION: Gets the data of an entire event for all of the events that are the 
+ *              first N in the "randomly" selected order,  where N is the input 
+ *              value.
+ * --------------------------------------------------------------------------------
+ * ================================================================================
+ * -------------------------------------------------------------------------------- */
+function dbGetEventDataByTopNRandom($uid, $top_n)
+{
+  // IMPORT REQUIRED METHODS
+  require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/Functions/Miscellaneous.php';
+  require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBIO/UserImage.php';
+
+  // IMPORT THE DATABASE CONNECTION
+  require $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBConnect/dbConnect.php';
+
+  // EXECUTE THE QUERY
+  $query = "SELECT eid, event_host_uid, username, first_name, last_name, 
+                   event_name, event_description_text,  
+                   address_name, address_unparsed_text
+            FROM 
+            (
+              SELECT *
+              FROM T_EVENT 
+                JOIN T_USER ON T_EVENT.event_host_uid = T_USER.uid 
+                LEFT JOIN T_ADDRESS ON T_EVENT.event_aid = T_ADDRESS.aid 
+              WHERE eid IN 
+              (
+                SELECT eid 
+                FROM   R_EVENT_USER 
+                       JOIN T_EVENT_USER_INVITE_STATUS_TYPE 
+              	         ON R_EVENT_USER.event_user_invite_status_type_code = 
+                           T_EVENT_USER_INVITE_STATUS_TYPE.event_user_invite_status_type_code
+                WHERE  uid = ? AND event_user_invite_status_type_label = 'Joined'    
+              )
+              ORDER BY RAND()
+              LIMIT ? 
+            ) T 
+            ORDER BY event_insert_timestamp DESC";
+  $statement = $conn->prepare($query);
+  $statement->bind_param("ii", $uid, $top_n);
+  $statement->execute();
+  $statement->store_result(); 	// Need this to check the number of rows later
+  $error = $statement->error;
+  // CHECK FOR AN ERROR, RETURN IT IF ONE EXISTS
+  if ($error != "") { return formatJsonResponseError($error); }
+  if ($statement->num_rows === 0) return formatJsonResponseSuccess("No such event exists.");
+
+  // ASSIGN THE RETURNED VALUES TO VARIABLES
+  $statement->bind_result($eid, 
+      $event_host_uid, $event_host_username, $event_host_first_name, $event_host_last_name, 
+      $event_name, $event_description_text, $address_name, $address_unparsed_text);
+  // NEED TO UPDATE THE ABOVE
+  
+  $events = array();
+
+  while($statement->fetch())
+  {
+    $event_profile_images = dbGetImagesFirstNEventProfileByEid($eid);
+    
+    $event_host = array
+    (
+        "uid" => $event_host_uid,
+        "username" => $event_host_username,
+        "firstName" => $event_host_first_name,
+        "lastName" => $event_host_last_name
+    );
+    $event_address = array
+    (
+        "addressName" => $address_name, 
+        "addressUnparsedText" => $address_unparsed_text
+    );
+    $event = array
+    (
+        "eid" => $eid,
+        "eventName" => $event_name, 
+        "eventDescriptionText" => $event_description_text, 
+        "eventHost" => $event_host, 
+        "eventProfileImages" => $event_profile_images, 
+        "eventAddress" => $event_address
+    );
+    array_push($events, $event);
+  }
+  $statement->close();
+
+  $parent = array
+  (
+      "events" => $events
+  );
+
+  return $parent;
+}
+
+
+
 /* FUNCTION:    dbUpdateEvent
  * DESCRIPTION: Updates an event into the corresponding database table with the
  *  			newly provided values.
@@ -1855,6 +1950,46 @@ function dbUpdateEventUnparsedAddress($event)
     );
 
   $statement->close();
+}
+
+
+
+/* FUNCTION:    dbGetCountHostedEvents
+ * DESCRIPTION: Retrieves and returns the count of events that the user with the
+ *              specified uid hosted..
+ * --------------------------------------------------------------------------------
+ * ================================================================================
+ * -------------------------------------------------------------------------------- */
+function dbGetCountHostedEvents($uid)
+{
+  // IMPORT THE DATABASE CONNECTION
+  require $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBConnect/dbConnect.php';
+
+  // EXECUTE THE QUERY
+  $query = "SELECT COUNT(*) AS countHostedEvents 
+            FROM   T_EVENT 
+            WHERE  event_host_uid = ?";
+  $statement = $conn->prepare($query);
+  $statement->bind_param("i", $uid);
+  $statement->execute();
+  $statement->store_result(); 	// Need this to check the number of rows later
+  $statement->error;
+
+  // CHECK FOR AN ERROR, RETURN IT IF ONE EXISTS
+  $error = $statement->error;
+  if ($error != "") { return formatJsonResponseError($error); }
+  // CHECK FOR THE COUNT OF RESULTS, RETURN A MESSAGE IF NONE EXIST
+  if ($statement->num_rows === 0) {
+    return formatJsonResponseError("Contact the database administrator about the dbGetCountHostedEvents PHP method.");
+  }
+
+  // ASSIGN THE RETURNED VALUES TO VARIABLES
+  $statement->bind_result($countHostedEvents);
+  $statement->fetch();
+  $statement->close();
+
+  // RETURN THE REQUESTED VALUE(S)
+  return $countHostedEvents;
 }
 
 ?>

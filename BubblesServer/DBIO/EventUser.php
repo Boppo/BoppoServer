@@ -245,4 +245,47 @@ function dbSetEventUser($eventUser, $set_or_not)
 
   $statement->close();
 }
+
+
+
+/* FUNCTION:    dbGetCountJoinedEvents
+ * DESCRIPTION: Retrieves and returns the count of events that the user with the
+ *              specified uid joined..
+ * --------------------------------------------------------------------------------
+ * ================================================================================
+ * -------------------------------------------------------------------------------- */
+function dbGetCountJoinedEvents($uid)
+{
+  // IMPORT THE DATABASE CONNECTION
+  require $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBConnect/dbConnect.php';
+
+  // EXECUTE THE QUERY
+  $query = "SELECT COUNT(*) AS countJoinedEvents 
+            FROM   R_EVENT_USER JOIN T_EVENT_USER_INVITE_STATUS_TYPE 
+            	   ON R_EVENT_USER.event_user_invite_status_type_code = 
+                     T_EVENT_USER_INVITE_STATUS_TYPE.event_user_invite_status_type_code
+            WHERE  uid = ? AND event_user_invite_status_type_label = 'Joined'";
+  $statement = $conn->prepare($query);
+  $statement->bind_param("i", $uid);
+  $statement->execute();
+  $statement->store_result(); 	// Need this to check the number of rows later
+  $statement->error;
+
+  // CHECK FOR AN ERROR, RETURN IT IF ONE EXISTS
+  $error = $statement->error;
+  if ($error != "") { return formatJsonResponseError($error); }
+  // CHECK FOR THE COUNT OF RESULTS, RETURN A MESSAGE IF NONE EXIST
+  if ($statement->num_rows === 0) {
+    return formatJsonResponseError("Contact the database administrator about the dbGetCountJoinedEvents PHP method.");
+  }
+
+  // ASSIGN THE RETURNED VALUES TO VARIABLES 
+  $statement->bind_result($countJoinedEvents);
+  $statement->fetch();
+  $statement->close();
+
+  // RETURN THE REQUESTED VALUE(S)
+  return $countJoinedEvents;
+}
+
 ?>

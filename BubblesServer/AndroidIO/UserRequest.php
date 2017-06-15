@@ -4,6 +4,8 @@ $function = $_GET['function'];
 
 if ($function == "setUser")
   setUser();
+if ($function == "getUserProfileData")
+  getUserProfileData();
 if ($function == "getUsersSearchedByName")
   getUsersSearchedByName();
 if ($function == "getFriends")
@@ -68,6 +70,40 @@ function setUser()
   $response = dbSetUser($user, $set_or_not);
 
   echo $response;
+}
+/* --------------------------------------------------------------------------------
+ * ================================================================================
+ * -------------------------------------------------------------------------------- */
+
+
+
+/* FUNCTION:    getUserProfileData
+ * DESCRIPTION: Gets the profile data for the user with the specified uid. In 
+ *              other words, gets anything about the user that includes the 
+ *              username, first name, last name, profile image and its thumbnail, 
+ *              count of friends, a few friends, a few events, etc. This retrieves 
+ *              more data than getUserData. 
+ * --------------------------------------------------------------------------------
+ * ================================================================================
+ * -------------------------------------------------------------------------------- */
+function getUserProfileData()
+{
+  /* THE FOLLOWING 3 LINES OF CODE ENABLE ERROR REPORTING. */
+  error_reporting(E_ALL);
+  ini_set('display_errors', TRUE);
+  ini_set('display_startup_errors', TRUE);
+  /* END. */
+
+  // DECODE JSON STRING
+  $json_decoded = json_decode(file_get_contents("php://input"), true);
+  // ASSIGN THE JSON VALUES TO VARIABLES
+  $uid = $json_decoded["uid"];
+
+  require $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBIO/User.php';
+  $user = dbGetUserProfileData($uid);
+
+  // RETURN THE EVENT ID
+  echo json_encode($user);
 }
 /* --------------------------------------------------------------------------------
  * ================================================================================

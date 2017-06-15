@@ -6,7 +6,10 @@
 		}
 	},
 	"MaxAmount": {
-		"NewsFeedMaxAmount": 5
+		"NewsFeedMaxAmount": 5, 
+		"UserProfileEventMaxAmount": 5, 
+		"UserProfileFriendMaxAmount": 5, 
+		"UserProfileUploadedImageMaxAmount": 5
 	}, 
 	"Event": {
 		"EventLiveDatetimeDurationOffset": {

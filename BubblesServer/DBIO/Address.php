@@ -61,7 +61,7 @@ function dbGetAddressByEid($eid)
 {
   // IMPORT THE DATABASE CONNECTION
   require $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBConnect/dbConnect.php';
-  require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBIO/Miscellaneous.php';
+  require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBIO/ReferenceData.php';
 
   // ACQUIRE THE INVITE TYPE LABEL
   $query = "SELECT aid, address_unparsed_text, address_country_numeric_code,

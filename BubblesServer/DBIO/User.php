@@ -177,6 +177,87 @@ function dbSetUser($user, $set_or_not)
 
 
 
+/* FUNCTION:    dbGetUserProfileData
+ * DESCRIPTION: Gets the profile data for the user with the specified uid. In
+ *              other words, gets anything about the user that includes the
+ *              username, first name, last name, profile image and its thumbnail,
+ *              count of friends, a few friends, a few events, etc. This retrieves
+ *              more data than getUserData.
+ * --------------------------------------------------------------------------------
+ * ================================================================================
+ * -------------------------------------------------------------------------------- */
+function dbGetUserProfileData($uid)
+{
+  // IMPORT REQUIRED METHODS
+  require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/Functions/Miscellaneous.php';
+  require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBIO/FriendshipStatus.php'; 
+  require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBIO/Event.php';
+  require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBIO/EventUser.php';
+  require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBIO/UserImage.php';
+
+  // IMPORT THE DATABASE CONNECTION
+  require $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBConnect/dbConnect.php';
+
+  // EXECUTE THE QUERY
+  $query = "SELECT uid, username, first_name, last_name 
+            FROM   T_USER 
+            WHERE  uid = ?";
+  $statement = $conn->prepare($query);
+  $statement->bind_param("i", $uid);
+  $statement->execute();
+  $error = $statement->error;
+  // CHECK FOR AN ERROR, RETURN IT IF ONE EXISTS
+  if ($error != "") { return formatJsonResponseError($error); }
+
+  // DEFAULT AND ASSIGN VARIABLES WHERE APPROPRIATE 
+  $path_gv = $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/Resources/GlobalVariables.json';
+  $file_gv = file_get_contents($path_gv);
+  $array_gv = json_decode($file_gv, true);
+  $user_profile_event_max_amount = $array_gv["MaxAmount"]["UserProfileEventMaxAmount"];
+  $user_profile_friend_max_amount = $array_gv["MaxAmount"]["UserProfileFriendMaxAmount"];
+  
+  $statement->bind_result($uid, $username, $first_name, $last_name);
+  $statement->fetch();
+
+  $user = array();
+
+  $user_profile_images = dbGetImagesFirstNProfileByUid($uid);
+  $count_friends = dbGetCountFriends($uid); 
+  $count_hosted_events = dbGetCountHostedEvents($uid);
+  $count_joined_events = dbGetCountJoinedEvents($uid);
+  $count_images = dbGetCountImages($uid);
+  $top_n_random_events = dbGetEventDataByTopNRandom($uid, $user_profile_event_max_amount);
+  $top_n_random_friends = dbGetFriendsByTopNRandom($uid, $user_profile_friend_max_amount); 
+  $latest_n_images = dbGetImagesLatestNByUid($uid);
+  
+  $user = array
+  (
+      "uid" => $uid,
+      "username" => $username, 
+      "firstName" => $first_name, 
+      "lastName" => $last_name, 
+      "userProfileImages" => $user_profile_images, 
+      "countFriends" => $count_friends, 
+      "countHostedEvents" => $count_hosted_events, 
+      "countJoinedEvents" => $count_joined_events, 
+      "countImages" => $count_images, 
+      "topNRandomEvents" => $top_n_random_events, 
+      "topNRandomFriends" => $top_n_random_friends, 
+      "latestNImages" => $latest_n_images
+  );
+  
+  $parent = array
+  (
+    "user" => $user  
+  );
+
+  $statement->close();
+
+  return $parent;
+}
+
+
+
 /* FUNCTION:    dbGetUsersSearchedByName
  * DESCRIPTION: Gets the users and their related data whose first names, last 
  *              names, and/or usernames match the input substring, and are 

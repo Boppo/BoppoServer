@@ -170,21 +170,22 @@ function dbGetImagesByEid($eid, $event_profile_indicator)
 	
 	$subquery = "";
 	if ($event_profile_indicator === true)
-	  $subquery = " AND eui_event_profile_sequence IS NOT NULL";
+	  $subquery = " AND eui_event_profile_sequence IS NOT NULL ";
 	else if ($event_profile_indicator === false)
-	  $subquery = " AND eui_event_profile_sequence IS NULL"; 
+	  $subquery = " AND eui_event_profile_sequence IS NULL "; 
 	else if (!$event_profile_indicator) {} // Do Nothing
 	
 	// EXECUTE THE QUERY
-	$query = "SELECT T_USER_IMAGE.uiid, uid, user_image_sequence, user_image_profile_sequence, 
-					 user_image_name, user_image_gps_latitude, user_image_gps_longitude, 
-	                 user_image_view_count, user_image_like_count, user_image_dislike_count, 
-	                 user_image_comment_count, user_image_insert_timestamp, user_image_update_timestamp, 
-	                 eui_event_profile_sequence, eui_insert_timestamp, eui_update_timestamp
-			  FROM   T_USER_IMAGE
-					 LEFT JOIN R_EVENT_USER_IMAGE ON T_USER_IMAGE.uiid = R_EVENT_USER_IMAGE.uiid
+	$query = "SELECT   T_USER_IMAGE.uiid, uid, user_image_sequence, user_image_profile_sequence, 
+					   user_image_name, user_image_gps_latitude, user_image_gps_longitude, 
+	                   user_image_view_count, user_image_like_count, user_image_dislike_count, 
+	                   user_image_comment_count, user_image_insert_timestamp, user_image_update_timestamp, 
+	                   eui_event_profile_sequence, eui_insert_timestamp, eui_update_timestamp
+			  FROM     T_USER_IMAGE
+					   LEFT JOIN R_EVENT_USER_IMAGE ON T_USER_IMAGE.uiid = R_EVENT_USER_IMAGE.uiid
 			  WHERE
-				  	 eid = ?" . $subquery;
+				  	   eid = ?" . $subquery . 
+	         "ORDER BY eui_insert_timestamp DESC";
 	$statement = $conn->prepare($query);
 	$statement->bind_param("i", $eid);
 	$statement->execute();
@@ -253,9 +254,9 @@ function dbGetImagesByUid($uid, $user_profile_indicator)
 
 	$subquery = "";
 	if ($user_profile_indicator === true)
-	  $subquery = " AND user_image_profile_sequence IS NOT NULL";
+	  $subquery = " AND user_image_profile_sequence IS NOT NULL ";
     else if ($user_profile_indicator === false)
-      $subquery = " AND user_image_profile_sequence IS NULL";
+      $subquery = " AND user_image_profile_sequence IS NULL ";
     else if (!$user_profile_indicator) {} // Do Nothing 
 
 	// EXECUTE THE QUERY
@@ -264,7 +265,8 @@ function dbGetImagesByUid($uid, $user_profile_indicator)
 	                 user_image_view_count, user_image_like_count, user_image_dislike_count, 
 	                 user_image_comment_count, user_image_insert_timestamp, user_image_update_timestamp 
 			  FROM   T_USER_IMAGE
-			  WHERE  uid = ?" . $subquery;
+			  WHERE  uid = ?" . $subquery . 
+	         "ORDER BY user_image_insert_timestamp DESC";
 	
 	$statement = $conn->prepare($query);
 	$statement->bind_param("i", $uid);
@@ -427,6 +429,84 @@ function dbGetImagesFirstNEventProfileByEid($eid)
 
 
 
+/* FUNCTION:    dbGetImagesLatestNByUid
+ * DESCRIPTION: Gets the latest N images for the specified UID user.
+ * --------------------------------------------------------------------------------
+ * ================================================================================
+ * -------------------------------------------------------------------------------- */
+function dbGetImagesLatestNByUid($uid)
+{
+  // IMPORT REQUIRED METHODS
+  require_once $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/Functions/Miscellaneous.php';
+  
+  // IMPORT THE DATABASE CONNECTION
+  require $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBConnect/dbConnect.php';
+  
+  // IMPORT THE NECESSARY GLOBAL VARIABLES
+  $path_gv = $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/Resources/GlobalVariables.json';
+  $file_gv = file_get_contents($path_gv);
+  $array_gv = json_decode($file_gv, true);
+  $latestN = $array_gv["MaxAmount"]["UserProfileUploadedImageMaxAmount"];
+
+  // EXECUTE THE QUERY
+  $query = "SELECT   uiid, uid, user_image_sequence, user_image_profile_sequence,
+              	     user_image_name, user_image_gps_latitude, user_image_gps_longitude,
+                     user_image_view_count, user_image_like_count, user_image_dislike_count,
+                     user_image_comment_count, user_image_insert_timestamp, user_image_update_timestamp
+            FROM     T_USER_IMAGE
+            WHERE    uid = ? 
+            ORDER BY user_image_insert_timestamp DESC
+            LIMIT    ?";
+
+  $statement = $conn->prepare($query);
+  $statement->bind_param("ii", $uid, $latestN);
+  $statement->execute();
+  $error = $statement->error;
+  // CHECK FOR AN ERROR, RETURN IT IF ONE EXISTS
+  if ($error != "") { return formatJsonResponseError($error); }
+
+  // BIND THE RESULTING VARIABLES
+  $statement->bind_result($uiid, $uid, $user_image_sequence, $user_image_profile_sequence,
+      $user_image_name, $user_image_gps_latitude, $user_image_gps_longitude,
+      $user_image_view_count, $user_image_like_count, $user_image_dislike_count,
+      $user_image_comment_count, $user_image_insert_timestamp, $user_image_update_timestamp);
+
+  $images = array();
+
+  while($statement->fetch())
+  {
+    $image = array
+    (
+        "uiid" => $uiid,
+        "uid" => $uid,
+        "userImageSequence" => $user_image_sequence,
+        "userImageProfileSequence" => $user_image_profile_sequence,
+        "userImagePath" => $uid . "/" . $user_image_sequence . "/" . $user_image_name,
+        "userImageThumbnailPath" => $uid . "/" . $user_image_sequence . "/TMB " . $user_image_name,
+        "userImageName" => $user_image_name,
+        "userImageGpsLatitude" => $user_image_gps_latitude,
+        "userImageGpsLongitude" => $user_image_gps_longitude,
+        "userImageViewCount" => $user_image_view_count,
+        "userImageLikeCount" => $user_image_like_count,
+        "userImageDislikeCount" => $user_image_dislike_count,
+        "userImageCommentCount" => $user_image_comment_count,
+        "userImageInsertTimestamp" => $user_image_insert_timestamp,
+        "userImageUpdateTimestamp" => $user_image_update_timestamp
+    );
+    array_push($images, $image);
+  }
+  $parent = array
+  (
+      "images" => $images
+  );
+
+  $statement->close();
+
+  return $parent;
+}
+
+
+
 /* FUNCTION:    dbSetImage
  * DESCRIPTION: Updates the image's properties in the database and filesystem.
  * --------------------------------------------------------------------------------
@@ -492,6 +572,45 @@ function dbSetImage($image, $set_or_not)
       return "Image has failed to update: no image or multiple images have been updated.";
 	
 	$statement->close();
+}
+
+
+
+/* FUNCTION:    dbGetCountImages
+ * DESCRIPTION: Retrieves and returns the count of images that the user with the
+ *              specified uid has..
+ * --------------------------------------------------------------------------------
+ * ================================================================================
+ * -------------------------------------------------------------------------------- */
+function dbGetCountImages($uid)
+{
+  // IMPORT THE DATABASE CONNECTION
+  require $_SERVER['DOCUMENT_ROOT'] . '/BubblesServer/DBConnect/dbConnect.php';
+
+  // ACQUIRE THE INVITE TYPE LABEL
+  $query = "SELECT COUNT(*) AS countImages 
+            FROM   T_USER_IMAGE 
+            WHERE  uid = ?";
+  $statement = $conn->prepare($query);
+  $statement->bind_param("i", $uid);
+  $statement->execute();
+  $statement->store_result(); 	// Need this to check the number of rows later
+  $statement->error;
+
+  // CHECK FOR AN ERROR, RETURN IT IF ONE EXISTS
+  $error = $statement->error;
+  if ($error != "") { return formatJsonResponseError($error); }
+  // CHECK FOR THE COUNT OF RESULTS, RETURN A MESSAGE IF NONE EXIST
+  if ($statement->num_rows === 0) {
+    return formatJsonResponseError("Contact the database administrator about the dbGetCountImages PHP method.");
+  }
+
+  $statement->bind_result($countImages);
+  $statement->fetch();
+  $statement->close();
+
+  // RETURN THE REQUESTED VALUE(S)
+  return $countImages;
 }
 
 ?>
