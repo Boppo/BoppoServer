@@ -1,0 +1,27 @@
+{
+	"Duration": {
+		"EventUserReinviteWaitDuration": {
+			"DatetimeUnit": "Day",
+			"DatetimeValue": 30
+		}
+	},
+	"MaxAmount": {
+		"NewsFeedMaxAmount": 5, 
+		"UserProfileEventMaxAmount": 10, 
+		"UserProfileFriendMaxAmount": 10, 
+		"UserProfileUploadedImageMaxAmount": 10
+	}, 
+	"Event": {
+		"EventLiveDatetimeDurationOffset": {
+			"DatetimeUnit": "DAY",
+			"DatetimeValue": 1
+		}
+	},
+	"UserImage": {
+		"UserImageProfileMaxAmount": 4,  
+		"EventUserImageEventProfileMaxAmount": 4 
+	}, 
+	"Permission": {
+		"EventUserReinviteUserTypeCode": 2
+	}
+}
