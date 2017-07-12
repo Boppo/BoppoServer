@@ -162,7 +162,6 @@ echo json_encode(dbGetCountryByNumericCode(392));
 require_once $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/Address.php';
 echo json_encode(dbGetAddressByEid(1));
 
-
 echo "<br><br>!END OF SCRIPT!";
 
 ?>
