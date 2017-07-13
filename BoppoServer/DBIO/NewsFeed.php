@@ -14,7 +14,7 @@ function dbGetNewsFriendCreatedEvent($uid, $max)
   require_once $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/Address.php';
 
   // IMPORT THE DATABASE CONNECTION
-  require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBConnect/dbConnect.php';
+  require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/_DBConnect.php';
 
   // EXECUTE THE QUERY
   $query = "CALL sp_get_newsFriendCreatedEvent(?, ?)";
@@ -77,7 +77,7 @@ function dbGetNewsFriendJoinedMutualEvent($uid, $max)
   require_once $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/Address.php';
 
   // IMPORT THE DATABASE CONNECTION
-  require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBConnect/dbConnect.php';
+  require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/_DBConnect.php';
 
   // EXECUTE THE QUERY
   $query = "CALL sp_get_newsFriendJoinedMutualEvent(?, ?);";
@@ -142,7 +142,7 @@ function dbGetNewsFriendsThatBecameFriends($uid, $max)
   require_once $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/UserImage.php';
 
   // IMPORT THE DATABASE CONNECTION
-  require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBConnect/dbConnect.php';
+  require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/_DBConnect.php';
 
   // EXECUTE THE QUERY
   $query = "CALL sp_get_newsFriendsThatBecameFriends(?, ?);";
@@ -206,7 +206,7 @@ function dbGetNewsFriendUploadedImage($uid, $max)
   require_once $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/UserImage.php';
 
   // IMPORT THE DATABASE CONNECTION
-  require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBConnect/dbConnect.php';
+  require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/_DBConnect.php';
 
   // EXECUTE THE QUERY
   $query = "CALL sp_get_newsFriendUploadedImage(?, ?);";
@@ -286,7 +286,7 @@ function dbGetNewsFriendActiveEvent($uid, $max)
   require_once $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/Address.php';
 
   // IMPORT THE DATABASE CONNECTION
-  require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBConnect/dbConnect.php';
+  require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/_DBConnect.php';
 
   // EXECUTE THE QUERY
   $query = "CALL sp_get_newsFriendActiveEvent(?, ?);";

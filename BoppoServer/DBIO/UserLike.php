@@ -11,7 +11,7 @@
 function dbSetObjectLikeOrDislike($uid, $object_type_code, $oid, $user_like_indicator)
 {
 	// IMPORT THE DATABASE CONNECTION
-	require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBConnect/dbConnect.php';
+	require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/_DBConnect.php';
 
 	// EXECUTE THE QUERY
 	$query = "CALL sp_setObjectLikeOrDislike(?, ?, ?, ?)"; 

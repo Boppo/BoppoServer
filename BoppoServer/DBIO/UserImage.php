@@ -9,7 +9,7 @@
 function fetchUserImageSequence($uid)
 {
 	// IMPORT THE DATABASE CONNECTION
-	require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBConnect/dbConnect.php';
+	require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/_DBConnect.php';
 
 	// ACQUIRE THE USER IMAGE SEQUENCE
 	$query = "SELECT (MAX(user_image_sequence)+1) FROM T_USER_IMAGE WHERE UID = ?";
@@ -50,7 +50,7 @@ function fetchImageEncoded($uiid)
   require_once $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/Functions/Miscellaneous.php';
 
   // IMPORT THE DATABASE CONNECTION
-  require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBConnect/dbConnect.php';
+  require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/_DBConnect.php';
 
   // EXECUTE THE QUERY
   $query = "SELECT  uiid, uid, user_image_sequence, user_image_profile_sequence,
@@ -108,7 +108,7 @@ function fetchImages($uiid)
   require_once $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/Functions/Miscellaneous.php';
 
   // IMPORT THE DATABASE CONNECTION
-  require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBConnect/dbConnect.php';
+  require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/_DBConnect.php';
 
   // EXECUTE THE QUERY
   $query = "SELECT  T_USER_IMAGE.uiid, T_USER_IMAGE.uid, user_image_sequence, user_image_profile_sequence, 
@@ -166,7 +166,7 @@ function dbGetImagesByEid($eid, $event_profile_indicator)
 	require_once $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/Functions/Miscellaneous.php';
 
 	// IMPORT THE DATABASE CONNECTION
-	require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBConnect/dbConnect.php'; 
+	require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/_DBConnect.php'; 
 	
 	$subquery = "";
 	if ($event_profile_indicator === true)
@@ -250,7 +250,7 @@ function dbGetImagesByUid($uid, $user_profile_indicator)
 	require_once $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/Functions/Miscellaneous.php';
 
 	// IMPORT THE DATABASE CONNECTION
-	require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBConnect/dbConnect.php';
+	require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/_DBConnect.php';
 
 	$subquery = "";
 	if ($user_profile_indicator === true)
@@ -327,7 +327,7 @@ function dbGetImagesFirstNProfileByUid($uid)
   require_once $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/Functions/Miscellaneous.php';
 
   // IMPORT THE DATABASE CONNECTION
-  require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBConnect/dbConnect.php';
+  require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/_DBConnect.php';
   
   // IMPORT THE NECESSARY GLOBAL VARIABLES
   $path_gv = $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/Resources/GlobalVariables.json';
@@ -383,7 +383,7 @@ function dbGetImagesFirstNEventProfileByEid($eid)
   require_once $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/Functions/Miscellaneous.php';
 
   // IMPORT THE DATABASE CONNECTION
-  require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBConnect/dbConnect.php';
+  require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/_DBConnect.php';
 
   // IMPORT THE NECESSARY GLOBAL VARIABLES
   $path_gv = $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/Resources/GlobalVariables.json';
@@ -440,7 +440,7 @@ function dbGetImagesLatestNByUid($uid)
   require_once $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/Functions/Miscellaneous.php';
   
   // IMPORT THE DATABASE CONNECTION
-  require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBConnect/dbConnect.php';
+  require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/_DBConnect.php';
   
   // IMPORT THE NECESSARY GLOBAL VARIABLES
   $path_gv = $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/Resources/GlobalVariables.json';
@@ -521,7 +521,7 @@ function dbSetImage($image, $set_or_not)
     /* END. */
   
 	// IMPORT THE DATABASE CONNECTION
-	require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBConnect/dbConnect.php';
+	require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/_DBConnect.php';
 	
 	// FETCH THE CURRENT VALUES FOR THIS EVENT
 	$imageCurrent = fetchImageEncoded($image["uiid"]);
@@ -585,7 +585,7 @@ function dbSetImage($image, $set_or_not)
 function dbGetCountImages($uid)
 {
   // IMPORT THE DATABASE CONNECTION
-  require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBConnect/dbConnect.php';
+  require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/_DBConnect.php';
 
   // ACQUIRE THE INVITE TYPE LABEL
   $query = "SELECT COUNT(*) AS countImages 

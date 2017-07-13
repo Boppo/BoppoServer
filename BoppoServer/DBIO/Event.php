@@ -14,7 +14,7 @@ function dbGetEventData($eid)
 	require_once $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/Address.php';
 	
 	// IMPORT THE DATABASE CONNECTION
-	require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBConnect/dbConnect.php';
+	require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/_DBConnect.php';
 	
 	// EXECUTE THE QUERY
 	$query = "SELECT DISTINCT T_EVENT.eid, T_USER.uid, username, first_name, last_name,  
@@ -111,7 +111,7 @@ function dbGetEventDataByRadius($longitude, $latitude, $radius)
   require_once $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/Address.php';
 
   // IMPORT THE DATABASE CONNECTION
-  require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBConnect/dbConnect.php';
+  require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/_DBConnect.php';
 
   // EXECUTE THE QUERY
   $query = "SELECT DISTINCT T_EVENT.eid, uid, username, first_name, last_name, event_name,
@@ -220,7 +220,7 @@ function dbGetLiveEventDataByRadius($longitude, $latitude, $radius)
 	require_once $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/Address.php';
 
 	// IMPORT THE DATABASE CONNECTION
-	require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBConnect/dbConnect.php';
+	require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/_DBConnect.php';
 	
 	// FETCH THE DATA REPRESENTING THE TIME UNIT AND VALUE OF THE OFFSET OF A LIVE EVENT DURATION
 	$path_gv = $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/Resources/GlobalVariables.json';
@@ -339,7 +339,7 @@ function dbGetEventDataEncoded($eid)
 	require_once $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/Functions/Miscellaneous.php';
 	
 	// IMPORT THE DATABASE CONNECTION
-	require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBConnect/dbConnect.php';
+	require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/_DBConnect.php';
 
 	// EXECUTE THE QUERY
 	$query = "SELECT DISTINCT T_EVENT.eid, event_host_uid, event_name,
@@ -411,7 +411,7 @@ function dbGetEventDataByMember($uid)
     require_once $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/Address.php';
     
 	// IMPORT THE DATABASE CONNECTION
-	require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBConnect/dbConnect.php';
+	require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/_DBConnect.php';
 
 	// GET THE EVENT USER DATA
 	$eventUser = fetchUserEncoded($uid); 
@@ -529,7 +529,7 @@ function dbGetLiveEventDataByMember($uid)
     require_once $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/Address.php';
     
     // IMPORT THE DATABASE CONNECTION
-    require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBConnect/dbConnect.php';
+    require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/_DBConnect.php';
     
     // GET THE EVENT USER DATA
     $eventUser = fetchUserEncoded($uid);
@@ -657,7 +657,7 @@ function dbGetEventDataByName($event_name)
 	require_once $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/Address.php';
 	
 	// IMPORT THE DATABASE CONNECTION
-	require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBConnect/dbConnect.php';
+	require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/_DBConnect.php';
 	
 	// MAKE THE EVENT NAME SEARCH BE A PARTIAL MATCH SEARCH
 	$event_name = "%".$event_name."%";
@@ -765,7 +765,7 @@ function dbGetLiveEventDataByName($event_name)
 	require_once $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/Address.php';
 	
 	// IMPORT THE DATABASE CONNECTION
-	require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBConnect/dbConnect.php';
+	require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/_DBConnect.php';
 	
 	// FETCH THE DATA REPRESENTING THE TIME UNIT AND VALUE OF THE OFFSET OF A LIVE EVENT DURATION
 	$path_gv = $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/Resources/GlobalVariables.json';
@@ -885,7 +885,7 @@ function dbGetEventDataByTopNViews($top_n_views)
 	require_once $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/Address.php';
 	
 	// IMPORT THE DATABASE CONNECTION
-	require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBConnect/dbConnect.php';
+	require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/_DBConnect.php';
 
 	// EXECUTE THE QUERY
 	$query = "SELECT DISTINCT T_EVENT.eid, uid, username, first_name, last_name, event_name, 
@@ -990,7 +990,7 @@ function dbGetLiveEventDataByTopNViews($top_n_views)
 	require_once $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/Address.php';
 	
 	// IMPORT THE DATABASE CONNECTION
-	require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBConnect/dbConnect.php';
+	require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/_DBConnect.php';
 	
 	// FETCH THE DATA REPRESENTING THE TIME UNIT AND VALUE OF THE OFFSET OF A LIVE EVENT DURATION
 	$path_gv = $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/Resources/GlobalVariables.json';
@@ -1108,7 +1108,7 @@ function dbGetEventDataByTopNLikes($top_n)
 	require_once $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/Address.php';
 	
 	// IMPORT THE DATABASE CONNECTION
-	require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBConnect/dbConnect.php';
+	require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/_DBConnect.php';
 
 	// EXECUTE THE QUERY
 	$query = "SELECT DISTINCT T_EVENT.eid, uid, username, first_name, last_name, event_name, 
@@ -1213,7 +1213,7 @@ function dbGetLiveEventDataByTopNLikes($top_n)
 	require_once $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/Address.php';
 	
 	// IMPORT THE DATABASE CONNECTION
-	require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBConnect/dbConnect.php';
+	require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/_DBConnect.php';
 	
 	// FETCH THE DATA REPRESENTING THE TIME UNIT AND VALUE OF THE OFFSET OF A LIVE EVENT DURATION
 	$path_gv = $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/Resources/GlobalVariables.json';
@@ -1331,7 +1331,7 @@ function dbGetEventDataByTopNDislikes($top_n)
 	require_once $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/Address.php';
 	
 	// IMPORT THE DATABASE CONNECTION
-	require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBConnect/dbConnect.php';
+	require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/_DBConnect.php';
 
 	// EXECUTE THE QUERY
 	$query = "SELECT DISTINCT T_EVENT.eid, uid, username, first_name, last_name, event_name, 
@@ -1436,7 +1436,7 @@ function dbGetLiveEventDataByTopNDislikes($top_n)
 	require_once $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/Address.php';
 	
 	// IMPORT THE DATABASE CONNECTION
-	require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBConnect/dbConnect.php';
+	require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/_DBConnect.php';
 	
 	// FETCH THE DATA REPRESENTING THE TIME UNIT AND VALUE OF THE OFFSET OF A LIVE EVENT DURATION
 	$path_gv = $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/Resources/GlobalVariables.json';
@@ -1554,7 +1554,7 @@ function dbGetEventDataByTopNRatings($top_n)
 	require_once $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/Address.php';
 	
 	// IMPORT THE DATABASE CONNECTION
-	require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBConnect/dbConnect.php';
+	require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/_DBConnect.php';
 
 	// EXECUTE THE QUERY
 	$query = "SELECT DISTINCT T_EVENT.eid, uid, username, first_name, last_name, event_name, 
@@ -1662,7 +1662,7 @@ function dbGetLiveEventDataByTopNRatings($top_n)
 	require_once $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/Address.php';
 	
 	// IMPORT THE DATABASE CONNECTION
-	require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBConnect/dbConnect.php';
+	require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/_DBConnect.php';
 	
 	// FETCH THE DATA REPRESENTING THE TIME UNIT AND VALUE OF THE OFFSET OF A LIVE EVENT DURATION
 	$path_gv = $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/Resources/GlobalVariables.json';
@@ -1783,7 +1783,7 @@ function dbGetEventDataByTopNRandom($uid, $top_n)
   require_once $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/Address.php';
 
   // IMPORT THE DATABASE CONNECTION
-  require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBConnect/dbConnect.php';
+  require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/_DBConnect.php';
 
   // EXECUTE THE QUERY
   $query = "SELECT * 
@@ -1881,7 +1881,7 @@ function dbGetEventDataByTopNRandom($uid, $top_n)
 function dbUpdateEvent($event, $set_or_not)
 {
 	// IMPORT THE DATABASE CONNECTION
-	require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBConnect/dbConnect.php';
+	require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/_DBConnect.php';
 	
 	// FETCH THE CURRENT VALUES FOR THIS EVENT
 	$eventCurrent = dbGetEventDataEncoded($event["eid"]);
@@ -1963,7 +1963,7 @@ function dbUpdateEvent($event, $set_or_not)
 function dbUpdateEventUnparsedAddress($event)
 {
   // IMPORT THE DATABASE CONNECTION
-  require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBConnect/dbConnect.php';
+  require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/_DBConnect.php';
   require_once $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/Functions/Miscellaneous.php';
   require_once $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/Address.php';
   
@@ -2014,7 +2014,7 @@ function dbUpdateEventUnparsedAddress($event)
 function dbGetCountHostedEvents($uid)
 {
   // IMPORT THE DATABASE CONNECTION
-  require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBConnect/dbConnect.php';
+  require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/_DBConnect.php';
 
   // EXECUTE THE QUERY
   $query = "SELECT COUNT(*) AS countHostedEvents 

@@ -26,7 +26,7 @@ if ($function == "getUserSentFriendRequestUsers")
  * -------------------------------------------------------------------------------- */
 function changeEmail()
 {
-    require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBConnect/dbConnect.php';
+    require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/_DBConnect.php';
     // 1 - DECODE JSON STRING
     $json_decoded = json_decode(file_get_contents("php://input"), true);
 
@@ -87,7 +87,7 @@ function changeEmail()
  * -------------------------------------------------------------------------------- */
 function changePassword()
 {
-    require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBConnect/dbConnect.php';
+    require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/_DBConnect.php';
     // 1 - DECODE JSON STRING
     $json_decoded = json_decode(file_get_contents("php://input"), true);
 
@@ -125,7 +125,7 @@ function changePassword()
  * -------------------------------------------------------------------------------- */
 function syncUserFacebook()
 {
-    require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBConnect/dbConnect.php';
+    require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/_DBConnect.php';
     // 1 - DECODE JSON STRING
     $json_decoded = json_decode(file_get_contents("php://input"), true);
     
@@ -163,7 +163,7 @@ function syncUserFacebook()
  * -------------------------------------------------------------------------------- */
 function setUserPrivacyLabel()
 {
-    require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBConnect/dbConnect.php';
+    require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/_DBConnect.php';
     // 1 - DECODE JSON STRING
     $json_decoded = json_decode(file_get_contents("php://input"), true);
 
@@ -226,7 +226,7 @@ function setUserPrivacyLabel()
  * -------------------------------------------------------------------------------- */
 function getUserData()
 {
-    require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBConnect/dbConnect.php';
+    require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/_DBConnect.php';
     // 1 - DECODE JSON STRING
     $json_decoded = json_decode(file_get_contents("php://input"), true);
 
@@ -295,7 +295,7 @@ function getUserData()
  * -------------------------------------------------------------------------------- */
 function getUserFriendRequestUsers()
 {
-	require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBConnect/dbConnect.php';
+	require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/_DBConnect.php';
 	// 1 - DECODE JSON STRING
 	$json_decoded = json_decode(file_get_contents("php://input"), true);
 	
@@ -371,7 +371,7 @@ function getUserFriendRequestUsers()
  * -------------------------------------------------------------------------------- */
 function getUserSentFriendRequestUsers()
 {
-	require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBConnect/dbConnect.php';
+	require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/_DBConnect.php';
 	// 1 - DECODE JSON STRING
 	$json_decoded = json_decode(file_get_contents("php://input"), true);
 

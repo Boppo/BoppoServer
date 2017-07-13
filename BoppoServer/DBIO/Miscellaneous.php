@@ -8,7 +8,7 @@
 function dbIncrementObjectViewCount($oid, $object_type_label)
 {
 	// IMPORT THE DATABASE CONNECTION
-	require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBConnect/dbConnect.php';
+	require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/_DBConnect.php';
 
 	// EXECUTE THE QUERY
 	if (strcmp($object_type_label, "User Image") === 0)

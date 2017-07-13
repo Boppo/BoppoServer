@@ -9,7 +9,7 @@
 function dbAddImageToEvent($eid, $uiid)
 {
   // IMPORT THE DATABASE CONNECTION
-  require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBConnect/dbConnect.php';
+  require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/_DBConnect.php';
 
   // ACQUIRE THE USER IMAGE SEQUENCE
   $query = "INSERT INTO R_EVENT_USER_IMAGE (eid, uiid) VALUES (?, ?)";
@@ -41,7 +41,7 @@ function dbSetEuiEventProfileSequence($eid, $uiid, $euiEventProfileSequence)
   require_once $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/Functions/Miscellaneous.php';
 
   // IMPORT THE DATABASE CONNECTION
-  require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBConnect/dbConnect.php';
+  require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/_DBConnect.php';
 
   // EXECUTE THE QUERY
   $query = "UPDATE R_EVENT_USER_IMAGE 

@@ -12,7 +12,7 @@ function dbGetEventUserEncoded($eid, $uid)
   require_once $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/Functions/Miscellaneous.php';
 
   // IMPORT THE DATABASE CONNECTION
-  require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBConnect/dbConnect.php';
+  require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/_DBConnect.php';
 
   // EXECUTE THE QUERY
   $query = "SELECT eid, uid, event_user_type_code, event_user_invite_status_type_code,
@@ -65,7 +65,7 @@ function dbGetEventUserData($eid, $uid)
 	require_once $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/Functions/Miscellaneous.php';
 
 	// IMPORT THE DATABASE CONNECTION
-	require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBConnect/dbConnect.php';
+	require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/_DBConnect.php';
 
 	// EXECUTE THE QUERY
 	$query = "SELECT eid, uid, event_user_type_label, event_user_invite_status_type_label, 
@@ -122,7 +122,7 @@ function dbGetEventUsersData($eid, $event_user_invite_status_type_label)
 	require_once $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/UserImage.php';
 
 	// IMPORT THE DATABASE CONNECTION
-	require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBConnect/dbConnect.php';
+	require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/_DBConnect.php';
 	
 	// EXECUTE THE QUERY
 	$query = "SELECT 
@@ -209,7 +209,7 @@ function dbSetEventUser($eventUser, $set_or_not)
   /* END. */
 
   // IMPORT THE DATABASE CONNECTION
-  require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBConnect/dbConnect.php';
+  require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/_DBConnect.php';
 
   // FETCH THE CURRENT VALUES FOR THIS EVENT
   $eventUserCurrent = dbGetEventUserEncoded($eventUser["eid"], $eventUser["uid"]);
@@ -257,7 +257,7 @@ function dbSetEventUser($eventUser, $set_or_not)
 function dbGetCountJoinedEvents($uid)
 {
   // IMPORT THE DATABASE CONNECTION
-  require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBConnect/dbConnect.php';
+  require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/_DBConnect.php';
 
   // EXECUTE THE QUERY
   $query = "SELECT COUNT(*) AS countJoinedEvents 

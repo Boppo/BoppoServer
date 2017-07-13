@@ -10,7 +10,7 @@
 function dbGetFriendshipStatus($uid_1, $uid_2)
 {
 	// IMPORT THE DATABASE CONNECTION
-	require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBConnect/dbConnect.php';
+	require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/_DBConnect.php';
 
 	// EXECUTE THE QUERY
 	$query = "SELECT uid_1, uid_2, user_relationship_type_label
@@ -74,7 +74,7 @@ function fetchFriendshipStatusRequestSentUsers($uid_1, $user_relationship_type_l
 	require_once $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/UserImage.php';
 
 	// IMPORT THE DATABASE CONNECTION
-	require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBConnect/dbConnect.php';
+	require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/_DBConnect.php';
 
 	$query = "SELECT uid, username, first_name, last_name 
 			  FROM R_USER_RELATIONSHIP 
@@ -132,7 +132,7 @@ function fetchFriendshipStatusRequestReceivedUsers($uid_2, $user_relationship_ty
 	require_once $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/UserImage.php';
 
 	// IMPORT THE DATABASE CONNECTION
-	require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBConnect/dbConnect.php';
+	require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/_DBConnect.php';
 
 	$query = "SELECT uid, username, first_name, last_name
 			  FROM R_USER_RELATIONSHIP
@@ -189,7 +189,7 @@ function isFriend($uid_1, $uid_2)
 	require_once $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/Functions/Miscellaneous.php';
 	
 	// IMPORT THE DATABASE CONNECTION
-	require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBConnect/dbConnect.php';
+	require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/_DBConnect.php';
 	
 	$query = "SELECT 1
 			  FROM R_USER_RELATIONSHIP
@@ -235,7 +235,7 @@ function dbGetFriendsByTopNRandom($uid, $top_n)
   require_once $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/UserImage.php';
 
   // IMPORT THE DATABASE CONNECTION
-  require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBConnect/dbConnect.php';
+  require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/_DBConnect.php';
 
   // EXECUTE THE QUERY
   $query = "SELECT T_USER.uid, username, first_name, last_name, user_relationship_upsert_timestamp 
@@ -318,7 +318,7 @@ function dbGetFriendsByTopNRandom($uid, $top_n)
 function dbGetCountFriends($uid)
 {
   // IMPORT THE DATABASE CONNECTION
-  require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBConnect/dbConnect.php';
+  require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/_DBConnect.php';
 
   // EXECUTE THE QUERY
   $query = "SELECT SUM(c) as countFriends 

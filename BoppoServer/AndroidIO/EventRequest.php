@@ -61,7 +61,7 @@ function createEvent()
 	/* END. */
 		
 	// IMPORT THE DATABASE CONNECTION
-	require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBConnect/dbConnect.php';
+	require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/_DBConnect.php';
 	// DECODE JSON STRING
 	$json_decoded = json_decode(file_get_contents("php://input"), true);
 	// ASSIGN THE JSON VALUES TO VARIABLES
@@ -193,7 +193,7 @@ function getEid()
 	/* END. */
 
 	// IMPORT THE DATABASE CONNECTION
-	require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBConnect/dbConnect.php';
+	require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/_DBConnect.php';
 	// DECODE JSON STRING
 	$json_decoded = json_decode(file_get_contents("php://input"), true);
 	// ASSIGN THE JSON VALUES TO VARIABLES
@@ -744,7 +744,7 @@ function deleteEvent()
 	/* END. */
 
 	// IMPORT THE DATABASE CONNECTION
-	require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBConnect/dbConnect.php';
+	require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/_DBConnect.php';
 	// DECODE JSON STRING
 	$json_decoded = json_decode(file_get_contents("php://input"), true);
 	// ASSIGN THE JSON VALUES TO VARIABLES
@@ -787,7 +787,7 @@ function updateEvent()
 	/* END. */
 
 	// IMPORT THE DATABASE CONNECTION
-	require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBConnect/dbConnect.php';
+	require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/_DBConnect.php';
 	// DECODE JSON STRING
 	$json_decoded = json_decode(file_get_contents("php://input"), true);
 	/*
@@ -914,7 +914,7 @@ function updateEventUnparsedAddress()
   /* END. */
 
   // IMPORT THE DATABASE CONNECTION
-  require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBConnect/dbConnect.php';
+  require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/_DBConnect.php';
   // DECODE JSON STRING
   $json_decoded = json_decode(file_get_contents("php://input"), true);
 

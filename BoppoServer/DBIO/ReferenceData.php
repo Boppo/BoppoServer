@@ -9,7 +9,7 @@
 function dbGetEventCategoryCode($event_category_label)
 {
   // IMPORT THE DATABASE CONNECTION
-  require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBConnect/dbConnect.php';
+  require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/_DBConnect.php';
 
   // ACQUIRE THE INVITE TYPE LABEL
   $query = "SELECT event_category_code  
@@ -42,7 +42,7 @@ function dbGetEventCategoryCode($event_category_label)
 function dbGetEventTypeCode($event_category_label, $event_type_label)
 {
   // IMPORT THE DATABASE CONNECTION
-  require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBConnect/dbConnect.php';
+  require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/_DBConnect.php';
   
   $event_category_code = dbGetEventCategoryCode($event_category_label);
 
@@ -78,7 +78,7 @@ function dbGetEventTypeCode($event_category_label, $event_type_label)
 function dbGetEventUserInviteStatusTypeCode($event_user_invite_status_type_label)
 {
   // IMPORT THE DATABASE CONNECTION
-  require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBConnect/dbConnect.php';
+  require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/_DBConnect.php';
 
   // ACQUIRE THE EVENT USER INVITE STATUS TYPE CODE
   $query = "SELECT event_user_invite_status_type_code
@@ -112,7 +112,7 @@ function dbGetEventUserInviteStatusTypeCode($event_user_invite_status_type_label
 function dbGetCountryByNumericCode($country_numeric_code)
 {
   // IMPORT THE DATABASE CONNECTION
-  require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBConnect/dbConnect.php';
+  require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/_DBConnect.php';
 
   // ACQUIRE THE INVITE TYPE LABEL
   $query = "SELECT country_numeric_code, country_2c_mnemonic_code,
@@ -163,7 +163,7 @@ function dbGetCountryByNumericCode($country_numeric_code)
 function dbGetCountryBy3cMnemonicCode($country_3c_mnemonic_code)
 {
   // IMPORT THE DATABASE CONNECTION
-  require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBConnect/dbConnect.php';
+  require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/_DBConnect.php';
 
   // ACQUIRE THE INVITE TYPE LABEL
   $query = "SELECT country_numeric_code, country_2c_mnemonic_code,

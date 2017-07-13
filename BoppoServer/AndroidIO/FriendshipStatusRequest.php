@@ -38,7 +38,7 @@ function blockUser()
 	/* END. */
 
 	// IMPORT THE DATABASE CONNECTION
-	require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBConnect/dbConnect.php';
+	require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/_DBConnect.php';
 	// DECODE JSON STRING
 	$json_decoded = json_decode(file_get_contents("php://input"), true);
 	// ASSIGN THE JSON VALUES TO VARIABLES
@@ -103,7 +103,7 @@ function unblockUser()
 	/* END. */
 
 	// IMPORT THE DATABASE CONNECTION
-	require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBConnect/dbConnect.php';
+	require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/_DBConnect.php';
 	// DECODE JSON STRING
 	$json_decoded = json_decode(file_get_contents("php://input"), true);
 	// ASSIGN THE JSON VALUES TO VARIABLES
@@ -188,7 +188,7 @@ function getFriendshipStatus()
 	/* END. */
 
 	// IMPORT THE DATABASE CONNECTION
-	require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBConnect/dbConnect.php';
+	require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/_DBConnect.php';
 	// DECODE JSON STRING
 	$json_decoded = json_decode(file_get_contents("php://input"), true);
 	// ASSIGN THE JSON VALUES TO VARIABLES
@@ -223,7 +223,7 @@ function getFriendshipStatusRequestSentUsers()
 	/* END. */
 
 	// IMPORT THE DATABASE CONNECTION
-	require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBConnect/dbConnect.php';
+	require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/_DBConnect.php';
 	// DECODE JSON STRING
 	$json_decoded = json_decode(file_get_contents("php://input"), true);
 	// ASSIGN THE JSON VALUES TO VARIABLES
@@ -258,7 +258,7 @@ function getFriendshipStatusRequestReceivedUsers()
 	/* END. */
 
 	// IMPORT THE DATABASE CONNECTION
-	require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBConnect/dbConnect.php';
+	require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/_DBConnect.php';
 	// DECODE JSON STRING
 	$json_decoded = json_decode(file_get_contents("php://input"), true);
 	// ASSIGN THE JSON VALUES TO VARIABLES
@@ -296,7 +296,7 @@ function rejectFriend()
 	/* END. */
 
 	// IMPORT THE DATABASE CONNECTION
-	require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBConnect/dbConnect.php';
+	require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/_DBConnect.php';
 	// DECODE JSON STRING
 	$json_decoded = json_decode(file_get_contents("php://input"), true);
 	// ASSIGN THE JSON VALUES TO VARIABLES
@@ -356,7 +356,7 @@ function cancelFriend()
 	/* END. */
 
 	// IMPORT THE DATABASE CONNECTION
-	require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBConnect/dbConnect.php';
+	require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/_DBConnect.php';
 	// DECODE JSON STRING
 	$json_decoded = json_decode(file_get_contents("php://input"), true);
 	// ASSIGN THE JSON VALUES TO VARIABLES
@@ -416,7 +416,7 @@ function unFriend()
 	/* END. */
 
 	// IMPORT THE DATABASE CONNECTION
-	require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBConnect/dbConnect.php';
+	require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/_DBConnect.php';
 	// DECODE JSON STRING
 	$json_decoded = json_decode(file_get_contents("php://input"), true);
 	// ASSIGN THE JSON VALUES TO VARIABLES

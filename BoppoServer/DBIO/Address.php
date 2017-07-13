@@ -9,7 +9,7 @@
 function dbDeleteAddressIfUnused($aid, $eid)
 {
   // IMPORT THE DATABASE CONNECTION
-  require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBConnect/dbConnect.php';
+  require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/_DBConnect.php';
   require_once $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/Miscellaneous.php';
   
   // CHECK IF THIS IS THE ONLY EVENT USING THIS ADDRESS
@@ -60,7 +60,7 @@ function dbDeleteAddressIfUnused($aid, $eid)
 function dbGetAddressByEid($eid)
 {
   // IMPORT THE DATABASE CONNECTION
-  require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBConnect/dbConnect.php';
+  require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/_DBConnect.php';
   require_once $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/ReferenceData.php';
 
   // ACQUIRE THE INVITE TYPE LABEL

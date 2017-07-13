@@ -26,7 +26,7 @@ function setObjectLikeOrDislike()
 	/* END. */
 
 	// IMPORT THE DATABASE CONNECTION
-	require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBConnect/dbConnect.php';
+	require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/_DBConnect.php';
 	// DECODE JSON STRING
 	$json_decoded = json_decode(file_get_contents("php://input"), true);
 	// ASSIGN THE JSON VALUES TO VARIABLES

@@ -5,7 +5,7 @@ function fetchFriendshipStatus($uid_1, $uid_2)
              User 2 is the user that received a friend request. */
 
     // 1 - ESTABLISH DATABASE CONNECTION
-	require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBConnect/dbConnect.php';
+	require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/_DBConnect.php';
 
     // $uid_1 = 1;
     // $uid_2 = 4;

@@ -8,7 +8,7 @@
 function fetchInviteTypeCode($invite_type_label)
 {
 	// IMPORT THE DATABASE CONNECTION
-	require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBConnect/dbConnect.php';
+	require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/_DBConnect.php';
 	
 	// ACQUIRE THE INVITE TYPE LABEL
 	$query = "SELECT invite_type_code 

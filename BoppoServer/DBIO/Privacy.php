@@ -8,7 +8,7 @@
 function fetchPrivacyCode($privacy_label)
 {
 	// IMPORT THE DATABASE CONNECTION
-	require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBConnect/dbConnect.php';
+	require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/_DBConnect.php';
 	
 	// ACQUIRE THE PRIVACY LABEL
 	$query = "SELECT privacy_code

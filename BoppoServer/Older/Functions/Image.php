@@ -16,7 +16,7 @@ elseif ($function == 'uploadImage')
  * -------------------------------------------------------------------------------- */
 function deleteImage()
 {
-    require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBConnect/dbConnect.php';
+    require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/_DBConnect.php';
     // 1 - DECODE JSON STRING
     $json_decoded = json_decode(file_get_contents("php://input"), true);
 
@@ -92,7 +92,7 @@ function deleteImage()
 function uploadImage()
 {
     // 1 - ESTABLISH DATABASE CONNECTION
-    require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBConnect/dbConnect.php';
+    require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/_DBConnect.php';
     
     // 2 - DECODE INCOMING JSON CONTENTS
     $json_decoded = json_decode(file_get_contents("php://input"), true);

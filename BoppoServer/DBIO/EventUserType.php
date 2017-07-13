@@ -8,7 +8,7 @@
 function fetchEventUserTypeCode($event_user_type_label)
 {
 	// IMPORT THE DATABASE CONNECTION
-	require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBConnect/dbConnect.php';
+	require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/_DBConnect.php';
 	
 	// ACQUIRE THE INVITE TYPE CODE
 	$query = "SELECT event_user_type_code 
@@ -43,7 +43,7 @@ function fetchEventUserTypeCode($event_user_type_label)
 function fetchEventUserTypeLabel($event_user_type_code)
 {
 	// IMPORT THE DATABASE CONNECTION
-	require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBConnect/dbConnect.php';
+	require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/_DBConnect.php';
 
 	// ACQUIRE THE INVITE TYPE LABEL
 	$query = "SELECT event_user_type_label

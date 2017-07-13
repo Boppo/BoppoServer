@@ -14,7 +14,7 @@ function dbSetObjectComment($uid, $object_type_code, $oid, $user_comment_upsert_
   $user_comment, $parent_ucid)
 {
   // IMPORT THE DATABASE CONNECTION
-  require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBConnect/dbConnect.php';
+  require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/_DBConnect.php';
 
   // EXECUTE THE QUERY
   $query = "CALL sp_setObjectComment(?, ?, ?, ?, ?, ?)"; 
@@ -43,7 +43,7 @@ function dbSetObjectComment($uid, $object_type_code, $oid, $user_comment_upsert_
 function dbGetObjectComments($object_type_code, $oid)
 {
   // IMPORT THE DATABASE CONNECTION
-  require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBConnect/dbConnect.php';
+  require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/_DBConnect.php';
 
   // EXECUTE THE QUERY
   $query = "SELECT ucid, T_USER_COMMENT.uid, username, first_name, last_name, 

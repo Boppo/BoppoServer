@@ -11,7 +11,7 @@ function fetchUserEncoded($uid)
   require_once $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/Functions/Miscellaneous.php';
 
   // IMPORT THE DATABASE CONNECTION
-  require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBConnect/dbConnect.php';
+  require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/_DBConnect.php';
 
   // EXECUTE THE QUERY
   $query = "SELECT  uid, first_name, last_name, email, phone, user_privacy_code
@@ -54,7 +54,7 @@ function fetchUserEncoded($uid)
 function getUserFriendRequestUsers()
 {
 	// IMPORT THE DATABASE CONNECTION
-	require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBConnect/dbConnect.php';
+	require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/_DBConnect.php';
 
 	$query = "SELECT user_relationship_type_code
 			  FROM T_USER_RELATIONSHIP_TYPE
@@ -124,7 +124,7 @@ function dbSetUser($user, $set_or_not)
     /* END. */
   
 	// IMPORT THE DATABASE CONNECTION
-	require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBConnect/dbConnect.php';
+	require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/_DBConnect.php';
 	
 	// FETCH THE CURRENT VALUES FOR THIS EVENT
 	$userCurrent = fetchUserEncoded($user["uid"]);
@@ -196,7 +196,7 @@ function dbGetUserProfileData($uid)
   require_once $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/UserImage.php';
 
   // IMPORT THE DATABASE CONNECTION
-  require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBConnect/dbConnect.php';
+  require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/_DBConnect.php';
 
   // EXECUTE THE QUERY
   $query = "SELECT uid, username, first_name, last_name 
@@ -272,7 +272,7 @@ function dbGetUsersSearchedByName($searched_by_uid, $searched_name)
   require_once $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/UserImage.php';
 
   // IMPORT THE DATABASE CONNECTION
-  require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBConnect/dbConnect.php'; 
+  require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/_DBConnect.php'; 
   
   // PREPARE VARIABLE SUBQUERY TO FILTER BY THE SEARCHED NAME
   $names = explode(" ", $searched_name); 
@@ -389,7 +389,7 @@ function dbGetFriends($uid)
   require_once $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/UserImage.php';
 
   // IMPORT THE DATABASE CONNECTION
-  require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBConnect/dbConnect.php';
+  require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/_DBConnect.php';
 
   // EXECUTE THE QUERY
   $query = "SELECT T_USER.uid, facebook_uid, googlep_uid, username, first_name, last_name, email, phone,

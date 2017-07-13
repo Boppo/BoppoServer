@@ -28,7 +28,7 @@ function setUser()
   // END. //
 
   // ESTABLISH DATABASE CONNECTION //
-  require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBConnect/dbConnect.php';
+  require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/_DBConnect.php';
 
   // DECODE INCOMING JSON CONTENTS //
   $json_decoded = json_decode(file_get_contents("php://input"), true);

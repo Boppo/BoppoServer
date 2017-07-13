@@ -14,7 +14,7 @@ if ($function == "getFriends")
  * -------------------------------------------------------------------------------- */
 function getFriends() 
 {
-	require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBConnect/dbConnect.php';
+	require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/_DBConnect.php';
 	// 1 - DECODE JSON STRING
 	//     THIS WILL GIVE THE LOGGED-IN USER'S ID
 	$json_decoded = json_decode(file_get_contents("php://input"), true);

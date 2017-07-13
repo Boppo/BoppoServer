@@ -1,7 +1,7 @@
 <?php
 
 	// 1 - Establish database connection
-	require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBConnect/dbConnect.php';
+	require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/_DBConnect.php';
 	require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/Older/getFriendStatus.php';
 
 	// 2 - Decode incoming Json contents
