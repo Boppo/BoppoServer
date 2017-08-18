@@ -1818,8 +1818,8 @@ function dbGetEventDataByTopNRandom($uid, $top_n)
   $statement->store_result(); 	// Need this to check the number of rows later
   $error = $statement->error;
   // CHECK FOR AN ERROR, RETURN IT IF ONE EXISTS
-  if ($error != "") { return formatJsonResponseError($error); }
-  if ($statement->num_rows === 0) return formatJsonResponseSuccess("No such event exists.");
+  if ($error != "") { return json_encode(formatResponseError($error)); }
+  if ($statement->num_rows === 0) return json_encode(formatResponseSuccess("No such event exists."));
 
   // ASSIGN THE RETURNED VALUES TO VARIABLES
   $statement->bind_result($eid, 
@@ -1984,19 +1984,19 @@ function dbUpdateEventUnparsedAddress($event)
   $statement->execute();
   $error = $statement->error;
   // CHECK FOR AN ERROR, RETURN IT IF ONE EXISTS
-  if ($error != "") { return formatJsonResponseError($error); }
+  if ($error != "") { return json_encode(formatResponseError($error)); }
 
   // RETURN A SUCCESS CONFIRMATION MESSAGE
   if ($statement->affected_rows === 0)
-    return formatJsonResponseError(
+    return formatResponseError(
       "Event has failed to update: no event has been updated, possibly because the input data is not new."
     );
   else if ($statement->affected_rows === 1)
-    return formatJsonResponseSuccess(
+    return formatResponseSuccess(
       "Event has been successfully updated."
     );
   else
-    return formatJsonResponseError(
+    return formatResponseError(
       "Event has failed to update: no event or multiple events have been updated."
     );
 
@@ -2028,10 +2028,10 @@ function dbGetCountHostedEvents($uid)
 
   // CHECK FOR AN ERROR, RETURN IT IF ONE EXISTS
   $error = $statement->error;
-  if ($error != "") { return formatJsonResponseError($error); }
+  if ($error != "") { return json_encode(formatResponseError($error)); }
   // CHECK FOR THE COUNT OF RESULTS, RETURN A MESSAGE IF NONE EXIST
   if ($statement->num_rows === 0) {
-    return formatJsonResponseError("Contact the database administrator about the dbGetCountHostedEvents PHP method.");
+    return json_encode(formatResponseError("Contact the database administrator about the dbGetCountHostedEvents PHP method."));
   }
 
   // ASSIGN THE RETURNED VALUES TO VARIABLES

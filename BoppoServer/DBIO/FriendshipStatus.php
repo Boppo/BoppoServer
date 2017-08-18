@@ -222,6 +222,96 @@ function isFriend($uid_1, $uid_2)
 
 
 
+/* FUNCTION:    dbGetFriends
+ * DESCRIPTION: Gets the data of a friend for all of the friends of the user with
+ *              the specified UID.
+ * --------------------------------------------------------------------------------
+ * ================================================================================
+ * -------------------------------------------------------------------------------- */ 
+
+ ////////// THIS SEEMS LIKE A DUPLICATE METHOD //////////
+ 
+/*
+function dbGetFriends($uid)
+{
+  // IMPORT REQUIRED METHODS
+  require_once $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/Functions/Miscellaneous.php';
+  require_once $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/UserImage.php';
+
+  // IMPORT THE DATABASE CONNECTION
+  require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/_DBConnect.php';
+
+  // EXECUTE THE QUERY
+  $query = "SELECT T_USER.uid, username, first_name, last_name, user_relationship_upsert_timestamp
+            FROM   T_USER
+                   JOIN
+                   (
+                     SELECT uid, user_relationship_upsert_timestamp
+                     FROM
+                     (
+                       SELECT uid_1 AS uid, user_relationship_upsert_timestamp
+                       FROM   R_USER_RELATIONSHIP
+                              JOIN T_USER_RELATIONSHIP_TYPE
+                              ON R_USER_RELATIONSHIP.user_relationship_type_code =
+                                T_USER_RELATIONSHIP_TYPE.user_relationship_type_code
+                       WHERE  user_relationship_type_label = 'Friend'
+                              AND uid_2 = ?
+            
+                       UNION
+            
+                       SELECT uid_2 AS uid, user_relationship_upsert_timestamp
+                       FROM   R_USER_RELATIONSHIP
+                              JOIN T_USER_RELATIONSHIP_TYPE
+                              ON R_USER_RELATIONSHIP.user_relationship_type_code =
+                                T_USER_RELATIONSHIP_TYPE.user_relationship_type_code
+                       WHERE  user_relationship_type_label = 'Friend'
+                              AND uid_1 = ?
+                    ) as T1
+                  ) T2 ON T_USER.uid = T2.uid
+            ORDER BY user_relationship_upsert_timestamp DESC";
+  $statement = $conn->prepare($query);
+  $statement->bind_param("ii", $uid, $uid);
+  $statement->execute();
+  $statement->store_result(); 	// Need this to check the number of rows later
+  $error = $statement->error;
+  // CHECK FOR AN ERROR, RETURN IT IF ONE EXISTS
+  if ($error != "") { return json_encode(formatResponseError($error)); }
+  if ($statement->num_rows === 0) return json_encode(formatResponseSuccess("No such friend exists."));
+
+  // ASSIGN THE RETURNED VALUES TO VARIABLES
+  $statement->bind_result($uid, $username, $first_name, $last_name, $user_relationship_upsert_timestamp);
+
+  $friends = array();
+
+  while($statement->fetch())
+  {
+    $user_profile_images = dbGetImagesFirstNProfileByUid($uid);
+
+    $friend = array
+    (
+        "uid" => $uid,
+        "username" => $username,
+        "firstName" => $first_name,
+        "lastName" => $last_name,
+        "userRelationshipUpsertTimestamp" => $user_relationship_upsert_timestamp,
+        "userProfileImages" => $user_profile_images
+    );
+
+    array_push($friends, $friend);
+  }
+  $statement->close();
+
+  $parent = array
+  (
+      "friends" => $friends
+  );
+
+  return $parent;
+}
+*/
+
+
+
 /* FUNCTION:    dbGetFriendsByTopNRandom
  * DESCRIPTION: Gets the data of a friend for all of the friends that are the first 
  *              N in the "randomly" selected order, where N is the input value.
@@ -273,8 +363,8 @@ function dbGetFriendsByTopNRandom($uid, $top_n)
   $statement->store_result(); 	// Need this to check the number of rows later
   $error = $statement->error;
   // CHECK FOR AN ERROR, RETURN IT IF ONE EXISTS
-  if ($error != "") { return formatJsonResponseError($error); }
-  if ($statement->num_rows === 0) return formatJsonResponseSuccess("No such friend exists.");
+  if ($error != "") { return json_encode(formatResponseError($error)); }
+  if ($statement->num_rows === 0) return json_encode(formatResponseSuccess("No such friend exists."));
 
   // ASSIGN THE RETURNED VALUES TO VARIABLES
   $statement->bind_result($uid, $username, $first_name, $last_name, $user_relationship_upsert_timestamp);
@@ -348,10 +438,10 @@ function dbGetCountFriends($uid)
 
   // CHECK FOR AN ERROR, RETURN IT IF ONE EXISTS
   $error = $statement->error;
-  if ($error != "") { return formatJsonResponseError($error); }
+  if ($error != "") { return json_encode(formatResponseError($error)); }
   // CHECK FOR THE COUNT OF RESULTS, RETURN A MESSAGE IF NONE EXIST
   if ($statement->num_rows === 0) {
-    return formatJsonResponseError("Contact the database administrator about the dbGetFriendCount PHP method.");
+    return json_encode(formatResponseError("Contact the database administrator about the dbGetFriendCount PHP method."));
   }
 
   // ASSIGN THE RETURNED VALUES TO VARIABLES

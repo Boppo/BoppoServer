@@ -201,12 +201,9 @@ function dbGetEventUsersData($eid, $event_user_invite_status_type_label)
  * ================================================================================
  * -------------------------------------------------------------------------------- */
 function dbSetEventUser($eventUser, $set_or_not)
-{
-  /* THE FOLLOWING 3 LINES OF CODE ENABLE ERROR REPORTING. */
-  error_reporting(E_ALL);
-  ini_set('display_errors', TRUE);
-  ini_set('display_startup_errors', TRUE);
-  /* END. */
+{  
+  // IMPORT REQUIRED METHODS
+  require_once $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/Functions/Miscellaneous.php';
 
   // IMPORT THE DATABASE CONNECTION
   require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/_DBConnect.php';
@@ -219,6 +216,8 @@ function dbSetEventUser($eventUser, $set_or_not)
   if ($set_or_not["eventUserInviteStatusTypeCode"] === true)
     $eventUserCurrent["eventUserInviteStatusTypeCode"] = $eventUser["eventUserInviteStatusTypeCode"];
 
+  echo "DBSETEVENTUSER FUNCTION TRIGGERED!!!<BR>";
+  
   // EXECUTE THE QUERY
   $query = "UPDATE R_EVENT_USER
             SET    event_user_type_code = ?,
@@ -231,17 +230,20 @@ function dbSetEventUser($eventUser, $set_or_not)
       $eventUserCurrent["eventUserTypeCode"], $eventUserCurrent["eventUserInviteStatusTypeCode"],
       $eventUserCurrent["eid"], $eventUserCurrent["uid"]);
   $statement->execute();
+  $statement->store_result(); 	// Need this to check the number of rows later
   $error = $statement->error;
   // CHECK FOR AN ERROR, RETURN IT IF ONE EXISTS
   if ($error != "") { return "DB ERROR: " . $error; }
 
   // RETURN A SUCCESS CONFIRMATION MESSAGE
   if ($statement->affected_rows === 0)
-    return "Event user has failed to update: no event user has been updated, possibly because the input data is not new.";
+    return formatResponseError("Event user has failed to update: no event user has been updated, 
+        possibly because the input data is not new.");
   if ($statement->affected_rows === 1)
-    return "Event user has been successfully updated.";
+    return json_encode(formatResponseSuccess("Event user has been successfully updated."));
   else
-    return "Event user has failed to update: no event user or multiple event users have been updated.";
+    return formatResponseError("Event user has failed to update: no event user or multiple event 
+        users have been updated.");
 
   $statement->close();
 }
@@ -273,10 +275,10 @@ function dbGetCountJoinedEvents($uid)
 
   // CHECK FOR AN ERROR, RETURN IT IF ONE EXISTS
   $error = $statement->error;
-  if ($error != "") { return formatJsonResponseError($error); }
+  if ($error != "") { return json_encode(formatResponseError($error)); }
   // CHECK FOR THE COUNT OF RESULTS, RETURN A MESSAGE IF NONE EXIST
   if ($statement->num_rows === 0) {
-    return formatJsonResponseError("Contact the database administrator about the dbGetCountJoinedEvents PHP method.");
+    return json_encode(formatResponseError("Contact the database administrator about the dbGetCountJoinedEvents PHP method."));
   }
 
   // ASSIGN THE RETURNED VALUES TO VARIABLES 

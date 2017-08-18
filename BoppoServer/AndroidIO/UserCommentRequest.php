@@ -43,7 +43,7 @@ function setObjectComment()
 
 	// CONVERT THE OBJECT TYPE LABEL TO AN OBJECT TYPE CODE
 	require_once $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/ObjectType.php';
-	$object_type_code = fetchObjectTypeCode($object_type_label);
+	$object_type_code = dbGetObjectTypeCode($object_type_label);
 
 	// PASS THE PARAMETERS TO THE DBIO METHOD TO SET THE OBJECT COMMENT FOR THE USER
 	require_once $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/UserComment.php';
@@ -86,7 +86,7 @@ function getObjectComments()
 
 	// CONVERT THE OBJECT TYPE LABEL TO AN OBJECT TYPE CODE
 	require_once $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/ObjectType.php';
-	$object_type_code = fetchObjectTypeCode($object_type_label);
+	$object_type_code = dbGetObjectTypeCode($object_type_label);
 
 	// PASS THE PARAMETERS TO THE DBIO METHOD TO GET THE OBJECT COMMENTS 
 	require_once $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/UserComment.php';

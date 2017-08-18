@@ -207,4 +207,38 @@ function dbGetCountryBy3cMnemonicCode($country_3c_mnemonic_code)
   return $country;
 }
 
+/* FUNCTION:    dbGetUidByDevice
+ * DESCRIPTION: Retrieves and returns the UID of the user to whom the specified 
+ *              device was last registered. 
+ * --------------------------------------------------------------------------------
+ * ================================================================================
+ * -------------------------------------------------------------------------------- */
+function dbGetUidByDevice($firebaseRegistrationIdentifier)
+{
+  // IMPORT THE DATABASE CONNECTION
+  require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/_DBConnect.php';
+
+  // ACQUIRE THE INVITE TYPE LABEL
+  $query = "SELECT device_latest_uid 
+			FROM T_DEVICE 
+			WHERE device_firebase_registration_identifier = ?";
+  $statement = $conn->prepare($query);
+  $statement->bind_param("s", $firebaseRegistrationIdentifier);
+  $statement->execute();
+  $statement->error;
+
+  // CHECK FOR AN ERROR, RETURN IT IF ONE EXISTS
+  $error = $statement->error;
+  if ($error != "") { echo formatResponseErro($error); return; }
+
+  // DEFAULT AND ASSIGN THE INVITE TYPE CODE
+  $uid = null;
+  $statement->bind_result($uid);
+  $statement->fetch();
+  $statement->close();
+
+  // RETURN THE INVITE TYPE CODE
+  return $uid;
+}
+
 ?>

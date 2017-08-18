@@ -1,11 +1,11 @@
 <?php
 
-/* FUNCTION: fetchObjectTypeCode
+/* FUNCTION: dbGetObjectTypeCode
  * DESCRIPTION: Retrieves and returns the code representing a type of an object.
  * --------------------------------------------------------------------------------
  * ================================================================================
  * -------------------------------------------------------------------------------- */
-function fetchObjectTypeCode($object_type_label)
+function dbGetObjectTypeCode($object_type_label)
 {
 	// IMPORT THE DATABASE CONNECTION
 	require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/_DBConnect.php';
@@ -21,7 +21,7 @@ function fetchObjectTypeCode($object_type_label)
 	
 	// CHECK FOR AN ERROR, RETURN IT IF ONE EXISTS
 	$error = $statement->error;
-	if ($error != "") { return "DB ERROR: "; }
+	if ($error != "") { return formatResponseError($error); }
 	
 	// DEFAULT AND ASSIGN THE INVITE TYPE CODE
 	$object_type_code = -1;

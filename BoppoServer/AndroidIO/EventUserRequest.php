@@ -23,9 +23,15 @@ function addUserToEvent()
 	ini_set('display_errors', TRUE);
 	ini_set('display_startup_errors', TRUE);
 	/* END. */
-
+	
 	// IMPORT THE DATABASE CONNECTION
 	require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/_DBConnect.php';
+	
+	// IMPORT REQUIRED FUNCTIONS
+	require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/Functions/Miscellaneous.php';
+	require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/Firebase.php';
+	require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/FirebaseIO/Topic.php';
+	
 	// DECODE JSON STRING
 	$json_decoded = json_decode(file_get_contents("php://input"), true);
 	// ASSIGN THE JSON VALUES TO VARIABLES
@@ -70,8 +76,8 @@ function addUserToEvent()
 	{
 		//echo $event_user_reinvite_wait_duration_unit . "<br>";
 		//var_dump($event_user_reinvite_wait_duration_unit);
-		echo "The event user reinvite wait duration unit is set incorrectly. ";
-		echo "Please contact the server administrator regarding this issue. ";
+		echo formatResponseError("The event user reinvite wait duration unit is set incorrectly. 
+		    Please contact the server administrator regarding this issue.");
 		return;
 	}
 		
@@ -79,18 +85,18 @@ function addUserToEvent()
 	{
 		if (strcmp($inviter_user, "User was and is not a member of the event.") === 0) 
 		{
-			echo "The inviter is not a member of the event.";
+			echo json_encode(formatResponseError("The inviter is not a member of the event."));
 			return; 
 		}
 		else 
 		{
-			echo "The inviter is not a member of the event.";
+			echo json_encode(formatResponseError("The inviter is not a member of the event."));
 			return;
 		}
 	}
 	else if (strcmp($inviter_user["eventUserInviteStatusTypeLabel"], "Joined") !== 0)
 	{
-		echo "The inviter is not a member of the event.";
+		echo json_encode(formatResponseError("The inviter is not a member of the event."));
 		return;
 	}
 	else if (!is_array($invitee_user))
@@ -105,15 +111,29 @@ function addUserToEvent()
 			
 			// CHECK FOR AN ERROR, RETURN IT IF ONE EXISTS
 			$error = $statement->error;
-			if ($error != "") { echo "DB ERROR: " . $error; return; }
+			if ($error != "") { echo json_encode(formatResponseError("DB ERROR: " . $error)); return; }
 			
-			// RETURN SUCCESS MESSAGE
-			echo "The user has been successfully invited to the event.";
+			// IF THE USER WAS SUCCESSFULLY ADDED TO THE EVENT, SUBSCRIBE TO THE TOPIC IN FIREBASE AND RETURN RESPONSES
+			$responses = array();
+			array_push($responses, formatResponseSuccess("The user has been successfully invited to the event."));
+			$deviceFirebaseRegistrationIdentifiers = dbGetUserDeviceFirebaseRegistrationIdentifiers($invitee_uid);
+			if (contains(json_encode($deviceFirebaseRegistrationIdentifiers), "responseType"))
+			{
+			  array_push($responses, $deviceFirebaseRegistrationIdentifiers);
+			}
+			else 
+			{
+              array_push($responses, $deviceFirebaseRegistrationIdentifiers);
+              $subscribeDevicesToEventResponse = subscribeDevicesToEvent($deviceFirebaseRegistrationIdentifiers, $eid);
+              array_push($responses, $subscribeDevicesToEventResponse);
+			}
+			
+			echo json_encode($responses);
 			return;
 		}
 		else
 		{
-			echo "Could not add user to event for unknown reason 1.";
+			echo json_encode(formatResponseError("Could not add user to event for unknown reason 1."));
 			return;
 		}
 	}
@@ -121,12 +141,12 @@ function addUserToEvent()
 	{
 		if (strcmp($invitee_user["eventUserInviteStatusTypeLabel"], "Joined") === 0)
 		{
-			echo "User is already a member of the event.";
+			echo json_encode(formatResponseError("User is already a member of the event."));
 			return;
 		}
 		else if (!$isFriend)
 		{
-			echo "User is not a friend of the inviter; only friends may be invited.";
+			echo json_encode(formatResponseError("User is not a friend of the inviter; only friends may be invited."));
 			return;
 		}
 		else if (strcmp($invitee_user["eventUserInviteStatusTypeLabel"], "Left") === 0)
@@ -146,21 +166,35 @@ function addUserToEvent()
 				$error = $statement->error;
 				if ($error != "") { echo "DB ERROR: " . $error; return; }
 				
-				// RETURN SUCCESS MESSAGE
-				echo "The user has been successfully invited to the event.";
+				// IF THE USER WAS SUCCESSFULLY ADDED TO THE EVENT, SUBSCRIBE TO THE TOPIC IN FIREBASE AND RETURN RESPONSES
+				$responses = array();
+				array_push($responses, formatResponseSuccess("The user has been successfully invited to the event."));
+				$deviceFirebaseRegistrationIdentifiers = dbGetUserDeviceFirebaseRegistrationIdentifiers($invitee_uid);
+				if (contains(json_encode($deviceFirebaseRegistrationIdentifiers), "responseType"))
+				{
+				  array_push($responses, $deviceFirebaseRegistrationIdentifiers);
+				}
+				else
+				{
+				  array_push($responses, $deviceFirebaseRegistrationIdentifiers);
+				  $subscribeDevicesToEventResponse = subscribeDevicesToEvent($deviceFirebaseRegistrationIdentifiers, $eid);
+				  array_push($responses, $subscribeDevicesToEventResponse);
+				}
+				
+				echo json_encode($responses);
 				return;
 			}
 			else
 			{
-				echo "User recently left the event. " . ($event_user_reinvite_wait_duration_value - 
-					$date_diff) . " more " . strtolower($event_user_reinvite_wait_duration_unit) . 
-					"s must pass.";
+				echo formatResponseError("User recently left the event. " . 
+				    ($event_user_reinvite_wait_duration_value - $date_diff) . " more " . 
+				    strtolower($event_user_reinvite_wait_duration_unit) . "s must pass.");
 				return; 
 			}
 		}
 		else if (strcmp($invitee_user["eventUserInviteStatusTypeLabel"], "Removed") === 0)
 		{
-			if ($inviter_event_user_type_code >= $event_user_reinvite_user_type_code)
+			if ($inviter_event_user_type_code <= $event_user_reinvite_user_type_code)
 			{
 				// EXECUTE A QUERY TO CALL A STORED PROCEDURE TO ADD THE USER TO THE EVENT
 				$query = "CALL sp_addUserToEvent(?, ?)";
@@ -172,13 +206,27 @@ function addUserToEvent()
 				$error = $statement->error;
 				if ($error != "") { echo "DB ERROR: " . $error; return; }
 				
-				// RETURN SUCCESS MESSAGE
-				echo "The user has been successfully invited to the event.";
+				// IF THE USER WAS SUCCESSFULLY ADDED TO THE EVENT, SUBSCRIBE TO THE TOPIC IN FIREBASE AND RETURN RESPONSES
+				$responses = array();
+				array_push($responses, formatResponseSuccess("The user has been successfully invited to the event."));
+				$deviceFirebaseRegistrationIdentifiers = dbGetUserDeviceFirebaseRegistrationIdentifiers($invitee_uid);
+				if (contains(json_encode($deviceFirebaseRegistrationIdentifiers), "responseType"))
+				{
+				  array_push($responses, $deviceFirebaseRegistrationIdentifiers);
+				}
+				else
+				{
+				  array_push($responses, $deviceFirebaseRegistrationIdentifiers);
+				  $subscribeDevicesToEventResponse = subscribeDevicesToEvent($deviceFirebaseRegistrationIdentifiers, $eid);
+				  array_push($responses, $subscribeDevicesToEventResponse);
+				}
+				
+				echo json_encode($responses);
 				return;
 			}
 			else 
 			{
-				echo "The inviter must be of higher importance to reinvite the invitee to the event.";
+				echo json_encode(formatResponseError("The inviter must be of higher importance to reinvite the invitee to the event."));
 				return;
 			}
 		}
@@ -271,6 +319,11 @@ function setEventUser()
   ini_set('display_errors', TRUE);
   ini_set('display_startup_errors', TRUE);
   // END. //
+  
+  // IMPORT REQUIRED FUNCTIONS
+  require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/Functions/Miscellaneous.php';
+  require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/Firebase.php';
+  require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/FirebaseIO/Topic.php';
 
   // ESTABLISH DATABASE CONNECTION //
   require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/_DBConnect.php';
@@ -283,13 +336,17 @@ function setEventUser()
   $event_user_type_label = $json_decoded["eventUserTypeLabel"];
   $event_user_invite_status_type_label = $json_decoded["eventUserInviteStatusTypeLabel"];
   $set_or_not = $json_decoded["setOrNot"];
+  
+  $responses = array();
 
   // MAKE SURE THAT VALID IDENTIFIER(S) WERE PROVIDED
   if ($eid <= 0) {
-    echo "ERROR: Incorrect event user identifier specified.";
+    array_push($responses, json_encode(formatResponseError("Incorrect event user identifier specified.")));
+    echo json_encode($responses); 
     return; }
   if ($uid <= 0) {
-    echo "ERROR: Incorrect user identifier specified.";
+    array_push($responses, json_encode(formatResponseError("Incorrect user identifier specified.")));
+    echo json_encode($responses); 
     return; }
   
   // ENCODE THE EVENT USER TYPE LABEL
@@ -298,7 +355,8 @@ function setEventUser()
   $set_or_not["eventUserTypeCode"] = $set_or_not["eventUserTypeLabel"];
   unset($set_or_not["eventUserTypeLabel"]);
   if ($json_decoded["eventUserTypeLabel"] != null && $event_user_type_code == null) {
-    echo "ERROR: Incorrect event user type label specified.";
+    array_push($responses, json_encode(formatResponseError("Incorrect event user type label specified.")));
+    echo json_encode($responses); 
     return; }
 
   // ENCODE THE EVENT USER INVITE STATUS TYPE LABEL
@@ -308,7 +366,8 @@ function setEventUser()
   $set_or_not["eventUserInviteStatusTypeCode"] = $set_or_not["eventUserInviteStatusTypeLabel"];
   unset($set_or_not["eventUserInviteStatusTypeLabel"]);
   if ($json_decoded["eventUserInviteStatusTypeLabel"] != null && $event_user_invite_status_type_code == null) {
-    echo "ERROR: Incorrect event user invite status type label specified.";
+    array_push($responses, json_encode(formatResponseError("Incorrect event user invite status type label specified.")));
+    echo json_encode($responses); 
     return; }
 
   // SEND THE NEW VALUES IN AN EVENT OBJECT TO THE CORRESPONDING DBIO METHOD
@@ -320,9 +379,23 @@ function setEventUser()
       "eventUserInviteStatusTypeCode" => $event_user_invite_status_type_code
   );
   require_once $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/EventUser.php';
-  $response = dbSetEventUser($eventUser, $set_or_not);
-
-  echo $response;
+  $setEventUserResponse = dbSetEventUser($eventUser, $set_or_not);
+  array_push($responses, $setEventUserResponse);
+  
+  // IF THE USER WAS SUCCESSFULLY ADDED TO THE EVENT, SUBSCRIBE TO THE TOPIC IN FIREBASE AND RETURN RESPONSES
+  if (contains(json_encode($setEventUserResponse), "responseType") && contains(json_encode($setEventUserResponse), "Success")) 
+  {
+    $deviceFirebaseRegistrationIdentifiers = dbGetUserDeviceFirebaseRegistrationIdentifiers($uid); 
+    array_push($responses, $deviceFirebaseRegistrationIdentifiers);
+    
+    if ($event_user_invite_status_type_label == "Joined" && !contains(json_encode($setEventUserResponse), "responseType")) 
+    {
+      $subscribeDevicesToEventResponse = subscribeDevicesToEvent($deviceFirebaseRegistrationIdentifiers, $eid);
+      array_push($responses, $subscribeDevicesToEventResponse); 
+    }
+  }
+  echo json_encode($responses);
+  return;
 }
 /* --------------------------------------------------------------------------------
  * ================================================================================

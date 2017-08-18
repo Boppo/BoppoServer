@@ -463,7 +463,7 @@ function dbGetImagesLatestNByUid($uid)
   $statement->execute();
   $error = $statement->error;
   // CHECK FOR AN ERROR, RETURN IT IF ONE EXISTS
-  if ($error != "") { return formatJsonResponseError($error); }
+  if ($error != "") { return json_encode(formatResponseError($error)); }
 
   // BIND THE RESULTING VARIABLES
   $statement->bind_result($uiid, $uid, $user_image_sequence, $user_image_profile_sequence,
@@ -595,14 +595,13 @@ function dbGetCountImages($uid)
   $statement->bind_param("i", $uid);
   $statement->execute();
   $statement->store_result(); 	// Need this to check the number of rows later
-  $statement->error;
 
   // CHECK FOR AN ERROR, RETURN IT IF ONE EXISTS
   $error = $statement->error;
-  if ($error != "") { return formatJsonResponseError($error); }
+  if ($error != "") { return json_encode(formatResponseError($error)); }
   // CHECK FOR THE COUNT OF RESULTS, RETURN A MESSAGE IF NONE EXIST
   if ($statement->num_rows === 0) {
-    return formatJsonResponseError("Contact the database administrator about the dbGetCountImages PHP method.");
+    return json_encode(formatResponseError("Contact the database administrator about the dbGetCountImages PHP method."));
   }
 
   $statement->bind_result($countImages);

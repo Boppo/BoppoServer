@@ -21,7 +21,7 @@ function dbDeleteAddressIfUnused($aid, $eid)
   $statement->execute();
   $error = $statement->error;
   // CHECK FOR AN ERROR, RETURN IT IF ONE EXISTS
-  if ($error != "") { return formatJsonResponseError($error); }
+  if ($error != "") { return json_encode(formatResponseError($error)); }
   
   $statement->bind_result($count);
   $statement->fetch();
@@ -38,13 +38,13 @@ function dbDeleteAddressIfUnused($aid, $eid)
     $statement->execute();
     $error = $statement->error;
     // CHECK FOR AN ERROR, RETURN IT IF ONE EXISTS
-    if ($error != "") { return formatJsonResponseError($error); }
+    if ($error != "") { return json_encode(formatResponseError($error)); }
     
-    return formatJsonResponseSuccess("");
+    return json_encode(formatResponseSuccess(""));
   }
   else 
   {
-    return formatJsonResponseError("Cannot delete the address because it is being used by another event.");
+    return json_encode(formatResponseError("Cannot delete the address because it is being used by another event."));
   }
   
 }

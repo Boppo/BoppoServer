@@ -207,7 +207,7 @@ function dbGetUserProfileData($uid)
   $statement->execute();
   $error = $statement->error;
   // CHECK FOR AN ERROR, RETURN IT IF ONE EXISTS
-  if ($error != "") { return formatJsonResponseError($error); }
+  if ($error != "") { return json_encode(formatResponseError($error)); }
 
   // DEFAULT AND ASSIGN VARIABLES WHERE APPROPRIATE 
   $path_gv = $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/Resources/GlobalVariables.json';

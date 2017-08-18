@@ -37,7 +37,7 @@ function setObjectLikeOrDislike()
 	
 	// CONVERT THE OBJECT TYPE LABEL TO AN OBJECT TYPE CODE
 	require_once $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/ObjectType.php';
-	$object_type_code = fetchObjectTypeCode($object_type_label);
+	$object_type_code = dbGetObjectTypeCode($object_type_label);
 	// CONVERT THE USER LIKE INDICATOR TO A CHARACTER
 	require_once $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/Functions/Miscellaneous.php';
 	$user_like_indicator = strBoolToChar($user_like_indicator); 

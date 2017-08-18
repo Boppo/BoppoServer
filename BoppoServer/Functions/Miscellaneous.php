@@ -1,6 +1,6 @@
 <?php
 
-/* FUNCTION: strBoolToChar
+/* FUNCTION:    strBoolToChar
  * DESCRIPTION: Converts a boolean that is stored as a string into a character.
  * --------------------------------------------------------------------------------
  * ================================================================================
@@ -17,7 +17,7 @@ function strBoolToChar($strBool)
 	return $char;
 }
 
-/* FUNCTION: charToStrBool
+/* FUNCTION:    charToStrBool
  * DESCRIPTION: Converts a boolean that is stored as a character into a string.
  * --------------------------------------------------------------------------------
  * ================================================================================
@@ -34,7 +34,22 @@ function charToStrBool($char)
 	return $strBool;
 }
 
-/* FUNCTION: compareDates
+/* FUNCTION:    contains
+ * DESCRIPTION: Checks if the input string contains another input string. 
+ * --------------------------------------------------------------------------------
+ * ================================================================================
+ * -------------------------------------------------------------------------------- */
+function contains($containingString, $containedString)
+{
+  if (strpos($containingString, $containedString) !== false)
+    return true; 
+  else 
+    return false; 
+}
+
+
+
+/* FUNCTION:    compareDates
  * DESCRIPTION: Compares the difference of the two input dates with the specified duration.
  * ----------------------------------------------------------------------------------------
  * ========================================================================================
@@ -59,6 +74,11 @@ function compareDates($date1, $date2, $time_unit)
 	return $diff;
 }
 
+/* FUNCTION:    compareDateDifferences
+ * DESCRIPTION: Returns a string stating whether the date difference is in or out of bounds.
+ * ----------------------------------------------------------------------------------------
+ * ========================================================================================
+ * ---------------------------------------------------------------------------------------- */
 function compareDateDifferences($diff1, $diff2)
 {
 	if ($diff1 > $diff2)
@@ -67,24 +87,55 @@ function compareDateDifferences($diff1, $diff2)
 		return "The time difference is within bounds.";
 }
 
-function formatJsonResponseError($error)
+/* FUNCTION:    formatResponseError
+ * DESCRIPTION: Returns the input string as a formatted error array. 
+ * ----------------------------------------------------------------------------------------
+ * ========================================================================================
+ * ---------------------------------------------------------------------------------------- */
+function formatResponseError($error)
 {
   $response = array
   (
     "responseType" => "ERROR", 
     "response" => $error
   );
-  return json_encode($response);
+  return $response;
 }
 
-function formatJsonResponseSuccess($response)
+/* FUNCTION:    formatResponseSuccess
+ * DESCRIPTION: Returns the input string as a formatted success array.
+ * ----------------------------------------------------------------------------------------
+ * ========================================================================================
+ * ---------------------------------------------------------------------------------------- */
+function formatResponseSuccess($response)
 {
   $response = array
   (
     "responseType" => "Success", 
     "response" => $response
   );
-  return json_encode($response);
+  return $response;
+}
+
+/* FUNCTION:    removeString
+ * DESCRIPTION: Returns the input string with the other input string removed from it.
+ * ----------------------------------------------------------------------------------------
+ * ========================================================================================
+ * ---------------------------------------------------------------------------------------- */
+function removeString($stringToRemoveFrom, $stringToRemove)
+{
+  return str_replace($stringToRemove, "", $stringToRemoveFrom);
+}
+
+/* FUNCTION:    replaceString
+ * DESCRIPTION: Returns the input string with the other input string replaced by yet
+ *              another input string.
+ * ----------------------------------------------------------------------------------------
+ * ========================================================================================
+ * ---------------------------------------------------------------------------------------- */
+function replaceString($stringToRemoveFrom, $stringToReplace, $stringToReplaceWith)
+{
+  return str_replace($stringToRemove, $stringToReplaceWith, $stringToRemoveFrom);
 }
 
 ?>
