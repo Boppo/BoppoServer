@@ -3,7 +3,7 @@
 function subscribeDevicesToTopics()
 {
   // EDIT THE FOLLOWING LIST TO CONTAIN FIREBASE REGISTRATION IDENTIFIERS OF THE DEVICE
-  $firebaseRegistrationIdentifier = "";
+  $frid = "";
   // EDIT THE FOLLOWING VARIABLE TO CONTAIN THE BASE NAME OF THE TOPICS
   $topicBaseName = "";
   // EDIT THE FOLLOWING LIST TO CONTAIN THE ID FOR THE TOPICS
@@ -34,7 +34,7 @@ function subscribeDevicesToTopics()
   {
     // Form the URLs for cURL
     // URL TEMPLATE: "https://iid.googleapis.com/iid/v1/REGISTRATION_TOKEN/rel/topics/TOPIC_NAME"
-    $urlTemplate = "https://iid.googleapis.com/iid/v1/$firebaseRegistrationIdentifier/rel/topics/";
+    $urlTemplate = "https://iid.googleapis.com/iid/v1/$frid/rel/topics/";
   
     $curl = curl_init();
     curl_setopt($curl, CURLOPT_URL, $urlTemplate . $topicBaseName . "-" . $topicId);

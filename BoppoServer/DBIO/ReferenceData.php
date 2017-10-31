@@ -213,7 +213,7 @@ function dbGetCountryBy3cMnemonicCode($country_3c_mnemonic_code)
  * --------------------------------------------------------------------------------
  * ================================================================================
  * -------------------------------------------------------------------------------- */
-function dbGetUidByDevice($firebaseRegistrationIdentifier)
+function dbGetUidByDevice($frid)
 {
   // IMPORT THE DATABASE CONNECTION
   require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/_DBConnect.php';
@@ -221,9 +221,9 @@ function dbGetUidByDevice($firebaseRegistrationIdentifier)
   // ACQUIRE THE INVITE TYPE LABEL
   $query = "SELECT device_latest_uid 
 			FROM T_DEVICE 
-			WHERE device_firebase_registration_identifier = ?";
+			WHERE device_frid = ?";
   $statement = $conn->prepare($query);
-  $statement->bind_param("s", $firebaseRegistrationIdentifier);
+  $statement->bind_param("s", $frid);
   $statement->execute();
   $statement->error;
 

@@ -159,10 +159,18 @@ deleteImage();
 require_once $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/Miscellaneous.php';
 echo json_encode(dbGetCountryByNumericCode(392));
 */
+/*
 require_once $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/Address.php';
 echo json_encode(dbGetAddressByEid(1));
-
-
+*/
+/*
+require_once $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/Functions/Miscellaneous.php';
+saveToErrorLog("Test string.", "abcdef");
+*/
+require_once $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/FirebaseIO/Message.php';
+echo json_encode(sendMessageToTopic("User", "7", "Test Message", 
+    "One small step for a man, one giant leap for a Brymian!", 
+    null, null));
 
 echo "<br><br>!END OF SCRIPT!";
 

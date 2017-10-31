@@ -1,6 +1,7 @@
 {
 	"Firebase": {
-		"API_ACCESS_KEY": "AAAAXYaD2lQ:APA91bFBAmMkugKsJ4Y7WjKwfcvkAG8kNvdHTCpZR4wYUvhUzw9PViugpfluCpsJB-pwVWHMdR7X94xICP4nmvg2eWYce2qsUfPAzueYs8kmrcRoAmpFRLiyvdakyJrYQsc80Oerz-B3"
+		"API_ACCESS_KEY": "AAAAXYaD2lQ:APA91bFBAmMkugKsJ4Y7WjKwfcvkAG8kNvdHTCpZR4wYUvhUzw9PViugpfluCpsJB-pwVWHMdR7X94xICP4nmvg2eWYce2qsUfPAzueYs8kmrcRoAmpFRLiyvdakyJrYQsc80Oerz-B3", 
+		"SENDER_ID": "401688746580"
 	}, 
 	"Duration": {
 		"EventUserReinviteWaitDuration": {

@@ -107,12 +107,12 @@ function formatResponseError($error)
  * ----------------------------------------------------------------------------------------
  * ========================================================================================
  * ---------------------------------------------------------------------------------------- */
-function formatResponseSuccess($response)
+function formatResponseSuccess($success)
 {
   $response = array
   (
     "responseType" => "Success", 
-    "response" => $response
+    "response" => $success
   );
   return $response;
 }
@@ -136,6 +136,34 @@ function removeString($stringToRemoveFrom, $stringToRemove)
 function replaceString($stringToRemoveFrom, $stringToReplace, $stringToReplaceWith)
 {
   return str_replace($stringToRemove, $stringToReplaceWith, $stringToRemoveFrom);
+}
+
+/* FUNCTION:    saveToSystemLog
+ * DESCRIPTION: Saves the input string to a system log file with the input label. For good
+ *              practice, use "__FUNCTION__" for the label to keep track of the calling 
+ *              method. This function organizes log messages into daily log files. 
+ * ----------------------------------------------------------------------------------------
+ * ========================================================================================
+ * ---------------------------------------------------------------------------------------- */
+function saveToSystemLog($string, $label)
+{
+  // IMPORT REQUIRED METHODS
+  require_once $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/Functions/Log.php'; 
+  saveToLog($string, $label, "System");
+}
+
+/* FUNCTION:    saveToErrorLog
+ * DESCRIPTION: Saves the input string to an error log file with the input label. For good
+ *              practice, use "__FUNCTION__" for the label to keep track of the calling
+ *              method. This function organizes log messages into daily log files.
+ * ----------------------------------------------------------------------------------------
+ * ========================================================================================
+ * ---------------------------------------------------------------------------------------- */
+function saveToErrorLog($string, $label)
+{
+  // IMPORT REQUIRED METHODS
+  require_once $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/Functions/Log.php';
+  saveToLog($string, $label, "Error");
 }
 
 ?>

@@ -219,8 +219,6 @@ function dbGetUserProfileData($uid)
   $statement->bind_result($uid, $username, $first_name, $last_name);
   $statement->fetch();
 
-  $user = array();
-
   $user_profile_images = dbGetImagesFirstNProfileByUid($uid);
   $count_friends = dbGetCountFriends($uid); 
   $count_hosted_events = dbGetCountHostedEvents($uid);
@@ -249,6 +247,54 @@ function dbGetUserProfileData($uid)
   $parent = array
   (
     "user" => $user  
+  );
+
+  $statement->close();
+
+  return $parent;
+}
+
+
+
+/* FUNCTION:    dbGetUserNames
+ * DESCRIPTION: Gets the first, last, and user names for the user with the 
+ *              specified uid. 
+ * --------------------------------------------------------------------------------
+ * ================================================================================
+ * -------------------------------------------------------------------------------- */
+function dbGetUserNames($uid)
+{
+  // IMPORT REQUIRED METHODS
+  require_once $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/Functions/Miscellaneous.php';
+
+  // IMPORT THE DATABASE CONNECTION
+  require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/_DBConnect.php';
+
+  // EXECUTE THE QUERY
+  $query = "SELECT uid, username, first_name, last_name
+            FROM   T_USER
+            WHERE  uid = ?";
+  $statement = $conn->prepare($query);
+  $statement->bind_param("i", $uid);
+  $statement->execute();
+  $error = $statement->error;
+  // CHECK FOR AN ERROR, RETURN IT IF ONE EXISTS
+  if ($error != "") { return json_encode(formatResponseError($error)); }
+
+  $statement->bind_result($uid, $username, $first_name, $last_name);
+  $statement->fetch();
+
+  $user = array
+  (
+      "uid" => $uid,
+      "username" => $username,
+      "firstName" => $first_name,
+      "lastName" => $last_name
+  );
+
+  $parent = array
+  (
+      "user" => $user
   );
 
   $statement->close();

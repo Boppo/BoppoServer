@@ -116,15 +116,15 @@ function addUserToEvent()
 			// IF THE USER WAS SUCCESSFULLY ADDED TO THE EVENT, SUBSCRIBE TO THE TOPIC IN FIREBASE AND RETURN RESPONSES
 			$responses = array();
 			array_push($responses, formatResponseSuccess("The user has been successfully invited to the event."));
-			$deviceFirebaseRegistrationIdentifiers = dbGetUserDeviceFirebaseRegistrationIdentifiers($invitee_uid);
-			if (contains(json_encode($deviceFirebaseRegistrationIdentifiers), "responseType"))
+			$deviceFrids = dbGetUserDeviceFrids($invitee_uid);
+			if (contains(json_encode($deviceFrids), "responseType"))
 			{
-			  array_push($responses, $deviceFirebaseRegistrationIdentifiers);
+			  array_push($responses, $deviceFrids);
 			}
 			else 
 			{
-              array_push($responses, $deviceFirebaseRegistrationIdentifiers);
-              $subscribeDevicesToEventResponse = subscribeDevicesToEvent($deviceFirebaseRegistrationIdentifiers, $eid);
+              array_push($responses, $deviceFrids);
+              $subscribeDevicesToEventResponse = subscribeDevicesToEvent($deviceFrids, $eid);
               array_push($responses, $subscribeDevicesToEventResponse);
 			}
 			
@@ -169,15 +169,15 @@ function addUserToEvent()
 				// IF THE USER WAS SUCCESSFULLY ADDED TO THE EVENT, SUBSCRIBE TO THE TOPIC IN FIREBASE AND RETURN RESPONSES
 				$responses = array();
 				array_push($responses, formatResponseSuccess("The user has been successfully invited to the event."));
-				$deviceFirebaseRegistrationIdentifiers = dbGetUserDeviceFirebaseRegistrationIdentifiers($invitee_uid);
-				if (contains(json_encode($deviceFirebaseRegistrationIdentifiers), "responseType"))
+				$deviceFrids = dbGetUserDeviceFrids($invitee_uid);
+				if (contains(json_encode($deviceFrids), "responseType"))
 				{
-				  array_push($responses, $deviceFirebaseRegistrationIdentifiers);
+				  array_push($responses, $deviceFrids);
 				}
 				else
 				{
-				  array_push($responses, $deviceFirebaseRegistrationIdentifiers);
-				  $subscribeDevicesToEventResponse = subscribeDevicesToEvent($deviceFirebaseRegistrationIdentifiers, $eid);
+				  array_push($responses, $deviceFrids);
+				  $subscribeDevicesToEventResponse = subscribeDevicesToEvent($deviceFrids, $eid);
 				  array_push($responses, $subscribeDevicesToEventResponse);
 				}
 				
@@ -209,15 +209,15 @@ function addUserToEvent()
 				// IF THE USER WAS SUCCESSFULLY ADDED TO THE EVENT, SUBSCRIBE TO THE TOPIC IN FIREBASE AND RETURN RESPONSES
 				$responses = array();
 				array_push($responses, formatResponseSuccess("The user has been successfully invited to the event."));
-				$deviceFirebaseRegistrationIdentifiers = dbGetUserDeviceFirebaseRegistrationIdentifiers($invitee_uid);
-				if (contains(json_encode($deviceFirebaseRegistrationIdentifiers), "responseType"))
+				$deviceFrids = dbGetUserDeviceFrids($invitee_uid);
+				if (contains(json_encode($deviceFrids), "responseType"))
 				{
-				  array_push($responses, $deviceFirebaseRegistrationIdentifiers);
+				  array_push($responses, $deviceFrids);
 				}
 				else
 				{
-				  array_push($responses, $deviceFirebaseRegistrationIdentifiers);
-				  $subscribeDevicesToEventResponse = subscribeDevicesToEvent($deviceFirebaseRegistrationIdentifiers, $eid);
+				  array_push($responses, $deviceFrids);
+				  $subscribeDevicesToEventResponse = subscribeDevicesToEvent($deviceFrids, $eid);
 				  array_push($responses, $subscribeDevicesToEventResponse);
 				}
 				
@@ -385,12 +385,12 @@ function setEventUser()
   // IF THE USER WAS SUCCESSFULLY ADDED TO THE EVENT, SUBSCRIBE TO THE TOPIC IN FIREBASE AND RETURN RESPONSES
   if (contains(json_encode($setEventUserResponse), "responseType") && contains(json_encode($setEventUserResponse), "Success")) 
   {
-    $deviceFirebaseRegistrationIdentifiers = dbGetUserDeviceFirebaseRegistrationIdentifiers($uid); 
-    array_push($responses, $deviceFirebaseRegistrationIdentifiers);
+    $deviceFrids = dbGetUserDeviceFrids($uid); 
+    array_push($responses, $deviceFrids);
     
     if ($event_user_invite_status_type_label == "Joined" && !contains(json_encode($setEventUserResponse), "responseType")) 
     {
-      $subscribeDevicesToEventResponse = subscribeDevicesToEvent($deviceFirebaseRegistrationIdentifiers, $eid);
+      $subscribeDevicesToEventResponse = subscribeDevicesToEvent($deviceFrids, $eid);
       array_push($responses, $subscribeDevicesToEventResponse); 
     }
   }

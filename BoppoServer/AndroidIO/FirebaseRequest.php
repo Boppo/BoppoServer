@@ -4,10 +4,14 @@ $function = $_GET['function'];
 
 if ($function == "addDeviceToFirebaseAndDb")
   addDeviceToFirebaseAndDb();
+if ($function == "removeDeviceFromFirebaseAndDb")
+  removeDeviceFromFirebaseAndDb();
 if ($function == "getDeviceSubscribedTopics")
   getDeviceSubscribedTopics();
+/*
 if ($function == "deleteDeviceFromFirebaseAndDb")
   deleteDeviceFromFirebaseAndDb();
+*/
 
   
   
@@ -29,44 +33,78 @@ function addDeviceToFirebaseAndDb()
   require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/Functions/Miscellaneous.php';
   require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/User.php';
   require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/Firebase.php';
+  require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/FirebaseIO/DeviceGroup.php';
   require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/FirebaseIO/Topic.php';
   // DECODE JSON STRING
   $json_decoded = json_decode(file_get_contents("php://input"), true);
   // ASSIGN THE JSON VALUES TO VARIABLES
-  $uid                            = $json_decoded["uid"];
-  $firebaseRegistrationIdentifier = $json_decoded["firebaseRegistrationIdentifier"]; 
+  $uid  = $json_decoded["uid"];
+  $frid = $json_decoded["frid"]; 
   
-  if (!isset($firebaseRegistrationIdentifier))
+  if (!isset($frid))
   {
-    echo json_encode(formatResponseError("The firebaseRegistrationIdentifier was not provided.")); return;
+    echo json_encode(formatResponseError("The frid was not provided.")); return;
   }
-    
-  $result = dbSetDeviceUser($firebaseRegistrationIdentifier, $uid); 
+   
+  removeDeviceFromDeviceGroup($frid);
+  $result = dbSetDeviceUser($frid, $uid); 
   if (contains($result, "responseType") && contains($result, "ERROR")) {
     echo $result; return; }
-
-  // FETCH AND PROCESS OTHER REQUIRED DATA
-  $dbGetFriendsString = dbGetFriends($uid); 
-  if (contains(json_encode($dbGetFriendsString), "responseType") && contains(json_encode($dbGetFriendsString), "ERROR")) {
-    echo $dbGetFriendsString; return; }
-  elseif (contains(json_encode($dbGetFriendsString), "responseType") && contains(json_encode($dbGetFriendsString), "Success")) {
-    echo $dbGetFriendsString; return; }
-    
-  $friendsToSubscribeTo = array();
-  $friends = $dbGetFriendsString["friends"];
-  foreach ($friends as $friend)
-  {
-    array_push($friendsToSubscribeTo, $friend["uid"]);
-  }
+  addDeviceToDeviceGroup($frid, $uid);
   
-  $results = subscribeDeviceToTopics($firebaseRegistrationIdentifier, "User", $friendsToSubscribeTo); 
-  echo json_encode($results);
+  echo json_encode($result);
   return; 
+}
+
+
+
+/* FUNCTION:    removeDeviceFromFirebaseAndDb
+ * DESCRIPTION: Removes the specified device from the Firebase Cloud Messaging 
+ *              service and database.
+ * --------------------------------------------------------------------------------
+ * ================================================================================
+ * -------------------------------------------------------------------------------- */
+function removeDeviceFromFirebaseAndDb()
+{
+  /* THE FOLLOWING 3 LINES OF CODE ENABLE ERROR REPORTING. */
+  error_reporting(E_ALL);
+  ini_set('display_errors', TRUE);
+  ini_set('display_startup_errors', TRUE);
+  /* END. */
+
+  // IMPORT REQUIRED FUNCTIONS
+  require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/Functions/Miscellaneous.php';
+  require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/User.php';
+  require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/Firebase.php';
+  require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/FirebaseIO/DeviceGroup.php';
+  require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/FirebaseIO/Topic.php';
+  // DECODE JSON STRING
+  $json_decoded = json_decode(file_get_contents("php://input"), true);
+  // ASSIGN THE JSON VALUES TO VARIABLES
+  $frid = $json_decoded["frid"];
+
+  if (!isset($frid))
+  {
+    echo json_encode(formatResponseError("The frid was not provided.")); return;
+  }
+   
+  removeDeviceFromDeviceGroup($frid);
+  $result = dbUnsetDeviceUser($frid);
+
+  echo json_encode($result);
+  return;
 }
 
 /* --------------------------------------------------------------------------------
  * ================================================================================
  * -------------------------------------------------------------------------------- */
+
+/* !!!!! PLANNING TO DEPRECATE THIS !!!!! */
+/* !!!!! PLANNING TO DEPRECATE THIS !!!!! */
+/* !!!!! PLANNING TO DEPRECATE THIS !!!!! */
+/* !!!!! PLANNING TO DEPRECATE THIS !!!!! */
+/* !!!!! PLANNING TO DEPRECATE THIS !!!!! */
+/* This method may not longer be required but a device-group level one may be */
 
 /* FUNCTION:    getDeviceSubscribedTopics
  * DESCRIPTION: Retrieves and returns all of the topics to which the device with 
@@ -98,14 +136,14 @@ function getDeviceSubscribedTopics()
   // DECODE JSON STRING
   $json_decoded = json_decode(file_get_contents("php://input"), true);
   // ASSIGN THE JSON VALUES TO VARIABLES
-  $firebaseRegistrationIdentifier = $json_decoded["firebaseRegistrationIdentifier"];
+  $frid = $json_decoded["frid"];
 
-  if (!isset($firebaseRegistrationIdentifier))
+  if (!isset($frid))
   {
-    echo json_encode(formatResponseError("The firebaseRegistrationIdentifier was not provided.")); return;
+    echo json_encode(formatResponseError("The frid was not provided.")); return;
   }
 
-  $results = dbGetDeviceSubscribedTopics($firebaseRegistrationIdentifier);
+  $results = dbGetDeviceSubscribedTopics($frid);
   echo json_encode($results);
   return;
 }
