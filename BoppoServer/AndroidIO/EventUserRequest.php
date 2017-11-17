@@ -113,6 +113,8 @@ function addUserToEvent()
 			$error = $statement->error;
 			if ($error != "") { echo json_encode(formatResponseError("DB ERROR: " . $error)); return; }
 			
+			// OBSOLETE
+			/*
 			// IF THE USER WAS SUCCESSFULLY ADDED TO THE EVENT, SUBSCRIBE TO THE TOPIC IN FIREBASE AND RETURN RESPONSES
 			$responses = array();
 			array_push($responses, formatResponseSuccess("The user has been successfully invited to the event."));
@@ -129,6 +131,8 @@ function addUserToEvent()
 			}
 			
 			echo json_encode($responses);
+			*/
+			echo json_encode(formatResponseSuccess("The user has been successfully invited to the event."));
 			return;
 		}
 		else
@@ -166,6 +170,8 @@ function addUserToEvent()
 				$error = $statement->error;
 				if ($error != "") { echo "DB ERROR: " . $error; return; }
 				
+                // OBSOLETE: 
+                /*
 				// IF THE USER WAS SUCCESSFULLY ADDED TO THE EVENT, SUBSCRIBE TO THE TOPIC IN FIREBASE AND RETURN RESPONSES
 				$responses = array();
 				array_push($responses, formatResponseSuccess("The user has been successfully invited to the event."));
@@ -182,6 +188,8 @@ function addUserToEvent()
 				}
 				
 				echo json_encode($responses);
+                */
+                echo json_encode(formatResponseSuccess("The user has been successfully invited to the event."));
 				return;
 			}
 			else
@@ -206,6 +214,8 @@ function addUserToEvent()
 				$error = $statement->error;
 				if ($error != "") { echo "DB ERROR: " . $error; return; }
 				
+				// OBSOLETE: 
+				/*
 				// IF THE USER WAS SUCCESSFULLY ADDED TO THE EVENT, SUBSCRIBE TO THE TOPIC IN FIREBASE AND RETURN RESPONSES
 				$responses = array();
 				array_push($responses, formatResponseSuccess("The user has been successfully invited to the event."));
@@ -222,6 +232,8 @@ function addUserToEvent()
 				}
 				
 				echo json_encode($responses);
+				*/
+				echo json_encode(formatResponseSuccess("The user has been successfully invited to the event."));
 				return;
 			}
 			else 
@@ -382,6 +394,8 @@ function setEventUser()
   $setEventUserResponse = dbSetEventUser($eventUser, $set_or_not);
   array_push($responses, $setEventUserResponse);
   
+  // OBSOLETE; 
+  /*
   // IF THE USER WAS SUCCESSFULLY ADDED TO THE EVENT, SUBSCRIBE TO THE TOPIC IN FIREBASE AND RETURN RESPONSES
   if (contains(json_encode($setEventUserResponse), "responseType") && contains(json_encode($setEventUserResponse), "Success")) 
   {
@@ -394,6 +408,7 @@ function setEventUser()
       array_push($responses, $subscribeDevicesToEventResponse); 
     }
   }
+  */
   echo json_encode($responses);
   return;
 }

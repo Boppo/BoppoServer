@@ -2,32 +2,134 @@
 
 $function = $_GET['function'];
 
+if ($function == "subscribeDevice")
+  subscribeDevice();
+if ($function == "unsubscribeDevice")
+  unsubscribeDevice();
+
+/*
 if ($function == "addDeviceToFirebaseAndDb")
   addDeviceToFirebaseAndDb();
 if ($function == "removeDeviceFromFirebaseAndDb")
   removeDeviceFromFirebaseAndDb();
 if ($function == "getDeviceSubscribedTopics")
   getDeviceSubscribedTopics();
+*/
 /*
 if ($function == "deleteDeviceFromFirebaseAndDb")
   deleteDeviceFromFirebaseAndDb();
 */
 
   
+
+/* FUNCTION:    subscribeDevice
+ * DESCRIPTION: Subscribes the device with the specified FRID for the user with the
+ *              specified UID to all topics subscribed to by that user in the 
+ *              database as well as in Firebase. 
+ * --------------------------------------------------------------------------------
+ * ================================================================================
+ * -------------------------------------------------------------------------------- */
+
+ function subscribeDevice()
+{
+  // THE FOLLOWING 3 LINES OF CODE ENABLE ERROR REPORTING. //
+  error_reporting(E_ALL);
+  ini_set('display_errors', TRUE);
+  ini_set('display_startup_errors', TRUE);
+  // END. //
   
+  // IMPORT REQUIRED FUNCTIONS
+  require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/Functions/Miscellaneous.php';
+  require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/User.php';
+  require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/Firebase.php';
+  require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/FirebaseIO/Topic.php';
+  // DECODE JSON STRING
+  $json_decoded = json_decode(file_get_contents("php://input"), true);
+  // ASSIGN THE JSON VALUES TO VARIABLES
+  $uid  = $json_decoded["uid"];
+  $frid = $json_decoded["frid"];
+  
+  if (!isset($uid))
+  {
+    echo json_encode(formatResponseError("The uid was not provided.")); return;
+  }
+  if (!isset($frid))
+  {
+    echo json_encode(formatResponseError("The frid was not provided.")); return;
+  }
+  
+  $setDeviceUserResponse = dbSetDeviceUser($uid, $frid); 
+  if (!contains(json_encode($setDeviceUserResponse), "Success"))
+  {
+    echo json_encode($setDeviceUserResponse); return; 
+  }
+  
+  $subscribeDeviceToTopicsResponse = subscribeDeviceToTopics($frid);
+
+  saveToSystemLog(json_encode($subscribeDeviceToTopicsResponse), __FUNCTION__);
+  echo json_encode($subscribeDeviceToTopicsResponse); 
+}
+
+/* FUNCTION:    unsubscribeDevice
+ * DESCRIPTION: Unsubscribes the device with the specified FRID from all topics 
+ *              subscribed to in the database as well as in Firebase.
+ * --------------------------------------------------------------------------------
+ * ================================================================================
+ * -------------------------------------------------------------------------------- */
+
+function unsubscribeDevice()
+{
+  // THE FOLLOWING 3 LINES OF CODE ENABLE ERROR REPORTING. //
+  error_reporting(E_ALL);
+  ini_set('display_errors', TRUE);
+  ini_set('display_startup_errors', TRUE);
+  // END. //
+
+  // IMPORT REQUIRED FUNCTIONS
+  require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/Functions/Miscellaneous.php';
+  require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/User.php';
+  require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/Firebase.php';
+  require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/FirebaseIO/Topic.php';
+  // DECODE JSON STRING
+  $json_decoded = json_decode(file_get_contents("php://input"), true);
+  // ASSIGN THE JSON VALUES TO VARIABLES
+  $frid = $json_decoded["frid"];
+
+  if (!isset($frid))
+  {
+    echo json_encode(formatResponseError("The frid was not provided.")); return;
+  }
+  
+  // Firebase stuff here
+  $unsubscribeDeviceFromTopicsResponse = unsubscribeDeviceFromTopics($frid);
+  // Consider building a fail-safe here that loops through the above variable's firebase responses 
+  //   and checks for anything other than "200". If exists !200, prevent DB-side unsubscription. 
+  // Firebase stuff here
+  
+  $unsetDeviceUserResponse = dbUnsetDeviceUser($frid);
+  if (!contains(json_encode($unsetDeviceUserResponse), "Success"))
+  {
+    echo json_encode($unsetDeviceUserResponse); return;
+  }
+
+  saveToSystemLog(json_encode($unsetDeviceUserResponse), __FUNCTION__);
+  echo json_encode($unsetDeviceUserResponse);
+}
+
 /* FUNCTION:    addDeviceToFirebaseAndDb
  * DESCRIPTION: Adds the specified device to the Firebase Cloud Messaging service 
  *              and database.
  * --------------------------------------------------------------------------------
  * ================================================================================
  * -------------------------------------------------------------------------------- */
+/*
 function addDeviceToFirebaseAndDb()
 {
-  /* THE FOLLOWING 3 LINES OF CODE ENABLE ERROR REPORTING. */
+  // THE FOLLOWING 3 LINES OF CODE ENABLE ERROR REPORTING. //
   error_reporting(E_ALL);
   ini_set('display_errors', TRUE);
   ini_set('display_startup_errors', TRUE);
-  /* END. */
+  // END. //
 
   // IMPORT REQUIRED FUNCTIONS
   require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/Functions/Miscellaneous.php';
@@ -55,6 +157,7 @@ function addDeviceToFirebaseAndDb()
   echo json_encode($result);
   return; 
 }
+*/
 
 
 
@@ -64,13 +167,14 @@ function addDeviceToFirebaseAndDb()
  * --------------------------------------------------------------------------------
  * ================================================================================
  * -------------------------------------------------------------------------------- */
+/*
 function removeDeviceFromFirebaseAndDb()
 {
-  /* THE FOLLOWING 3 LINES OF CODE ENABLE ERROR REPORTING. */
+  // THE FOLLOWING 3 LINES OF CODE ENABLE ERROR REPORTING. //
   error_reporting(E_ALL);
   ini_set('display_errors', TRUE);
   ini_set('display_startup_errors', TRUE);
-  /* END. */
+  // END. //
 
   // IMPORT REQUIRED FUNCTIONS
   require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/Functions/Miscellaneous.php';
@@ -94,6 +198,7 @@ function removeDeviceFromFirebaseAndDb()
   echo json_encode($result);
   return;
 }
+*/
 
 /* --------------------------------------------------------------------------------
  * ================================================================================
@@ -112,22 +217,15 @@ function removeDeviceFromFirebaseAndDb()
  * --------------------------------------------------------------------------------
  * ================================================================================
  * -------------------------------------------------------------------------------- */
+/*
 function getDeviceSubscribedTopics()
 {
   /*
-   * CONTINUE HERE
-   * 
-   * - Get the list of all topics to which the device is subscribed 
-   * - Return the list to that device
-   * - Have the device unsubscribe from all those topics 
-   * - After unsubscribing, call another method to acknowledge and 
-   *     delete the device and its subscribed topics from the database
-   */
-  /* THE FOLLOWING 3 LINES OF CODE ENABLE ERROR REPORTING. */
+  // THE FOLLOWING 3 LINES OF CODE ENABLE ERROR REPORTING. //
   error_reporting(E_ALL);
   ini_set('display_errors', TRUE);
   ini_set('display_startup_errors', TRUE);
-  /* END. */
+  // END. //
 
   // IMPORT REQUIRED FUNCTIONS
   require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/Functions/Miscellaneous.php';
@@ -147,6 +245,7 @@ function getDeviceSubscribedTopics()
   echo json_encode($results);
   return;
 }
+*/
 
 /* --------------------------------------------------------------------------------
  * ================================================================================

@@ -6,7 +6,7 @@
  * --------------------------------------------------------------------------------
  * ================================================================================
  * -------------------------------------------------------------------------------- */
-function dbSetDeviceUser($frid, $uid)
+function dbSetDeviceUser($uid, $frid)
 {
   // IMPORT REQUIRED METHODS
   require_once $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/Functions/Miscellaneous.php';
@@ -23,16 +23,16 @@ function dbSetDeviceUser($frid, $uid)
 
   // CHECK FOR AN ERROR, RETURN IT IF ONE EXISTS
   $error = $statement->error;
-  if ($error != "") { echo json_encode(formatResponseError($error)); return; }
+  if ($error != "") { return formatResponseError($error); }
 
   // RETURN RESULT MESSAGE  
   if ($statement->affected_rows === 1)
   {
-    return json_encode(formatResponseSuccess("User has been successfully registered to device."));
+    return formatResponseSuccess("User has been successfully registered to device.");
   }
   else if ($statement->affected_rows === 0)
   {
-    return json_encode(formatResponseSuccess("User is already registered to device."));
+    return formatResponseSuccess("User is already registered to device.");
   }
   else
   {
@@ -46,7 +46,7 @@ function dbSetDeviceUser($frid, $uid)
 
 
 /* FUNCTION:    dbUnsetDeviceUser
- * DESCRIPTION: Unsers the user for the device with the specified Firebase 
+ * DESCRIPTION: Unsets the user for the device with the specified Firebase 
  * Registration Identifier in the database. 
  * --------------------------------------------------------------------------------
  * ================================================================================
@@ -70,7 +70,7 @@ function dbUnsetDeviceUser($frid)
 
   // CHECK FOR AN ERROR, RETURN IT IF ONE EXISTS
   $error = $statement->error;
-  if ($error != "") { echo json_encode(formatResponseError($error)); return; }
+  if ($error != "") { return formatResponseError($error); }
 
   // RETURN RESULT MESSAGE
   if ($statement->affected_rows === 1)
@@ -93,6 +93,303 @@ function dbUnsetDeviceUser($frid)
 
 
 
+/* FUNCTION:    dbSubscribeUserToTopic
+ * DESCRIPTION: Subscribes the user with the specified UID to the topic (User, 
+ *              Image, Event, etc. notifications) with the specified topicName. 
+ * --------------------------------------------------------------------------------
+ * ================================================================================
+ * -------------------------------------------------------------------------------- */
+function dbSubscribeUserToTopic($uid, $topicName)
+{
+  // IMPORT REQUIRED METHODS
+  require_once $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/Functions/Miscellaneous.php';
+
+  // IMPORT THE DATABASE CONNECTION
+  require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/_DBConnect.php';
+
+  // EXECUTE THE QUERY
+  $query = "INSERT INTO T_SUBSCRIBED_TOPIC (uid, topic_name) 
+            VALUES (?, ?)";
+  $statement = $conn->prepare($query);
+  $statement->bind_param("is", $uid, $topicName);
+  $statement->execute();
+  $statement->store_result(); 	// Need this to check the number of rows later
+  
+  // CHECK FOR AN ERROR, RETURN IT IF ONE EXISTS
+  $error = $statement->error;
+  // CHECK FOR THE COUNT OF RESULTS, RETURN A MESSAGE IF NONE EXIST
+  if ($statement->affected_rows === 0) {
+    return formatResponseError("User subscription to topic failed, possibly because one with the specified
+      uid and topic_name already exists.");
+  }
+  if ($statement->affected_rows > 1) {
+    return formatResponseError("DATA FLAWED: Please contact the database administrator with this method's name
+      because something went wrong (" . __FUNCTION__ . ").");
+  }
+  if ($error != "") { return formatResponseError($error); }
+  
+  return formatResponseSuccess("User subscribed to topic successfully.");
+  
+  $statement->close();
+}
+
+
+
+/* FUNCTION:    dbUnsubscribeUserFromTopic
+ * DESCRIPTION: Unsubscribes the user with the specified UID from the topic (User,
+ *              Image, Event, etc. notifications) with the specified topicName.
+ * --------------------------------------------------------------------------------
+ * ================================================================================
+ * -------------------------------------------------------------------------------- */
+function dbUnsubscribeUserFromTopic($uid, $topicName)
+{
+  // IMPORT REQUIRED METHODS
+  require_once $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/Functions/Miscellaneous.php';
+
+  // IMPORT THE DATABASE CONNECTION
+  require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/_DBConnect.php';
+
+  // EXECUTE THE QUERY
+  $query = "DELETE 
+            FROM T_SUBSCRIBED_TOPIC 
+            WHERE uid = ? AND topic_name = ?"; 
+  $statement = $conn->prepare($query);
+  $statement->bind_param("is", $uid, $topicName);
+  $statement->execute();
+  $statement->store_result(); 	// Need this to check the number of rows later
+
+  // CHECK FOR AN ERROR, RETURN IT IF ONE EXISTS
+  $error = $statement->error;
+  // CHECK FOR THE COUNT OF RESULTS, RETURN A MESSAGE IF NONE EXIST
+  if ($statement->affected_rows === 0) {
+    return formatResponseError("User unsubscription from topic failed, possibly because none with the specified
+      uid and topic_name already exist.");
+  }
+  if ($statement->affected_rows > 1) {
+    return formatResponseError("DATA FLAWED: Please contact the database administrator with this method's name
+      because something went wrong (" . __FUNCTION__ . ").");
+  }
+  if ($error != "") { return formatResponseError($error); }
+
+  return formatResponseSuccess("User unsubscribed from topic successfully.");
+
+  $statement->close();
+}
+
+
+
+/* FUNCTION:    dbGetDevices
+ * DESCRIPTION: Retrieves and returns Device data of all of the devices used by the
+ *              user with the specified UID. 
+ * --------------------------------------------------------------------------------
+ * ================================================================================
+ * -------------------------------------------------------------------------------- */
+function dbGetDevices($uid)
+{
+  // IMPORT REQUIRED METHODS
+  require_once $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/Functions/Miscellaneous.php';
+
+  // IMPORT THE DATABASE CONNECTION
+  require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/_DBConnect.php';
+
+  // EXECUTE THE QUERY
+  $query = "SELECT did, device_frid, device_latest_uid, device_latest_uid_update_timestamp 
+            FROM T_DEVICE
+            WHERE device_latest_uid = ?";
+  $statement = $conn->prepare($query);
+  $statement->bind_param("i", $uid);
+  $statement->execute();
+
+  // CHECK FOR AN ERROR, RETURN IT IF ONE EXISTS
+  $error = $statement->error;
+  if ($error != "") { echo json_encode(formatResponseError($error)); return; }
+
+  // DEFAULT AND ASSIGN THE IMAGE VARIABLES
+  $statement->bind_result($did, $device_frid, $device_latest_uid, $device_latest_uid_update_timestamp);
+
+  // RETURN RESULT MESSAGE
+  $devices = array();
+  while($statement->fetch())
+  {
+    $device = array
+    (
+      "did" => $did, 
+      "deviceFrid" => $device_frid, 
+      "deviceLatestUid" => $device_latest_uid,
+      "deviceLatestUidUpdateTimestamp" => $device_latest_uid_update_timestamp
+    );
+    array_push($devices, $device);
+  }
+  
+  $parent = array
+  (
+      "devices" => $devices
+  );
+
+  return $parent;
+
+  $statement->close();
+}
+
+
+
+/* FUNCTION:    dbGetSubscribedTopics
+ * DESCRIPTION: Retrieves and returns Topic data of all of the topics subscribed to
+ *              by the user with the device latest UID of the device with the
+ *              specified FRID.
+ * --------------------------------------------------------------------------------
+ * ================================================================================
+ * -------------------------------------------------------------------------------- */
+function dbGetSubscribedTopics($frid)
+{
+  // IMPORT REQUIRED METHODS
+  require_once $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/Functions/Miscellaneous.php';
+
+  // IMPORT THE DATABASE CONNECTION
+  require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/_DBConnect.php';
+
+  // EXECUTE THE QUERY
+  $query = "SELECT tid, uid, topic_name
+            FROM T_SUBSCRIBED_TOPIC
+              JOIN T_DEVICE ON uid = device_latest_uid
+            WHERE device_frid = ?";
+  $statement = $conn->prepare($query);
+  $statement->bind_param("s", $frid);
+  $statement->execute();
+
+  // CHECK FOR AN ERROR, RETURN IT IF ONE EXISTS
+  $error = $statement->error;
+  if ($error != "") { echo json_encode(formatResponseError($error)); return; }
+
+  // DEFAULT AND ASSIGN THE IMAGE VARIABLES
+  $statement->bind_result($tid, $uid, $topic_name);
+
+  // RETURN RESULT MESSAGE
+  $topics = array();
+  while($statement->fetch())
+  {
+    $topic = array
+    (
+        "tid" => $tid,
+        "uid" => $uid,
+        "topicName" => $topic_name
+    );
+    array_push($topics, $topic);
+  }
+
+  $parent = array
+  (
+      "topics" => $topics
+  );
+
+  return $parent;
+
+  $statement->close();
+}
+
+
+
+/* FUNCTION:    dbIsUserSubscribedToTopic
+ * DESCRIPTION: Returns true or false depending on whether or not the user with the
+ *              specified UID is subscribed to the topic with the specified topic 
+ *              name. 
+ * --------------------------------------------------------------------------------
+ * ================================================================================
+ * -------------------------------------------------------------------------------- */
+function dbIsUserSubscribedToTopic($uid, $topicName)
+{
+  // IMPORT REQUIRED METHODS
+  require_once $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/Functions/Miscellaneous.php';
+
+  // IMPORT THE DATABASE CONNECTION
+  require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/_DBConnect.php';
+
+  // EXECUTE THE QUERY
+  $query = "SELECT 1 
+            FROM T_SUBSCRIBED_TOPIC 
+            WHERE uid = ? AND topic_name = ?";
+  $statement = $conn->prepare($query);
+  $statement->bind_param("is", $uid, $topicName);
+  $statement->execute();
+  $statement->store_result(); 	// Need this to check the number of rows later
+  
+  // CHECK FOR AN ERROR, RETURN IT IF ONE EXISTS
+  $error = $statement->error;
+  // CHECK FOR THE COUNT OF RESULTS, RETURN A MESSAGE IF NONE EXIST
+  if ($statement->affected_rows === 0) {
+    return false;
+  }
+  if ($statement->affected_rows > 1) {
+    return formatResponseError("DATA FLAWED: Please contact the database administrator with this method's name
+      because something went wrong (" . __FUNCTION__ . ").");
+  }
+  if ($error != "") { return formatResponseError($error); }
+  
+  return true;
+  
+  $statement->close();
+}
+
+
+
+/* !!!!! PLANNING TO DEPRECATE THIS !!!!! */
+/* !!!!! PLANNING TO DEPRECATE THIS !!!!! */
+/* !!!!! PLANNING TO DEPRECATE THIS !!!!! */
+/* !!!!! PLANNING TO DEPRECATE THIS !!!!! */
+/* !!!!! PLANNING TO DEPRECATE THIS !!!!! */
+/* FUNCTION:    dbGetUserDeviceFrids
+ * DESCRIPTION: Retrieves and returns all of the devices to which the user with
+ *              the input UID is currently logged in.
+ * --------------------------------------------------------------------------------
+ * ================================================================================
+ * -------------------------------------------------------------------------------- */
+/*
+function dbGetUserDeviceFrids($uid)
+{
+  // IMPORT REQUIRED METHODS
+  require_once $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/Functions/Miscellaneous.php';
+
+  // IMPORT THE DATABASE CONNECTION
+  require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/_DBConnect.php';
+
+  // EXECUTE THE QUERY
+  $query = "SELECT device_frid
+            FROM T_DEVICE
+            WHERE device_latest_uid = ?";
+  $statement = $conn->prepare($query);
+  $statement->bind_param("i", $uid);
+  $statement->execute();
+  $statement->store_result(); 	// Need this to check the number of rows later
+
+  // CHECK FOR AN ERROR, RETURN IT IF ONE EXISTS
+  $error = $statement->error;
+  // CHECK FOR THE COUNT OF RESULTS, RETURN A MESSAGE IF NONE EXIST
+  if ($statement->num_rows === 0) {
+    return formatResponseSuccess("User is not logged in to any device.");
+  }
+  if ($error != "") { return formatResponseError($error); }
+
+  // DEFAULT AND ASSIGN THE IMAGE VARIABLES
+  $statement->bind_result($device_frid);
+
+  $deviceFrids = array();
+  while($statement->fetch())
+  {
+    array_push($deviceFrids, $device_frid);
+  }
+
+  $statement->close();
+
+  $parent = array
+  (
+      "deviceFrids" => $deviceFrids
+  );
+
+  return $parent;
+}*/
+
+
+
 /* !!!!! PLANNING TO DEPRECATE THIS !!!!! */
 /* !!!!! PLANNING TO DEPRECATE THIS !!!!! */
 /* !!!!! PLANNING TO DEPRECATE THIS !!!!! */
@@ -106,6 +403,7 @@ function dbUnsetDeviceUser($frid)
  * --------------------------------------------------------------------------------
  * ================================================================================
  * -------------------------------------------------------------------------------- */
+/*
 function dbSubscribeDeviceToTopic($frid, $topicName)
 { 
   // IMPORT REQUIRED METHODS
@@ -147,16 +445,22 @@ function dbSubscribeDeviceToTopic($frid, $topicName)
   }
 
   $statement->close();
-}
+}*/
 
 
 
+/* !!!!! PLANNING TO DEPRECATE THIS !!!!! */
+/* !!!!! PLANNING TO DEPRECATE THIS !!!!! */
+/* !!!!! PLANNING TO DEPRECATE THIS !!!!! */
+/* !!!!! PLANNING TO DEPRECATE THIS !!!!! */
+/* !!!!! PLANNING TO DEPRECATE THIS !!!!! */
 /* FUNCTION:    dbSubscribeDeviceGroupToTopic
  * DESCRIPTION: Subscribes the device group for the user with the input UID to the 
  *              specified topic.
  * --------------------------------------------------------------------------------
  * ================================================================================
  * -------------------------------------------------------------------------------- */
+/*
 function dbSubscribeDeviceGroupToTopic($uid, $topicName)
 {
   // IMPORT REQUIRED METHODS
@@ -203,6 +507,7 @@ function dbSubscribeDeviceGroupToTopic($uid, $topicName)
 
   $statement->close();
 }
+*/
 
 
 
@@ -218,7 +523,8 @@ function dbSubscribeDeviceGroupToTopic($uid, $topicName)
  *              Identifier from the specified topic.
  * --------------------------------------------------------------------------------
  * ================================================================================
- * -------------------------------------------------------------------------------- */
+ * -------------------------------------------------------------------------------- */ 
+/*
 function dbUnsubscribeDeviceFromTopic($frid, $topicName)
 {
   // IMPORT REQUIRED METHODS
@@ -260,16 +566,22 @@ function dbUnsubscribeDeviceFromTopic($frid, $topicName)
   }
 
   $statement->close();
-}
+}*/
 
 
 
+/* !!!!! PLANNING TO DEPRECATE THIS !!!!! */
+/* !!!!! PLANNING TO DEPRECATE THIS !!!!! */
+/* !!!!! PLANNING TO DEPRECATE THIS !!!!! */
+/* !!!!! PLANNING TO DEPRECATE THIS !!!!! */
+/* !!!!! PLANNING TO DEPRECATE THIS !!!!! */
 /* FUNCTION:    dbUnsubscribeDeviceGroupFromTopic
  * DESCRIPTION: Unsubscribes the device group for the user with the specified UID 
  *              from the specified topic.
  * --------------------------------------------------------------------------------
  * ================================================================================
  * -------------------------------------------------------------------------------- */
+/*
 function dbUnsubscribeDeviceGroupFromTopic($uid, $topicName)
 {
   // IMPORT REQUIRED METHODS
@@ -315,16 +627,22 @@ function dbUnsubscribeDeviceGroupFromTopic($uid, $topicName)
   }
 
   $statement->close();
-}
+}*/
 
 
 
+/* !!!!! PLANNING TO DEPRECATE THIS !!!!! */
+/* !!!!! PLANNING TO DEPRECATE THIS !!!!! */
+/* !!!!! PLANNING TO DEPRECATE THIS !!!!! */
+/* !!!!! PLANNING TO DEPRECATE THIS !!!!! */
+/* !!!!! PLANNING TO DEPRECATE THIS !!!!! */
 /* FUNCTION:    getDeviceSubscribedTopics
  * DESCRIPTION: Retrieves and returns all of the topics to which the device with 
  *              the input Firebase Registration Identifier is subscribed. 
  * --------------------------------------------------------------------------------
  * ================================================================================
  * -------------------------------------------------------------------------------- */
+/*
 function dbGetDeviceSubscribedTopics($frid)
 {
   // IMPORT REQUIRED METHODS
@@ -367,68 +685,22 @@ function dbGetDeviceSubscribedTopics($frid)
   return $parent;
 
   $statement->close();
-}
+}*/
 
 
 
-/* FUNCTION:    dbGetUserDeviceFrids
- * DESCRIPTION: Retrieves and returns all of the devices to which the user with
- *              the input UID is currently logged in.
- * --------------------------------------------------------------------------------
- * ================================================================================
- * -------------------------------------------------------------------------------- */
-function dbGetUserDeviceFrids($uid)
-{
-  // IMPORT REQUIRED METHODS
-  require_once $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/Functions/Miscellaneous.php';
-
-  // IMPORT THE DATABASE CONNECTION
-  require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/_DBConnect.php';
-
-  // EXECUTE THE QUERY
-  $query = "SELECT device_frid  
-            FROM T_DEVICE 
-            WHERE device_latest_uid = ?";
-  $statement = $conn->prepare($query);
-  $statement->bind_param("i", $uid);
-  $statement->execute();
-  $statement->store_result(); 	// Need this to check the number of rows later
-  
-  // CHECK FOR AN ERROR, RETURN IT IF ONE EXISTS
-  $error = $statement->error;
-  // CHECK FOR THE COUNT OF RESULTS, RETURN A MESSAGE IF NONE EXIST
-  if ($statement->num_rows === 0) {
-    return formatResponseSuccess("User is not logged in to any device.");
-  }
-  if ($error != "") { return formatResponseError($error); }
-  
-  // DEFAULT AND ASSIGN THE IMAGE VARIABLES
-  $statement->bind_result($device_frid);
-  
-  $deviceFrids = array();
-  while($statement->fetch())
-  {
-    array_push($deviceFrids, $device_frid);
-  }
-  
-  $statement->close();
-  
-  $parent = array
-  (
-    "deviceFrids" => $deviceFrids  
-  );
-  
-  return $parent;
-}
-
-
-
+/* !!!!! PLANNING TO DEPRECATE THIS !!!!! */
+/* !!!!! PLANNING TO DEPRECATE THIS !!!!! */
+/* !!!!! PLANNING TO DEPRECATE THIS !!!!! */
+/* !!!!! PLANNING TO DEPRECATE THIS !!!!! */
+/* !!!!! PLANNING TO DEPRECATE THIS !!!!! */
 /* FUNCTION:    dbGetDeviceGroupFrid
  * DESCRIPTION: Retrieves and returns the Device Group Firebase Registration 
  *              Identifier (FRID) used by user's (whose UID is provided) devices. 
  * --------------------------------------------------------------------------------
  * ================================================================================
  * -------------------------------------------------------------------------------- */
+/*
 function dbGetDeviceGroupFrid($uid)
 {
   // IMPORT REQUIRED METHODS
@@ -466,10 +738,15 @@ function dbGetDeviceGroupFrid($uid)
   return $device_group_frid;
 
   $statement->close();
-}
+}*/
 
 
 
+/* !!!!! PLANNING TO DEPRECATE THIS !!!!! */
+/* !!!!! PLANNING TO DEPRECATE THIS !!!!! */
+/* !!!!! PLANNING TO DEPRECATE THIS !!!!! */
+/* !!!!! PLANNING TO DEPRECATE THIS !!!!! */
+/* !!!!! PLANNING TO DEPRECATE THIS !!!!! */
 /* FUNCTION:    dbGetDevice
  * DESCRIPTION: Retrieves and returns the Device Group data, mainly the UID of the
  *              latest device user and the device group FRID, of the device with 
@@ -477,6 +754,7 @@ function dbGetDeviceGroupFrid($uid)
  * --------------------------------------------------------------------------------
  * ================================================================================
  * -------------------------------------------------------------------------------- */
+/*
 function dbGetDevice($deviceFrid)
 {
   // IMPORT REQUIRED METHODS
@@ -517,10 +795,15 @@ function dbGetDevice($deviceFrid)
   return $parent;
 
   $statement->close();
-}
+}*/
 
 
 
+/* !!!!! PLANNING TO DEPRECATE THIS !!!!! */
+/* !!!!! PLANNING TO DEPRECATE THIS !!!!! */
+/* !!!!! PLANNING TO DEPRECATE THIS !!!!! */
+/* !!!!! PLANNING TO DEPRECATE THIS !!!!! */
+/* !!!!! PLANNING TO DEPRECATE THIS !!!!! */
 /* FUNCTION:    dbAddDeviceToDeviceGroup
  * DESCRIPTION: Adds the device with the specified device firebase registration
  *              identifier (FRID) to the device group with the specified device
@@ -528,6 +811,7 @@ function dbGetDevice($deviceFrid)
  * --------------------------------------------------------------------------------
  * ================================================================================
  * -------------------------------------------------------------------------------- */
+/*
 function dbAddDeviceToDeviceGroup($deviceFrid, $deviceGroupFrid)
 {
   // IMPORT REQUIRED METHODS
@@ -536,11 +820,9 @@ function dbAddDeviceToDeviceGroup($deviceFrid, $deviceGroupFrid)
   // IMPORT THE DATABASE CONNECTION
   require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/_DBConnect.php';
   
-  /*
-  $deviceGroupFrid = dbGetDeviceGroupFrid($uid);
-  if (contains(json_encode($deviceGroupFrid), "responseType"))
-    return $deviceGroupFrid;
-  */
+  //$deviceGroupFrid = dbGetDeviceGroupFrid($uid);
+  //if (contains(json_encode($deviceGroupFrid), "responseType"))
+  //  return $deviceGroupFrid;
 
   // EXECUTE THE QUERY
   $query = "UPDATE T_DEVICE 
@@ -572,16 +854,22 @@ function dbAddDeviceToDeviceGroup($deviceFrid, $deviceGroupFrid)
   return formatResponseSuccess("Device associated with the device group successfully.");
 
   $statement->close();
-}
+}*/
 
 
 
+/* !!!!! PLANNING TO DEPRECATE THIS !!!!! */
+/* !!!!! PLANNING TO DEPRECATE THIS !!!!! */
+/* !!!!! PLANNING TO DEPRECATE THIS !!!!! */
+/* !!!!! PLANNING TO DEPRECATE THIS !!!!! */
+/* !!!!! PLANNING TO DEPRECATE THIS !!!!! */
 /* FUNCTION:    dbCreateDeviceGroup
  * DESCRIPTION: Creates a device group with the input device group firebase 
  *              registration identifier (FRID) in the database.
  * --------------------------------------------------------------------------------
  * ================================================================================
  * -------------------------------------------------------------------------------- */
+/*
 function dbCreateDeviceGroup($deviceGroupFrid)
 {
   // IMPORT REQUIRED METHODS
@@ -615,15 +903,22 @@ function dbCreateDeviceGroup($deviceGroupFrid)
 
   $statement->close();
 }
+*/
 
 
 
+/* !!!!! PLANNING TO DEPRECATE THIS !!!!! */
+/* !!!!! PLANNING TO DEPRECATE THIS !!!!! */
+/* !!!!! PLANNING TO DEPRECATE THIS !!!!! */
+/* !!!!! PLANNING TO DEPRECATE THIS !!!!! */
+/* !!!!! PLANNING TO DEPRECATE THIS !!!!! */
 /* FUNCTION:    dbRemoveDeviceFromDeviceGroup
  * DESCRIPTION: Removes the device with the specified device firebase registration
  *              identifier (FRID) from the current device group.
  * --------------------------------------------------------------------------------
  * ================================================================================
  * -------------------------------------------------------------------------------- */
+/*
 function dbRemoveDeviceFromDeviceGroup($deviceFrid)
 {
   // IMPORT REQUIRED METHODS
@@ -677,5 +972,6 @@ function dbRemoveDeviceFromDeviceGroup($deviceFrid)
 
   $statement->close();
 }
+*/
 
 ?>

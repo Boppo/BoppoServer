@@ -26,10 +26,17 @@ function setUserRelationship()
   // IMPORT THE DATABASE CONNECTION FUNCTION AND OTHER REQUIRED FUNCTIONS
   require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/_DBConnect.php';
   require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/Firebase.php';
+  require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/ObjectType.php';
   require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/DBIO/User.php';
   require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/Functions/Miscellaneous.php';
   require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/FirebaseIO/Topic.php';
-  require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/FirebaseIO/Message.php';
+  require $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/FirebaseIO/Message.php'; 
+  
+  // GET REQUIRED METADATA 
+  // Fetch the object type code for a "user" objectTypeLabel type
+  $objectTypeCode = dbGetObjectTypeCode("User");
+  if (contains(json_encode($objectTypeCode), "responseType"))
+    return json_encode($objectTypeCode);
 
   // DECODE INCOMING JSON CONTENTS //
   $json_decoded = json_decode(file_get_contents("php://input"), true);
@@ -84,38 +91,30 @@ function setUserRelationship()
     echo json_encode(formatResponseSuccess("User relationship has been set successfully.")); 
     if ($userRelationshipAction == "Accept")
     {
-      // Subscribe users to each other
-      $frids = dbGetUserDeviceFrids($uid1);
-      $subscriptionResponse = subscribeDevicesToTopics(
-          $frids["deviceFrids"], "User", array($uid2));
-      $frids = dbGetUserDeviceFrids($uid2);
-      $subscriptionResponse = subscribeDevicesToTopics(
-          $frids["deviceFrids"], "User", array($uid1)); 
       // Let User with UID2 know that User with UID1 has accepted the friend request
-      sendMessageToTopic(
+      sendMessageToUser(
         "User", $uid2, "User Befriended", 
         $user1ProfileData["username"] . " has befriended you.", 
         null, null);
+      // Subscribe the two users to each other
+      subscribeDevicesToTopic($uid1, $objectTypeCode . "." . $uid2); 
+      subscribeDevicesToTopic($uid2, $objectTypeCode . "." . $uid1);
     }
     else if ($userRelationshipAction == "Unfriend")
     {
-      // Unsubscribe users from each other
-      $frids = dbGetUserDeviceFrids($uid1);
-      $subscriptionResponse = unsubscribeDevicesFromTopics(
-          $frids["deviceFrids"], "User", array($uid2));
-      $frids = dbGetUserDeviceFrids($uid2);
-      $subscriptionResponse = unsubscribeDevicesFromTopics(
-          $frids["deviceFrids"], "User", array($uid1)); 
       // Let User with UID2 know that User with UID1 has unfriended them
-      sendMessageToTopic(
+      sendMessageToUser(
           "User", $uid2, "User Unfriended",
           $user1ProfileData["username"] . " has unfriended you.",
           null, null);
+      // Unsubscribe the two users from each other
+      unsubscribeDevicesFromTopic($uid1, $objectTypeCode . "." . $uid2);
+      unsubscribeDevicesFromTopic($uid2, $objectTypeCode . "." . $uid1);
     }
     else if ($userRelationshipAction == "Add")
     {
       // Let User with UID2 know that User with UID1 has sent them a friend request
-      sendMessageToTopic(
+      sendMessageToUser(
           "User", $uid2, "User Sent Friend Rquest",
           $user1ProfileData["username"] . " has sent you a friend request.",
           null, null);
@@ -123,7 +122,7 @@ function setUserRelationship()
     else if ($userRelationshipAction == "Reject")
     {
       // Let User with UID2 know that User with UID1 has rejected their friend request
-      sendMessageToTopic(
+      sendMessageToUser(
           "User", $uid2, "User Rejected Friend Rquest",
           $user1ProfileData["username"] . " has rejected your friend request.",
           null, null);

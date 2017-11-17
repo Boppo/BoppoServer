@@ -40,7 +40,7 @@ function sendMessageToTopic($objectTypeLabel, $topic,
   );
   
   $id = $topic;
-  $to = "/topics/" . $objectTypeCode . "-" . $id;
+  $to = "/topics/" . $objectTypeCode . "." . $id;
   $message = array
   (
       "to" => $to,
@@ -61,6 +61,7 @@ function sendMessageToTopic($objectTypeLabel, $topic,
   
   $parent = array
   (
+    "topicName" => $objectTypeCode . "." . $id, 
     "curlResult" => $curlResult, 
     "curlError" => $curlError, 
     "curlResponse" => $curlResponse
@@ -74,7 +75,7 @@ function sendMessageToTopic($objectTypeLabel, $topic,
 
 
 function sendMessageToUser($objectTypeLabel, $uid,
-    $titleName, $body, $icon, $sound)
+  $titleName, $body, $icon, $sound)
 {
   // IMPORT REQUIRED METHODS
   require_once $_SERVER['DOCUMENT_ROOT'] . '/BoppoServer/Functions/Miscellaneous.php';
@@ -90,18 +91,16 @@ function sendMessageToUser($objectTypeLabel, $uid,
       'Content-Type:application/json',
       'Authorization:key=' . $API_ACCESS_KEY
   );
-
+  
+  $devices = dbGetDevices($uid)["devices"];
+  $deviceFrids = array();
+  foreach ($devices as $device)
+  {
+    array_push($deviceFrids, $device["deviceFrid"]);
+  }
+  
   // Form the URL for cURL
   $url = "https://fcm.googleapis.com/fcm/send";
-
-  // Fetch the object type code for the specified objectTypeLabel
-  // Ex: x for the User, y for the User Image, z for the Event
-  $objectTypeCode = dbGetObjectTypeCode($objectTypeLabel);
-  if (contains(json_encode($objectTypeCode), "responseType"))
-  {
-    saveToErrorLog(json_encode($objectTypeCode), __FUNCTION__);
-    return;
-  }
 
   // Prepare the Firebase Message
   $notification = array
@@ -112,12 +111,17 @@ function sendMessageToUser($objectTypeLabel, $uid,
       "sound"      => $sound
   );
 
-  $frids = 
-    dbGetUserDeviceFrids($uid)["deviceFrids"];
-  $to = $frids; 
+  $devices = dbGetDevices($uid)["devices"];
+  $deviceFrids = array();
+  foreach ($devices as $device)
+  {
+    array_push($deviceFrids, $device["deviceFrid"]);
+  }
+  $registration_ids = $deviceFrids; 
+  
   $message = array
   (
-      "to" => $to,
+      "registration_ids" => $registration_ids,
       "notification" => $notification
   );
 
@@ -133,16 +137,22 @@ function sendMessageToUser($objectTypeLabel, $uid,
   $curlResponse = curl_getinfo($curl, CURLINFO_HTTP_CODE);
   curl_close($curl);
 
-  $parent = array
+  $curlRre = array
   (
+      "uid" => $uid,
       "curlResult" => $curlResult,
       "curlError" => $curlError,
       "curlResponse" => $curlResponse
   );
-
+  
+  $parent = array
+  (
+      "subscribeResult"  => $curlRre
+  );
+  
   saveToSystemLog(json_encode($parent), __FUNCTION__);
-
-  return formatResponseSuccess("Message sent to topic successfully.");
+  
+  return formatResponseSuccess("Message sent to user successfully.");
 }
 
 ?>
